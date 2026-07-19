@@ -2,3 +2,19 @@
 /.phpunit.cache/
 /.phpunit.result.cache
 /phpunit.xml
+
+# Editors and IDEs
+/.idea/
+/.vscode/
+/.zed/
+/.fleet/
+/*.sublime-*
+
+# AI coding tools
+/.claude/
+/.codex/
+/.cursor/
+/.gemini/
+/.junie/
+/.aider*
+/CLAUDE.local.md
