@@ -1,0 +1,29 @@
+{
+    "name": "yarunoka/core",
+    "description": "Calendar-aware schedule DSL and pure occurrence query engine",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.5"
+    },
+    "require-dev": {
+        "azuyalabs/yasumi": "^2.11",
+        "opis/json-schema": "^2.4",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^13.0"
+    },
+    "suggest": {
+        "azuyalabs/yasumi": "Compute public holidays offline with the bundled YasumiHolidaysResolver"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yarunoka\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Yarunoka\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}
