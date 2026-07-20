@@ -3,3 +3,6 @@ parameters:
     paths:
         - src/
         - tests/
+    # PHPUnit lives in its own vendor-bin namespace, outside the root autoloader
+    bootstrapFiles:
+        - vendor-bin/phpunit/vendor/autoload.php

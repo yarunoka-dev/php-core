@@ -8,9 +8,8 @@
     },
     "require-dev": {
         "azuyalabs/yasumi": "^2.11",
-        "opis/json-schema": "^2.4",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^13.0"
+        "bamarni/composer-bin-plugin": "^1.8",
+        "opis/json-schema": "^2.4"
     },
     "suggest": {
         "azuyalabs/yasumi": "Compute public holidays offline with the bundled YasumiHolidaysResolver"
@@ -23,6 +22,18 @@
     "autoload-dev": {
         "psr-4": {
             "Yarunoka\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true
+        }
+    },
+    "extra": {
+        "bamarni-bin": {
+            "bin-links": true,
+            "forward-command": true,
+            "target-directory": "vendor-bin"
         }
     },
     "minimum-stability": "stable"
