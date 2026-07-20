@@ -24,7 +24,7 @@ final class TimesBuilder
     {
         if ($times instanceof FixedTimes) {
             return array_map(
-                static fn (TimeOfDay $time): string => $time->toString(),
+                static fn(TimeOfDay $time): string => $time->toString(),
                 $times->times,
             );
         }
@@ -41,6 +41,6 @@ final class TimesBuilder
             return $raw;
         }
 
-        throw new InvalidValueException('Unknown times node: '.get_debug_type($times));
+        throw new InvalidValueException('Unknown times node: ' . get_debug_type($times));
     }
 }

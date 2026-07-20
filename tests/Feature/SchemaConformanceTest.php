@@ -252,20 +252,20 @@ class SchemaConformanceTest extends TestCase
 
     private static function doc(string $scheduleJson, ?string $definitions = null): string
     {
-        $definitionsPart = $definitions === null ? '' : ', "definitions": '.$definitions;
+        $definitionsPart = $definitions === null ? '' : ', "definitions": ' . $definitions;
 
-        return '{"version": 1, "timezone": "Asia/Tokyo"'.$definitionsPart.', "schedules": ['.$scheduleJson.']}';
+        return '{"version": 1, "timezone": "Asia/Tokyo"' . $definitionsPart . ', "schedules": [' . $scheduleJson . ']}';
     }
 
     private function parser(): YrnkParser
     {
-        return new YrnkParser(resolvers: ['yasumi-jp' => static fn (): array => ['2026-01-01']]);
+        return new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => ['2026-01-01']]);
     }
 
     private function schemaAccepts(string $json): bool
     {
-        $validator = new Validator;
-        $validator->resolver()?->registerFile(self::SCHEMA_ID, dirname(__DIR__, 2).'/schema/yarunoka.schema.json');
+        $validator = new Validator();
+        $validator->resolver()?->registerFile(self::SCHEMA_ID, dirname(__DIR__, 2) . '/schema/yarunoka.schema.json');
 
         return $validator->validate(json_decode($json), self::SCHEMA_ID)->isValid();
     }

@@ -22,7 +22,7 @@ final class DayExpressionParser
         }
 
         return new DayExpression(array_map(
-            static fn (mixed $atom): DayAtom => is_array($atom) && ($atom[0] ?? null) === 'every'
+            static fn(mixed $atom): DayAtom => is_array($atom) && ($atom[0] ?? null) === 'every'
                 ? DayCycleParser::parse($atom)
                 : DayAtomParser::parse($atom),
             $raw,

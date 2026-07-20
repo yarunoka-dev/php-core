@@ -40,7 +40,7 @@ final readonly class DayMatcher
             $atom instanceof LastDayOfMonth => $date->day === $date->daysInMonth(),
             $atom instanceof CustomRef => $this->definitions->customContains($atom->name, $date),
             $atom instanceof CalendarWord => $this->matchesCalendarWord($atom, $date),
-            default => throw new InvalidValueException('Unknown day expression atom: '.get_debug_type($atom)),
+            default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };
     }
 

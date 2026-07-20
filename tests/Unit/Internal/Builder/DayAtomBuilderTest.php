@@ -23,7 +23,7 @@ class DayAtomBuilderTest extends TestCase
         $this->assertSame('mon', DayAtomBuilder::build(new Weekday(DayName::Mon)));
         $this->assertSame('holiday', DayAtomBuilder::build(CalendarWord::Holiday));
         $this->assertSame(['3rd', 'mon'], DayAtomBuilder::build(new OrdinalWeekday(Ordinal::Third, DayName::Mon)));
-        $this->assertSame('last_day_of_month', DayAtomBuilder::build(new LastDayOfMonth));
+        $this->assertSame('last_day_of_month', DayAtomBuilder::build(new LastDayOfMonth()));
         $this->assertSame('fête-nationale', DayAtomBuilder::build(new CustomRef('fête-nationale')));
     }
 }

@@ -110,7 +110,7 @@ class PollerScenarioTest extends TestCase
         );
         $poller = new RoutinePoller(
             $evaluator,
-            (new ScheduleParser)->parse(['days' => ['business_day'], 'times' => ['08:00']]),
+            (new ScheduleParser())->parse(['days' => ['business_day'], 'times' => ['08:00']]),
             $this->at('2026-07-16T00:00:00+09:00'),
         );
 
@@ -139,7 +139,7 @@ class PollerScenarioTest extends TestCase
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
 
-        return new RoutinePoller($evaluator, (new ScheduleParser)->parse($schedule), $this->at($startedAt), $grace);
+        return new RoutinePoller($evaluator, (new ScheduleParser())->parse($schedule), $this->at($startedAt), $grace);
     }
 
     private function at(string $iso): DateTimeImmutable

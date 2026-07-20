@@ -30,7 +30,7 @@ final class YrnkParser
      */
     public function __construct(
         private readonly array $resolvers = [],
-        private readonly ScheduleParser $scheduleParser = new ScheduleParser,
+        private readonly ScheduleParser $scheduleParser = new ScheduleParser(),
     ) {}
 
     /**
@@ -51,7 +51,7 @@ final class YrnkParser
         $unknownKeys = array_diff(array_keys($input), self::KNOWN_KEYS);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('Unknown keys in the document: '.implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
         $definitions = DefinitionsParser::parse($input['definitions'] ?? []);

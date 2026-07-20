@@ -165,13 +165,19 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['times' => ['09:00']]);
 
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-12T09:00:00+09:00'), $this->at('2026-07-12T09:30:00+09:00'),
+            $schedule,
+            $this->at('2026-07-12T09:00:00+09:00'),
+            $this->at('2026-07-12T09:30:00+09:00'),
         ));
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-12T08:30:00+09:00'), $this->at('2026-07-12T09:00:00+09:00'),
+            $schedule,
+            $this->at('2026-07-12T08:30:00+09:00'),
+            $this->at('2026-07-12T09:00:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-12T09:00:00+09:00'), $this->at('2026-07-12T09:00:00+09:00'),
+            $schedule,
+            $this->at('2026-07-12T09:00:00+09:00'),
+            $this->at('2026-07-12T09:00:00+09:00'),
         ));
     }
 
@@ -184,10 +190,14 @@ class MatchFinderTest extends TestCase
         // Even for an interval from the start of the year, June is the
         // only candidate.
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-01-01T00:00:00+09:00'), $this->at('2026-12-31T00:00:00+09:00'),
+            $schedule,
+            $this->at('2026-01-01T00:00:00+09:00'),
+            $this->at('2026-12-31T00:00:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-06-15T10:00:00+09:00'), $this->at('2026-12-31T00:00:00+09:00'),
+            $schedule,
+            $this->at('2026-06-15T10:00:00+09:00'),
+            $this->at('2026-12-31T00:00:00+09:00'),
         ));
     }
 
@@ -203,13 +213,17 @@ class MatchFinderTest extends TestCase
         ]);
 
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-11-01T00:00:00+09:00'), $this->at('2026-11-02T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-11-01T00:00:00+09:00'),
+            $this->at('2026-11-02T23:59:00+09:00'),
         ));
         // The 11/2 10:00 point is exactly from and does not count. The
         // November base day 11/30 (Mon) lands on 11/30, so there is no
         // point up to 11/29.
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-11-02T10:00:00+09:00'), $this->at('2026-11-29T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-11-02T10:00:00+09:00'),
+            $this->at('2026-11-29T23:59:00+09:00'),
         ));
     }
 
@@ -223,10 +237,14 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['days' => [1], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['10:00']]);
 
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-30T00:00:00+09:00'), $this->at('2026-07-31T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-07-30T00:00:00+09:00'),
+            $this->at('2026-07-31T23:59:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-02T00:00:00+09:00'), $this->at('2026-07-30T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-07-02T00:00:00+09:00'),
+            $this->at('2026-07-30T23:59:00+09:00'),
         ));
     }
 
@@ -245,15 +263,21 @@ class MatchFinderTest extends TestCase
         $prev = $this->schedule(['days' => [1], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['10:00']]);
 
         $this->assertTrue($finder->hasMatchIn(
-            $next, $this->at('2029-01-01T00:00:00+09:00'), $this->at('2029-01-01T23:59:00+09:00'),
+            $next,
+            $this->at('2029-01-01T00:00:00+09:00'),
+            $this->at('2029-01-01T23:59:00+09:00'),
         ));
         // A point exactly at from does not count, and there is no point
         // before January's next landing (1/31).
         $this->assertFalse($finder->hasMatchIn(
-            $next, $this->at('2029-01-01T10:00:00+09:00'), $this->at('2029-01-02T00:00:00+09:00'),
+            $next,
+            $this->at('2029-01-01T10:00:00+09:00'),
+            $this->at('2029-01-02T00:00:00+09:00'),
         ));
         $this->assertTrue($finder->hasMatchIn(
-            $prev, $this->at('2027-12-30T00:00:00+09:00'), $this->at('2027-12-31T23:59:00+09:00'),
+            $prev,
+            $this->at('2027-12-30T00:00:00+09:00'),
+            $this->at('2027-12-31T23:59:00+09:00'),
         ));
     }
 
@@ -272,7 +296,9 @@ class MatchFinderTest extends TestCase
         // The 11 months in between have empty base days; the walk still
         // picks up the 2026-06 base day.
         $this->assertTrue($lands->hasMatchIn(
-            $schedule, $this->at('2027-06-16T00:00:00+09:00'), $this->at('2027-06-16T23:59:00+09:00'),
+            $schedule,
+            $this->at('2027-06-16T00:00:00+09:00'),
+            $this->at('2027-06-16T23:59:00+09:00'),
         ));
     }
 
@@ -289,7 +315,9 @@ class MatchFinderTest extends TestCase
 
         $this->assertFalse($tooFar->matches($schedule, $this->at('2027-06-17T10:00:00+09:00')));
         $this->assertFalse($tooFar->hasMatchIn(
-            $schedule, $this->at('2027-06-17T00:00:00+09:00'), $this->at('2027-06-17T23:59:00+09:00'),
+            $schedule,
+            $this->at('2027-06-17T00:00:00+09:00'),
+            $this->at('2027-06-17T23:59:00+09:00'),
         ));
     }
 
@@ -315,10 +343,14 @@ class MatchFinderTest extends TestCase
         // intervals are more than 366 days after / before it.
         $this->assertTrue($finder->matches($next, $this->at('2026-06-15T10:00:00+09:00')));
         $this->assertFalse($finder->hasMatchIn(
-            $next, $this->at('2027-09-01T00:00:00+09:00'), $this->at('2027-09-30T23:59:00+09:00'),
+            $next,
+            $this->at('2027-09-01T00:00:00+09:00'),
+            $this->at('2027-09-30T23:59:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $prev, $this->at('2025-03-01T00:00:00+09:00'), $this->at('2025-04-30T23:59:00+09:00'),
+            $prev,
+            $this->at('2025-03-01T00:00:00+09:00'),
+            $this->at('2025-04-30T23:59:00+09:00'),
         ));
     }
 
@@ -331,10 +363,14 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['days' => [25], 'if' => ['not', 'sat'], 'times' => ['10:00']]);
 
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-01T00:00:00+09:00'), $this->at('2026-07-31T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-07-01T00:00:00+09:00'),
+            $this->at('2026-07-31T23:59:00+09:00'),
         ));
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-01T00:00:00+09:00'), $this->at('2026-08-25T10:00:00+09:00'),
+            $schedule,
+            $this->at('2026-07-01T00:00:00+09:00'),
+            $this->at('2026-08-25T10:00:00+09:00'),
         ));
     }
 
@@ -347,7 +383,9 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['years' => [2020], 'months' => [6], 'days' => [15], 'allday' => true]);
 
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-01-01T00:00:00+09:00'), $this->at('2026-12-31T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-01-01T00:00:00+09:00'),
+            $this->at('2026-12-31T23:59:00+09:00'),
         ));
     }
 
@@ -358,10 +396,14 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['days' => [['3rd', 'mon']], 'allday' => true]);
 
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-19T23:59:00+09:00'), $this->at('2026-07-20T00:00:00+09:00'),
+            $schedule,
+            $this->at('2026-07-19T23:59:00+09:00'),
+            $this->at('2026-07-20T00:00:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-20T00:00:00+09:00'), $this->at('2026-07-20T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-07-20T00:00:00+09:00'),
+            $this->at('2026-07-20T23:59:00+09:00'),
         ));
     }
 
@@ -372,10 +414,14 @@ class MatchFinderTest extends TestCase
         $schedule = $this->schedule(['days' => ['mon'], 'times' => ['08:00', '12:00']]);
 
         $this->assertTrue($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-13T09:00:00+09:00'), $this->at('2026-07-13T12:00:00+09:00'),
+            $schedule,
+            $this->at('2026-07-13T09:00:00+09:00'),
+            $this->at('2026-07-13T12:00:00+09:00'),
         ));
         $this->assertFalse($finder->hasMatchIn(
-            $schedule, $this->at('2026-07-13T12:01:00+09:00'), $this->at('2026-07-13T23:59:00+09:00'),
+            $schedule,
+            $this->at('2026-07-13T12:01:00+09:00'),
+            $this->at('2026-07-13T23:59:00+09:00'),
         ));
     }
 
@@ -392,7 +438,7 @@ class MatchFinderTest extends TestCase
             businessHolidays: BusinessHolidays::ofDates([]),
             businessDays: BusinessDays::ofDates([]),
             custom: array_map(
-                static fn (array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
                 $custom,
             ),
         ), resolvers: []);
@@ -411,7 +457,7 @@ class MatchFinderTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser)->parse($raw);
+        return (new ScheduleParser())->parse($raw);
     }
 
     private function at(string $iso): DateTimeImmutable

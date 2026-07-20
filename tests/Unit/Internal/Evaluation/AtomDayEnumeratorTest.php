@@ -97,9 +97,9 @@ class AtomDayEnumeratorTest extends TestCase
     {
         $enumerator = $this->enumerator();
 
-        $this->assertSame([31], $enumerator->daysIn(new LastDayOfMonth, 2026, 7));
-        $this->assertSame([28], $enumerator->daysIn(new LastDayOfMonth, 2026, 2));
-        $this->assertSame([29], $enumerator->daysIn(new LastDayOfMonth, 2024, 2));
+        $this->assertSame([31], $enumerator->daysIn(new LastDayOfMonth(), 2026, 7));
+        $this->assertSame([28], $enumerator->daysIn(new LastDayOfMonth(), 2026, 2));
+        $this->assertSame([29], $enumerator->daysIn(new LastDayOfMonth(), 2024, 2));
     }
 
     // ---- custom references ----
@@ -188,10 +188,10 @@ class AtomDayEnumeratorTest extends TestCase
             businessHolidays: BusinessHolidays::ofDates([]),
             businessDays: BusinessDays::ofDates($businessDays),
             workweek: $workweek === null ? null : new Workweek(
-                array_map(static fn (string $day): DayName => DayName::from($day), $workweek),
+                array_map(static fn(string $day): DayName => DayName::from($day), $workweek),
             ),
             custom: array_map(
-                static fn (array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
                 $custom,
             ),
         ), resolvers: [])));

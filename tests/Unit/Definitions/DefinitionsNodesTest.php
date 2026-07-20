@@ -26,7 +26,7 @@ class DefinitionsNodesTest extends TestCase
         $holidays = Holidays::ofDates(['2026-01-01', '2026-01-12']);
 
         $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
-            static fn (LocalDate $date): string => $date->toString(),
+            static fn(LocalDate $date): string => $date->toString(),
             $holidays->dates ?? [],
         ));
         $this->assertNull($holidays->resolver);

@@ -103,7 +103,7 @@ class DayAtomNodesTest extends TestCase
         $this->assertInstanceOf(DayAtom::class, new MonthDay(25));
         $this->assertInstanceOf(DayAtom::class, new Weekday(DayName::Mon));
         $this->assertInstanceOf(DayAtom::class, new OrdinalWeekday(Ordinal::Last, DayName::Fri));
-        $this->assertInstanceOf(DayAtom::class, new LastDayOfMonth);
+        $this->assertInstanceOf(DayAtom::class, new LastDayOfMonth());
         $this->assertInstanceOf(DayAtom::class, new CustomRef('founding-day'));
         $this->assertInstanceOf(DayAtom::class, CalendarWord::Holiday);
     }

@@ -40,7 +40,7 @@ final readonly class TimeWindow
      */
     public function toStrings(): array
     {
-        $format = static fn (int $seconds): string => sprintf('%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60));
+        $format = static fn(int $seconds): string => sprintf('%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60));
 
         return [
             $format($this->startSeconds),

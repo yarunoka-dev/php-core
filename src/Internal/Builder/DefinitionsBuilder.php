@@ -43,14 +43,14 @@ final class DefinitionsBuilder
 
         if ($definitions->workweek !== null) {
             $raw['workweek'] = array_map(
-                static fn (DayName $day): string => $day->value,
+                static fn(DayName $day): string => $day->value,
                 $definitions->workweek->days,
             );
         }
 
         if ($definitions->businessHours !== null) {
             $raw['business_hours'] = array_map(
-                static fn (TimeWindow $window): array => $window->toStrings(),
+                static fn(TimeWindow $window): array => $window->toStrings(),
                 $definitions->businessHours->windows,
             );
         }
@@ -77,7 +77,7 @@ final class DefinitionsBuilder
 
         if ($definition->dates !== null) {
             return array_map(
-                static fn (LocalDate $date): string => $date->toString(),
+                static fn(LocalDate $date): string => $date->toString(),
                 $definition->dates,
             );
         }

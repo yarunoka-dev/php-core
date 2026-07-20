@@ -35,8 +35,8 @@ class DayMatcherTest extends TestCase
         $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Third, DayName::Mon), $this->day('2026-07-20')));
         $this->assertFalse($matcher->matches(new OrdinalWeekday(Ordinal::Fifth, DayName::Mon), $this->day('2026-07-27')));
         $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Last, DayName::Fri), $this->day('2026-07-31')));
-        $this->assertTrue($matcher->matches(new LastDayOfMonth, $this->day('2026-07-31')));
-        $this->assertFalse($matcher->matches(new LastDayOfMonth, $this->day('2026-07-30')));
+        $this->assertTrue($matcher->matches(new LastDayOfMonth(), $this->day('2026-07-31')));
+        $this->assertFalse($matcher->matches(new LastDayOfMonth(), $this->day('2026-07-30')));
     }
 
     #[Test]
@@ -107,7 +107,7 @@ class DayMatcherTest extends TestCase
             businessHolidays: BusinessHolidays::ofDates($businessHolidays),
             businessDays: BusinessDays::ofDates($businessDays),
             custom: array_map(
-                static fn (array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
                 $custom,
             ),
         ), resolvers: []));

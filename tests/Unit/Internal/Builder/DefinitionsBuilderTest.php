@@ -37,7 +37,7 @@ class DefinitionsBuilderTest extends TestCase
     #[Test]
     public function empty_definitions_become_empty(): void
     {
-        $this->assertSame([], DefinitionsBuilder::build(new Definitions));
+        $this->assertSame([], DefinitionsBuilder::build(new Definitions()));
     }
 
     #[Test]
@@ -52,7 +52,7 @@ class DefinitionsBuilderTest extends TestCase
     public function deferred_becomes_a_resolved_snapshot(): void
     {
         $definitions = new Definitions(
-            holidays: Holidays::deferred(static fn (): array => ['2026-01-01']),
+            holidays: Holidays::deferred(static fn(): array => ['2026-01-01']),
         );
 
         $this->assertSame(['holidays' => ['2026-01-01']], DefinitionsBuilder::build($definitions));
@@ -62,7 +62,7 @@ class DefinitionsBuilderTest extends TestCase
     public function a_contract_violation_of_deferred_raises(): void
     {
         $definitions = new Definitions(
-            holidays: Holidays::deferred(static fn (): array => ['2026/01/01']),
+            holidays: Holidays::deferred(static fn(): array => ['2026/01/01']),
         );
 
         $this->expectException(InvalidCalendarDataException::class);
@@ -74,7 +74,7 @@ class DefinitionsBuilderTest extends TestCase
     public function deferred_returning_a_non_array_raises_too(): void
     {
         $definitions = new Definitions(
-            holidays: Holidays::deferred(static fn (): string => 'not-an-array'),
+            holidays: Holidays::deferred(static fn(): string => 'not-an-array'),
         );
 
         $this->expectException(InvalidCalendarDataException::class);

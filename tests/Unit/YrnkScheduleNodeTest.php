@@ -34,7 +34,7 @@ class YrnkScheduleNodeTest extends TestCase
     #[Test]
     public function the_date_axes_can_be_omitted(): void
     {
-        $schedule = new YrnkSchedule(times: new AllDay);
+        $schedule = new YrnkSchedule(times: new AllDay());
 
         $this->assertNull($schedule->years);
         $this->assertNull($schedule->months);
@@ -47,7 +47,7 @@ class YrnkScheduleNodeTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new YrnkSchedule(times: new AllDay, years: []);
+        new YrnkSchedule(times: new AllDay(), years: []);
     }
 
     #[Test]
@@ -55,7 +55,7 @@ class YrnkScheduleNodeTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new YrnkSchedule(times: new AllDay, years: [0]);
+        new YrnkSchedule(times: new AllDay(), years: [0]);
     }
 
     #[Test]
@@ -63,7 +63,7 @@ class YrnkScheduleNodeTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new YrnkSchedule(times: new AllDay, years: [2043, 2043]);
+        new YrnkSchedule(times: new AllDay(), years: [2043, 2043]);
     }
 
     #[Test]
@@ -71,7 +71,7 @@ class YrnkScheduleNodeTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new YrnkSchedule(times: new AllDay, months: [13]);
+        new YrnkSchedule(times: new AllDay(), months: [13]);
     }
 
     #[Test]
@@ -79,6 +79,6 @@ class YrnkScheduleNodeTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new YrnkSchedule(times: new AllDay, months: [0]);
+        new YrnkSchedule(times: new AllDay(), months: [0]);
     }
 }

@@ -30,7 +30,7 @@ class ScheduleParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->parser = new ScheduleParser;
+        $this->parser = new ScheduleParser();
     }
 
     // ---- the day expression of days ----
@@ -207,7 +207,7 @@ class ScheduleParserTest extends TestCase
             $negated->if,
         );
         $this->assertEquals(
-            new IfGuard(Direction::Next, negated: false, condition: new LastDayOfMonth),
+            new IfGuard(Direction::Next, negated: false, condition: new LastDayOfMonth()),
             $directed->if,
         );
         $this->assertEquals(

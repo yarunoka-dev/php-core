@@ -105,7 +105,7 @@ class TimesNodesTest extends TestCase
     #[Test]
     public function every_grid_can_hold_a_business_hour_reference_between(): void
     {
-        $grid = new EveryGrid(1, TimeUnit::Hour, between: new BusinessHourRef);
+        $grid = new EveryGrid(1, TimeUnit::Hour, between: new BusinessHourRef());
 
         $this->assertInstanceOf(BusinessHourRef::class, $grid->between);
     }
@@ -115,6 +115,6 @@ class TimesNodesTest extends TestCase
     {
         $this->assertInstanceOf(TimesSpec::class, new FixedTimes([TimeOfDay::fromString('09:00')]));
         $this->assertInstanceOf(TimesSpec::class, new EveryGrid(1, TimeUnit::Hour, between: null));
-        $this->assertInstanceOf(TimesSpec::class, new AllDay);
+        $this->assertInstanceOf(TimesSpec::class, new AllDay());
     }
 }

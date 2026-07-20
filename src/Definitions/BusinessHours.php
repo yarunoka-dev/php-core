@@ -27,7 +27,7 @@ final readonly class BusinessHours
         }
 
         $sorted = $windows;
-        usort($sorted, static fn (TimeWindow $a, TimeWindow $b): int => $a->startSeconds <=> $b->startSeconds);
+        usort($sorted, static fn(TimeWindow $a, TimeWindow $b): int => $a->startSeconds <=> $b->startSeconds);
 
         foreach ($sorted as $i => $window) {
             if ($i > 0 && $window->startSeconds < $sorted[$i - 1]->endSeconds) {

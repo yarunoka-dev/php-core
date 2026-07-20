@@ -68,7 +68,7 @@ final class ReferenceChecker
             ],
         };
 
-        $missing = array_keys(array_filter($required, static fn (?object $definition): bool => $definition === null));
+        $missing = array_keys(array_filter($required, static fn(?object $definition): bool => $definition === null));
 
         if ($missing !== []) {
             throw new MissingCalendarDataException(sprintf(

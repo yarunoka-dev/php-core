@@ -19,7 +19,7 @@ final class DayExpressionBuilder
     public static function build(DayExpression $expression): array
     {
         return array_map(
-            static fn (DayAtom $atom): int|string|array => DayAtomBuilder::build($atom),
+            static fn(DayAtom $atom): int|string|array => DayAtomBuilder::build($atom),
             $expression->atoms,
         );
     }

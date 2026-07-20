@@ -20,7 +20,7 @@ class EverySequenceTest extends TestCase
     #[Test]
     public function from_is_the_first_point(): void
     {
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-17 10:00', 'every' => [7, 'hour']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-17 10:00', 'every' => [7, 'hour']]);
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-17 10:00:00')));
@@ -32,7 +32,7 @@ class EverySequenceTest extends TestCase
     {
         // Every 7 hours anchored at 7/17 10:00: 10:00, 17:00, 00:00 the
         // next day, 07:00, 14:00, …
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-17 10:00', 'every' => [7, 'hour']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-17 10:00', 'every' => [7, 'hour']]);
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-17 17:00:00')));
@@ -46,7 +46,7 @@ class EverySequenceTest extends TestCase
     #[Test]
     public function the_motivating_172800_seconds_resolve_as_an_every_two_days_sequence(): void
     {
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-14 03:00', 'every' => [172800, 'second']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 03:00', 'every' => [172800, 'second']]);
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 03:00:00')));
@@ -57,7 +57,7 @@ class EverySequenceTest extends TestCase
     #[Test]
     public function every_36_hours_which_decomposes_into_no_days_and_times_is_writable(): void
     {
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']]);
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 00:00:00')));
@@ -70,7 +70,7 @@ class EverySequenceTest extends TestCase
     #[Test]
     public function the_sequence_stops_at_until(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'until' => '2026-07-17 00:00',
             'every' => [36, 'hour'],
@@ -85,7 +85,7 @@ class EverySequenceTest extends TestCase
     #[Test]
     public function the_firing_decision_is_asked_as_the_interval_between_last_run_and_now(): void
     {
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']]);
         $evaluator = $this->evaluator();
 
         // Last run 7/14 00:30, now 7/15 12:00 → the 7/15 12:00 point is
@@ -105,7 +105,7 @@ class EverySequenceTest extends TestCase
     {
         // Every 90 minutes: 10:00, 11:30, 13:00, … (unlike the grid it
         // keeps counting across days).
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-07-14 10:00', 'every' => [90, 'minute']]);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 10:00', 'every' => [90, 'minute']]);
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 11:30:00')));
@@ -121,8 +121,8 @@ class EverySequenceTest extends TestCase
         // 2026-03-08. In an hourly sequence anchored at 3/7 01:30, the
         // wall 02:30 of 3/8 does not exist and is pushed to 03:30.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(definitions: new Definitions, timezone: $timezone);
-        $schedule = (new ScheduleParser)->parse(['from' => '2026-03-08 01:30', 'every' => [1, 'hour']]);
+        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 01:30', 'every' => [1, 'hour']]);
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08 01:30:00', $timezone)));
         // The wall 02:30 point is pushed to the instant 03:30 EDT (the
@@ -135,7 +135,7 @@ class EverySequenceTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(definitions: new Definitions, timezone: new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('Asia/Tokyo'));
     }
 
     private function at(string $dateTime): DateTimeImmutable

@@ -25,7 +25,7 @@ final readonly class Workweek
         }
 
         if (count($days) !== count(array_unique(array_map(
-            static fn (DayName $day): string => $day->value,
+            static fn(DayName $day): string => $day->value,
             $days,
         )))) {
             throw new InvalidValueException('Duplicate day name in workweek');

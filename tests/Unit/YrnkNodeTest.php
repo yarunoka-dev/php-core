@@ -20,8 +20,8 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame(1, $document->version);
@@ -37,8 +37,8 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 2,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
     }
 
@@ -50,8 +50,8 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Europe/London'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame('Europe/London', $document->timezone->getName());
@@ -63,8 +63,8 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('+09:00'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame('+09:00', $document->timezone->getName());
@@ -78,7 +78,7 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions,
+            definitions: new Definitions(),
             schedules: [],
         );
     }

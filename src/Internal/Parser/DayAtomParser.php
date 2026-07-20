@@ -69,7 +69,7 @@ final class DayAtomParser
         }
 
         if ($word === 'last_day_of_month') {
-            return new LastDayOfMonth;
+            return new LastDayOfMonth();
         }
 
         if (Ordinal::tryFrom($word) !== null) {

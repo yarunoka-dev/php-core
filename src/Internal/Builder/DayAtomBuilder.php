@@ -32,7 +32,7 @@ final class DayAtomBuilder
             $atom instanceof OrdinalWeekday => [$atom->ordinal->value, $atom->dayName->value],
             $atom instanceof LastDayOfMonth => 'last_day_of_month',
             $atom instanceof CustomRef => $atom->name,
-            default => throw new InvalidValueException('Unknown day expression atom: '.get_debug_type($atom)),
+            default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };
     }
 }

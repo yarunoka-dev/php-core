@@ -36,7 +36,7 @@ final class DefinitionsParser
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('Unknown keys in definitions: '.implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('Unknown keys in definitions: ' . implode(', ', $unknownKeys));
         }
 
         try {

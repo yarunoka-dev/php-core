@@ -48,7 +48,7 @@ class DayAtomParserTest extends TestCase
     #[Test]
     public function the_end_of_month_word_becomes_last_day_of_month(): void
     {
-        $this->assertEquals(new LastDayOfMonth, DayAtomParser::parse('last_day_of_month'));
+        $this->assertEquals(new LastDayOfMonth(), DayAtomParser::parse('last_day_of_month'));
     }
 
     #[Test]

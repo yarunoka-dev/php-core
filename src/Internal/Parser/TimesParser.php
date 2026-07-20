@@ -61,7 +61,7 @@ final class TimesParser
         $unknownKeys = array_diff(array_keys($raw), ['every', 'between']);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('The only keys allowed in the times grid are every and between: '.implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('The only keys allowed in the times grid are every and between: ' . implode(', ', $unknownKeys));
         }
 
         if (! array_key_exists('every', $raw)) {
@@ -106,7 +106,7 @@ final class TimesParser
     private static function parseBetween(mixed $raw): TimeWindow|BusinessHourRef
     {
         if ($raw === 'business_hour') {
-            return new BusinessHourRef;
+            return new BusinessHourRef();
         }
 
         if (is_string($raw)) {

@@ -31,11 +31,11 @@ class RoundTripTest extends TestCase
     public function a_document_round_trip_is_the_identity(array $raw): void
     {
         $parser = new YrnkParser(resolvers: [
-            'yasumi-jp' => static fn (): array => ['2026-01-01'],
-            'garbage-days' => static fn (): array => [],
+            'yasumi-jp' => static fn(): array => ['2026-01-01'],
+            'garbage-days' => static fn(): array => [],
         ]);
 
-        $this->assertSame($raw, (new YrnkBuilder)->build($parser->parse($raw)));
+        $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }
 
     /**
@@ -45,7 +45,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('schedules')]
     public function a_single_schedule_round_trip_is_the_identity(array $raw): void
     {
-        $this->assertSame($raw, (new ScheduleBuilder)->build((new ScheduleParser)->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
     }
 
     /**
@@ -141,7 +141,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [$atom], 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder)->build((new ScheduleParser)->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
     }
 
     /**
@@ -171,7 +171,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [25], 'shift' => $shift, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder)->build((new ScheduleParser)->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
     }
 
     /**
@@ -197,7 +197,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [13], 'if' => $if, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder)->build((new ScheduleParser)->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
     }
 
     /**
@@ -220,7 +220,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('timesForms')]
     public function a_times_round_trip_is_the_identity(array $schedule): void
     {
-        $this->assertSame($schedule, (new ScheduleBuilder)->build((new ScheduleParser)->parse($schedule)));
+        $this->assertSame($schedule, (new ScheduleBuilder())->build((new ScheduleParser())->parse($schedule)));
     }
 
     /**
@@ -253,9 +253,9 @@ class RoundTripTest extends TestCase
             'definitions' => $definitions,
             'schedules' => [['times' => ['09:00']]],
         ];
-        $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn (): array => []]);
+        $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => []]);
 
-        $this->assertSame($raw, (new YrnkBuilder)->build($parser->parse($raw)));
+        $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }
 
     /**
@@ -283,12 +283,12 @@ class RoundTripTest extends TestCase
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
             definitions: new Definitions(
-                holidays: Holidays::deferred(static fn (): array => ['2026-01-01']),
+                holidays: Holidays::deferred(static fn(): array => ['2026-01-01']),
             ),
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
-        $built = (new YrnkBuilder)->build($document);
+        $built = (new YrnkBuilder())->build($document);
 
         $this->assertSame(['holidays' => ['2026-01-01']], $built['definitions'] ?? null);
     }
@@ -302,10 +302,10 @@ class RoundTripTest extends TestCase
             'definitions' => ['custom' => ['anniversary' => ['2026-10-01']]],
             'schedules' => [['days' => ['anniversary'], 'times' => ['09:00']]],
         ];
-        $parser = new YrnkParser;
+        $parser = new YrnkParser();
 
-        $json = (new YrnkBuilder)->toJson($parser->parse($raw));
+        $json = (new YrnkBuilder())->toJson($parser->parse($raw));
 
-        $this->assertSame($raw, (new YrnkBuilder)->build($parser->parse($json)));
+        $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($json)));
     }
 }

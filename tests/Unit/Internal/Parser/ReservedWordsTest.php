@@ -78,7 +78,7 @@ class ReservedWordsTest extends TestCase
     private function reservedWordsInSchema(string $definition): array
     {
         $value = json_decode(
-            (string) file_get_contents(dirname(__DIR__, 4).'/schema/yarunoka.schema.json'),
+            (string) file_get_contents(dirname(__DIR__, 4) . '/schema/yarunoka.schema.json'),
             associative: true,
         );
 

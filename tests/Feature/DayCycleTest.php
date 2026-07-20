@@ -21,7 +21,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function every_other_day_rings_counting_the_from_day_as_day_one(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
@@ -40,7 +40,7 @@ class DayCycleTest extends TestCase
         // Day one of the count is the from date (7/14). The 03:00 of 7/14
         // is before from and does not exist, but the phase stays anchored
         // at 7/14.
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 12:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
@@ -55,7 +55,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function the_phase_is_kept_across_a_month_boundary(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-24 00:00',
             'days' => [['every', 3, 'day']],
             'times' => ['10:00'],
@@ -73,7 +73,7 @@ class DayCycleTest extends TestCase
     public function a_matching_day_can_carry_several_times(): void
     {
         // Medication every other day, morning and evening.
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['08:00', '20:00'],
@@ -88,7 +88,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function months_only_filters_the_matching_days_and_does_not_reset_the_count(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'months' => [8],
             'days' => [['every', 2, 'day']],
@@ -107,7 +107,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function days_excluded_by_if_do_not_shift_the_cycle(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'if' => ['not', 'holiday'],
@@ -125,7 +125,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function every_1_day_is_every_day_from_the_from_date(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 1, 'day']],
             'times' => ['10:00'],
@@ -140,7 +140,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function combining_with_other_atoms_is_an_or(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day'], 'mon'],
             'times' => ['10:00'],
@@ -158,7 +158,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function the_cycle_stops_at_until(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'until' => '2026-07-18 03:00',
             'days' => [['every', 2, 'day']],
@@ -175,7 +175,7 @@ class DayCycleTest extends TestCase
     #[Test]
     public function has_match_in_does_not_count_non_matching_days(): void
     {
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],

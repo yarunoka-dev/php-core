@@ -35,7 +35,7 @@ final readonly class TimesExpander
 
         if ($times instanceof FixedTimes) {
             $seconds = array_map(
-                static fn (TimeOfDay $time): int => $time->secondsFromMidnight,
+                static fn(TimeOfDay $time): int => $time->secondsFromMidnight,
                 $times->times,
             );
             sort($seconds);
@@ -63,6 +63,6 @@ final readonly class TimesExpander
             return $points;
         }
 
-        throw new InvalidValueException('Unknown times node: '.get_debug_type($times));
+        throw new InvalidValueException('Unknown times node: ' . get_debug_type($times));
     }
 }

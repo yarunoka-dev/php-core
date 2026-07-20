@@ -3,6 +3,8 @@
 /.phpunit.cache/
 /.phpunit.result.cache
 /phpunit.xml
+/.php-cs-fixer.cache
+/.php-cs-fixer.php
 
 # Editors and IDEs
 /.idea/

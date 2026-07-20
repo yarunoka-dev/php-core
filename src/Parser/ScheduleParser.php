@@ -37,7 +37,7 @@ final class ScheduleParser
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('Unknown keys in the schedule: '.implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('Unknown keys in the schedule: ' . implode(', ', $unknownKeys));
         }
 
         try {
@@ -65,11 +65,11 @@ final class ScheduleParser
     {
         $present = array_values(array_filter(
             ['times', 'allday', 'every'],
-            static fn (string $key): bool => array_key_exists($key, $raw),
+            static fn(string $key): bool => array_key_exists($key, $raw),
         ));
 
         if (count($present) > 1) {
-            throw new InvalidYrnkException('times / allday / every are mutually exclusive: '.implode(', ', $present));
+            throw new InvalidYrnkException('times / allday / every are mutually exclusive: ' . implode(', ', $present));
         }
 
         if ($present === []) {
@@ -88,7 +88,7 @@ final class ScheduleParser
             throw new InvalidYrnkException('allday accepts only true (omit it otherwise)');
         }
 
-        return new AllDay;
+        return new AllDay();
     }
 
     /**

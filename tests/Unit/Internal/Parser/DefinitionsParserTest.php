@@ -18,7 +18,7 @@ class DefinitionsParserTest extends TestCase
         $definitions = DefinitionsParser::parse(['holidays' => ['2026-01-01']]);
 
         $this->assertSame(['2026-01-01'], array_map(
-            static fn (LocalDate $date): string => $date->toString(),
+            static fn(LocalDate $date): string => $date->toString(),
             $definitions->holidays->dates ?? [],
         ));
         $this->assertNull($definitions->businessHolidays);

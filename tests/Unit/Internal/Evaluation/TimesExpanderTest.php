@@ -57,7 +57,7 @@ class TimesExpanderTest extends TestCase
     {
         // No point during the lunch break (12:00–13:00).
         $expander = $this->expander(businessHours: [['09:00', '12:00'], ['13:00', '18:00']]);
-        $times = new EveryGrid(1, TimeUnit::Hour, between: new BusinessHourRef);
+        $times = new EveryGrid(1, TimeUnit::Hour, between: new BusinessHourRef());
 
         $this->assertSame(
             [9 * 3600, 10 * 3600, 11 * 3600, 13 * 3600, 14 * 3600, 15 * 3600, 16 * 3600, 17 * 3600],
@@ -68,7 +68,7 @@ class TimesExpanderTest extends TestCase
     #[Test]
     public function all_day_becomes_the_single_point_at_the_start_of_the_day(): void
     {
-        $this->assertSame([0], $this->expander()->secondsOf(new AllDay));
+        $this->assertSame([0], $this->expander()->secondsOf(new AllDay()));
     }
 
     // ---- helpers ----
@@ -80,7 +80,7 @@ class TimesExpanderTest extends TestCase
     {
         return new TimesExpander(new ResolvedDefinitions(new Definitions(
             businessHours: $businessHours === null ? null : new BusinessHours(array_map(
-                static fn (array $pair): TimeWindow => TimeWindow::fromStrings($pair[0], $pair[1]),
+                static fn(array $pair): TimeWindow => TimeWindow::fromStrings($pair[0], $pair[1]),
                 $businessHours,
             )),
         ), resolvers: []));

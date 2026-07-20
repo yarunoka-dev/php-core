@@ -27,7 +27,7 @@ class ReferenceCheckerTest extends TestCase
                 holidays: Holidays::byResolver('yasumi-jp'),
                 custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
             ),
-            resolvers: ['yasumi-jp' => static fn (): array => []],
+            resolvers: ['yasumi-jp' => static fn(): array => []],
         );
 
         $this->expectNotToPerformAssertions();
@@ -40,7 +40,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['founding-day'], 'times' => ['09:00']])],
-            new Definitions,
+            new Definitions(),
             resolvers: [],
         );
     }
@@ -52,7 +52,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday'], 'times' => ['09:00']])],
-            new Definitions,
+            new Definitions(),
             resolvers: [],
         );
     }
@@ -80,7 +80,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => [25], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['09:00']])],
-            new Definitions,
+            new Definitions(),
             resolvers: [],
         );
     }
@@ -92,7 +92,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']])],
-            new Definitions,
+            new Definitions(),
             resolvers: [],
         );
     }
@@ -138,6 +138,6 @@ class ReferenceCheckerTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser)->parse($raw);
+        return (new ScheduleParser())->parse($raw);
     }
 }

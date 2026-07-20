@@ -100,7 +100,7 @@ class MatchesTest extends TestCase
         // 2026-03-08. The wall time 02:30 does not exist; the point
         // stands at the pre-transition-offset interpretation = the
         // instant 03:30 EDT.
-        $evaluator = new YrnkEvaluator(new Definitions, new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['02:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-03-08T03:30:00-04:00')));
@@ -113,7 +113,7 @@ class MatchesTest extends TestCase
         // 02:00 EDT → 01:00 EST on 2026-11-01, so the wall time 01:30
         // occurs twice. The point counts only as its first occurrence
         // (EDT, -04:00).
-        $evaluator = new YrnkEvaluator(new Definitions, new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [1], 'times' => ['01:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-11-01T01:30:00-04:00')));
@@ -414,10 +414,10 @@ class MatchesTest extends TestCase
                 businessHolidays: BusinessHolidays::ofDates($businessHolidays),
                 businessDays: BusinessDays::ofDates($businessDays),
                 workweek: $workweek === null ? null : new Workweek(
-                    array_map(static fn (string $day) => DayName::from($day), $workweek),
+                    array_map(static fn(string $day) => DayName::from($day), $workweek),
                 ),
                 custom: array_map(
-                    static fn (array $dates) => CustomDefinition::ofDates($dates),
+                    static fn(array $dates) => CustomDefinition::ofDates($dates),
                     $custom,
                 ),
             ),
@@ -430,7 +430,7 @@ class MatchesTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser)->parse($raw);
+        return (new ScheduleParser())->parse($raw);
     }
 
     private function at(string $iso): DateTimeImmutable

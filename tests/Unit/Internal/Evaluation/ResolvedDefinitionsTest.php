@@ -51,7 +51,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function an_undefined_custom_name_raises(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions, resolvers: []);
+        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
 
         $this->expectException(UndefinedNameException::class);
 
@@ -61,7 +61,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function the_workweek_default_is_monday_through_friday(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions, resolvers: []);
+        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
 
         $this->assertTrue($resolved->isInWorkweek(DayName::Mon));
         $this->assertTrue($resolved->isInWorkweek(DayName::Fri));
@@ -85,7 +85,7 @@ class ResolvedDefinitionsTest extends TestCase
         $withWindows = new ResolvedDefinitions(new Definitions(
             businessHours: new BusinessHours([TimeWindow::fromStrings('09:00', '18:00')]),
         ), resolvers: []);
-        $without = new ResolvedDefinitions(new Definitions, resolvers: []);
+        $without = new ResolvedDefinitions(new Definitions(), resolvers: []);
 
         $this->assertCount(1, $withWindows->businessHourWindows());
 
@@ -133,7 +133,7 @@ class ResolvedDefinitionsTest extends TestCase
     {
         $resolved = new ResolvedDefinitions(
             new Definitions(holidays: Holidays::byResolver('broken')),
-            resolvers: ['broken' => static fn (): array => ['2026/01/01']],
+            resolvers: ['broken' => static fn(): array => ['2026/01/01']],
         );
 
         $this->expectException(InvalidCalendarDataException::class);
@@ -144,7 +144,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function referencing_an_undefined_layer_raises_the_safeguard_error(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions, resolvers: []);
+        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
 
         $this->expectException(MissingCalendarDataException::class);
 

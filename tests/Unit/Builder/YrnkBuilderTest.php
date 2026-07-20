@@ -21,7 +21,7 @@ class YrnkBuilderTest extends TestCase
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
             definitions: new Definitions(holidays: Holidays::ofDates([])),
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame([
@@ -29,7 +29,7 @@ class YrnkBuilderTest extends TestCase
             'timezone' => 'Asia/Tokyo',
             'definitions' => ['holidays' => []],
             'schedules' => [['allday' => true]],
-        ], (new YrnkBuilder)->build($document));
+        ], (new YrnkBuilder())->build($document));
     }
 
     #[Test]
@@ -38,15 +38,15 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('UTC'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame([
             'version' => 1,
             'timezone' => 'UTC',
             'schedules' => [['allday' => true]],
-        ], (new YrnkBuilder)->build($document));
+        ], (new YrnkBuilder())->build($document));
     }
 
     #[Test]
@@ -55,13 +55,13 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('UTC'),
-            definitions: new Definitions,
-            schedules: [new YrnkSchedule(times: new AllDay)],
+            definitions: new Definitions(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
         $this->assertSame(
             '{"version":1,"timezone":"UTC","schedules":[{"allday":true}]}',
-            (new YrnkBuilder)->toJson($document),
+            (new YrnkBuilder())->toJson($document),
         );
     }
 }

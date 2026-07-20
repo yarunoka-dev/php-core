@@ -27,14 +27,14 @@ class ScheduleBuilderTest extends TestCase
             'years' => [2043],
             'days' => [15],
             'times' => ['10:00'],
-        ], (new ScheduleBuilder)->build($schedule));
+        ], (new ScheduleBuilder())->build($schedule));
     }
 
     #[Test]
     public function all_day_becomes_the_allday_key(): void
     {
-        $schedule = new YrnkSchedule(times: new AllDay);
+        $schedule = new YrnkSchedule(times: new AllDay());
 
-        $this->assertSame(['allday' => true], (new ScheduleBuilder)->build($schedule));
+        $this->assertSame(['allday' => true], (new ScheduleBuilder())->build($schedule));
     }
 }

@@ -126,7 +126,7 @@ class CalendarScenarioTest extends TestCase
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
-        $schedule = (new ScheduleParser)->parse([
+        $schedule = (new ScheduleParser())->parse([
             'days' => ['weekday'],
             'times' => ['every' => [2, 'hour'], 'between' => 'business_hour'],
         ]);
@@ -150,7 +150,7 @@ class CalendarScenarioTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser)->parse($raw);
+        return (new ScheduleParser())->parse($raw);
     }
 
     private function evaluator(): YrnkEvaluator
@@ -184,7 +184,7 @@ class CalendarScenarioTest extends TestCase
 
         $hits = array_filter(
             $days,
-            fn (DateTimeImmutable $day): bool => $evaluator->hasMatchIn(
+            fn(DateTimeImmutable $day): bool => $evaluator->hasMatchIn(
                 $schedule,
                 $day->modify('-1 second'),
                 $day->modify('+1 day')->modify('-1 second'),
@@ -192,7 +192,7 @@ class CalendarScenarioTest extends TestCase
         );
 
         return array_values(array_map(
-            static fn (DateTimeImmutable $day): string => $day->format('Y-m-d'),
+            static fn(DateTimeImmutable $day): string => $day->format('Y-m-d'),
             $hits,
         ));
     }

@@ -16,7 +16,7 @@ use Yarunoka\YrnkSchedule;
 final class YrnkBuilder
 {
     public function __construct(
-        private readonly ScheduleBuilder $scheduleBuilder = new ScheduleBuilder,
+        private readonly ScheduleBuilder $scheduleBuilder = new ScheduleBuilder(),
     ) {}
 
     /**
@@ -36,7 +36,7 @@ final class YrnkBuilder
         }
 
         $raw['schedules'] = array_map(
-            fn (YrnkSchedule $schedule): array => $this->scheduleBuilder->build($schedule),
+            fn(YrnkSchedule $schedule): array => $this->scheduleBuilder->build($schedule),
             $document->schedules,
         );
 

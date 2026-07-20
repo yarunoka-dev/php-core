@@ -43,7 +43,7 @@ trait DateSetDefinition
     public static function ofDates(array $dates): self
     {
         $parsed = array_map(
-            static fn (LocalDate|string $date): LocalDate => $date instanceof LocalDate
+            static fn(LocalDate|string $date): LocalDate => $date instanceof LocalDate
                 ? $date
                 : LocalDate::fromString($date),
             $dates,
@@ -90,7 +90,7 @@ trait DateSetDefinition
     public static function deferred(Closure|YrnkResolverInterface $resolve): self
     {
         if ($resolve instanceof YrnkResolverInterface) {
-            $resolve = static fn (): array => $resolve->resolve();
+            $resolve = static fn(): array => $resolve->resolve();
         }
 
         return new self(null, null, $resolve);
