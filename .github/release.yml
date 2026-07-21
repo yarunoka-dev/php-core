@@ -1,0 +1,27 @@
+# Release notes list changes that can reach users. `internal` marks PRs that
+# touch nothing shipped (CI, tests, dev tooling, repo meta) — judged by what
+# was touched, not by the author's impact prediction. Renovate is excluded by
+# author: with no runtime dependencies here, its PRs only touch dev tooling
+# and lock files, which users never receive.
+changelog:
+  exclude:
+    labels:
+      - internal
+    authors:
+      - renovate[bot]
+  categories:
+    - title: Breaking Changes
+      labels:
+        - breaking
+    - title: Enhancements
+      labels:
+        - enhancement
+    - title: Bug Fixes
+      labels:
+        - bug
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Other Changes
+      labels:
+        - "*"
