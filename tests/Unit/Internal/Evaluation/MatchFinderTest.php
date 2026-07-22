@@ -322,6 +322,47 @@ class MatchFinderTest extends TestCase
     }
 
     #[Test]
+    public function a_strict_shift_landing_searches_up_to_exactly_the_366_day_contract(): void
+    {
+        // The strict form starts one day past the base day but obeys the
+        // same maximum displacement. 2027-06-16 is exactly 366 days from
+        // the 2026-06-15 base day.
+        $lands = $this->finder(custom: ['desk-open-day' => ['2027-06-16']]);
+        $schedule = $this->schedule([
+            'years' => [2026], 'months' => [6], 'days' => [15],
+            'shift' => ['next', 'desk-open-day'], 'times' => ['10:00'],
+        ]);
+
+        $this->assertTrue($lands->matches($schedule, $this->at('2027-06-16T10:00:00+09:00')));
+        $this->assertTrue($lands->hasMatchIn(
+            $schedule,
+            $this->at('2027-06-16T00:00:00+09:00'),
+            $this->at('2027-06-16T23:59:00+09:00'),
+        ));
+    }
+
+    #[Test]
+    public function a_strict_shift_landing_beyond_the_366_day_contract_does_not_land(): void
+    {
+        // 2027-06-17 is 367 days from 2026-06-15 — out of contract for
+        // the strict form too (the spec's maximum displacement of 366
+        // calendar days is uniform across both forms), and the single
+        // check and the interval check must agree on that.
+        $tooFar = $this->finder(custom: ['desk-open-day' => ['2027-06-17']]);
+        $schedule = $this->schedule([
+            'years' => [2026], 'months' => [6], 'days' => [15],
+            'shift' => ['next', 'desk-open-day'], 'times' => ['10:00'],
+        ]);
+
+        $this->assertFalse($tooFar->matches($schedule, $this->at('2027-06-17T10:00:00+09:00')));
+        $this->assertFalse($tooFar->hasMatchIn(
+            $schedule,
+            $this->at('2027-06-17T00:00:00+09:00'),
+            $this->at('2027-06-17T23:59:00+09:00'),
+        ));
+    }
+
+    #[Test]
     public function finishes_by_the_contract_distance_even_across_months_without_base_days(): void
     {
         // A schedule whose base days exist only in 2026-06 (via years /

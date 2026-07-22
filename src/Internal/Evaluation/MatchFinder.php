@@ -494,13 +494,15 @@ final readonly class MatchFinder
      * The landing day of a base day (the forward landing computation).
      * Walks in the given direction until the landing condition holds.
      * or_same includes the base day itself; the strict form advances one
-     * day before searching.
+     * day before searching. The maximum displacement from the base day is
+     * the same 366 days for both forms, so the strict walk tests one
+     * candidate fewer.
      */
     private function landingOf(Shift $shift, LocalDate $base): ?LocalDate
     {
         $cursor = $shift->orSame ? $base : $base->addDays($shift->direction->step());
 
-        for ($i = 0; $i <= self::SHIFT_SEARCH_LIMIT_DAYS; $i++) {
+        for ($displacement = $shift->orSame ? 0 : 1; $displacement <= self::SHIFT_SEARCH_LIMIT_DAYS; $displacement++) {
             if ($this->dayMatcher->matches($shift->condition, $cursor)) {
                 return $cursor;
             }
