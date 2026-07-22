@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Internal\ReferenceChecker;
@@ -23,7 +23,7 @@ class ReferenceCheckerTest extends TestCase
     {
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday', 'founding-day'], 'times' => ['09:00']])],
-            new Definitions(
+            new Calendar(
                 holidays: Holidays::byResolver('yasumi-jp'),
                 custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
             ),
@@ -40,7 +40,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['founding-day'], 'times' => ['09:00']])],
-            new Definitions(),
+            new Calendar(),
             resolvers: [],
         );
     }
@@ -52,7 +52,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday'], 'times' => ['09:00']])],
-            new Definitions(),
+            new Calendar(),
             resolvers: [],
         );
     }
@@ -63,7 +63,7 @@ class ReferenceCheckerTest extends TestCase
         try {
             ReferenceChecker::ensureResolvable(
                 [$this->schedule(['days' => ['business_day'], 'times' => ['09:00']])],
-                new Definitions(holidays: Holidays::ofDates([])),
+                new Calendar(holidays: Holidays::ofDates([])),
                 resolvers: [],
             );
             $this->fail('MissingCalendarDataException was not thrown');
@@ -80,7 +80,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => [25], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['09:00']])],
-            new Definitions(),
+            new Calendar(),
             resolvers: [],
         );
     }
@@ -92,7 +92,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']])],
-            new Definitions(),
+            new Calendar(),
             resolvers: [],
         );
     }
@@ -102,7 +102,7 @@ class ReferenceCheckerTest extends TestCase
     {
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']])],
-            new Definitions(businessHours: new BusinessHours([TimeWindow::fromStrings('09:00', '18:00')])),
+            new Calendar(businessHours: new BusinessHours([TimeWindow::fromStrings('09:00', '18:00')])),
             resolvers: [],
         );
 
@@ -116,7 +116,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['weekday'], 'times' => ['09:00']])],
-            new Definitions(businessDays: BusinessDays::byResolver('unknown')),
+            new Calendar(businessDays: BusinessDays::byResolver('unknown')),
             resolvers: [],
         );
     }
@@ -128,7 +128,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['09:00']])],
-            new Definitions(custom: ['garbage-day' => CustomDefinition::byResolver('unknown')]),
+            new Calendar(custom: ['garbage-day' => CustomDefinition::byResolver('unknown')]),
             resolvers: [],
         );
     }

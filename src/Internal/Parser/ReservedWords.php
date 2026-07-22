@@ -9,7 +9,7 @@ use Yarunoka\Exceptions\ReservedNameException;
  * collisions with the built-in vocabulary and the structural words, and
  * shapes indistinguishable from literals (dates, times, numbers) or
  * resolver names. The namespace is structurally separated under
- * definitions.custom, so the scope is narrower than in the original
+ * calendar.custom, so the scope is narrower than in the original
  * implementation (custom key names only).
  *
  * @internal
@@ -18,7 +18,7 @@ final class ReservedWords
 {
     /**
      * Deliberately duplicated content of the customName enum in
-     * schema/yarunoka.schema.json. Agreement is verified by
+     * schema/calendar.schema.json. Agreement is verified by
      * ReservedWordsTest (public for that test).
      */
     public const array WORDS = [
@@ -34,10 +34,10 @@ final class ReservedWords
         'not', 'prev', 'next', 'or_same',
         // Unit words of every
         'hour', 'minute', 'second', 'day',
-        // Structural keys of the document, schedules, and definitions
+        // Structural keys of the document, schedules, and calendar
         // (they do not collide with the value namespace, but are reserved
         // to avoid confusing the reader)
-        'version', 'timezone', 'definitions', 'schedules',
+        'version', 'timezone', 'calendar', 'schedules',
         'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every', 'between', 'from', 'until',
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];

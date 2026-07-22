@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.0/document.schema.json",
+    "title": "Yrnk schedule document (version 1.0)",
+    "description": "A document of the calendar-aware schedule DSL (Yrnk). The JSON Schemas under this base URI are the authoritative definition of the syntax; every language implementation is a copy of them. A document has two layers: reading directives (version, timezone) that declare how to interpret the document, and content (calendar, schedules). Constraints that JSON Schema cannot express are validated by implementations at parse time (see 'Constraints beyond the schema' in docs/specification.md): resolvability of custom references and resolver names, presence of the calendar entries required by the calendar vocabulary, start < end and non-overlap of time windows, existence of dates and of the timezone name (IANA names only; fixed offsets are rejected), from < until, and presence of 'from' in schedules that use [\"every\", N, \"day\"]. Timezones with DST transitions are interpreted per RFC 5545 section 3.3.5.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["version", "timezone", "schedules"],
+    "properties": {
+        "version": {"const": "1.0"},
+        "timezone": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "calendar": {"$ref": "calendar.schema.json"},
+        "schedules": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "schedule.schema.json"}
+        }
+    }
+}

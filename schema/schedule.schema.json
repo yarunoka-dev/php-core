@@ -1,0 +1,226 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.0/schedule.schema.json",
+    "title": "Yrnk schedule",
+    "description": "A single schedule: a pure expression that describes a set of points in time. Fields are the date axes (years, months, days), the date modifiers (shift, if), the time part (exactly one of times, allday, or every), and the validity range (from, until). A schedule refers to calendar vocabulary and custom names by name only; it carries no definitions of its own.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "from": {"$ref": "#/$defs/dateTime"},
+        "until": {"$ref": "#/$defs/dateTime"},
+        "years": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "integer", "minimum": 1, "maximum": 9999}
+        },
+        "months": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "integer", "minimum": 1, "maximum": 12}
+        },
+        "days": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"oneOf": [
+                {"$ref": "#/$defs/dayAtom"},
+                {"$ref": "#/$defs/dayCycle"}
+            ]}
+        },
+        "shift": {"$ref": "#/$defs/shift"},
+        "if": {"$ref": "#/$defs/ifGuard"},
+        "times": {"$ref": "#/$defs/times"},
+        "allday": {"const": true},
+        "every": {"$ref": "#/$defs/sequenceEvery"}
+    },
+    "oneOf": [
+        {
+            "required": ["times"],
+            "not": {"anyOf": [{"required": ["allday"]}, {"required": ["every"]}]}
+        },
+        {
+            "required": ["allday"],
+            "not": {"anyOf": [{"required": ["times"]}, {"required": ["every"]}]}
+        },
+        {
+            "required": ["every", "from"],
+            "not": {"anyOf": [
+                {"required": ["times"]}, {"required": ["allday"]},
+                {"required": ["years"]}, {"required": ["months"]}, {"required": ["days"]},
+                {"required": ["shift"]}, {"required": ["if"]}
+            ]}
+        }
+    ],
+    "$defs": {
+        "dateTime": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 16,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} ([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "dayCycle": {
+            "type": "array",
+            "prefixItems": [
+                {"const": "every"},
+                {"type": "integer", "minimum": 1},
+                {"const": "day"}
+            ],
+            "minItems": 3,
+            "maxItems": 3,
+            "items": false
+        },
+        "sequenceEvery": {
+            "type": "array",
+            "prefixItems": [
+                {"type": "integer", "minimum": 1},
+                {"enum": ["hour", "minute", "second"]}
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+        },
+
+        "ordinal": {"enum": ["1st", "2nd", "3rd", "4th", "5th", "last"]},
+        "ordinalTuple": {
+            "type": "array",
+            "prefixItems": [{"$ref": "#/$defs/ordinal"}, {"$ref": "primitives.schema.json#/$defs/dayName"}],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+        },
+        "dayAtomWord": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"enum": [
+                    "business_hour",
+                    "1st", "2nd", "3rd", "4th", "5th", "last",
+                    "not", "prev", "next", "or_same",
+                    "hour", "minute", "second", "day",
+                    "version", "timezone", "calendar", "schedules",
+                    "years", "months", "days", "shift", "if", "times", "allday", "every", "between", "from", "until",
+                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "custom"
+                ]}},
+                {"not": {"pattern": "^\\d+$"}},
+                {"not": {"pattern": "^\\d{2}:\\d{2}$"}},
+                {"not": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}
+            ]
+        },
+        "dayAtom": {
+            "oneOf": [
+                {"type": "integer", "minimum": 1, "maximum": 31},
+                {"$ref": "#/$defs/dayAtomWord"},
+                {"$ref": "#/$defs/ordinalTuple"}
+            ]
+        },
+
+        "direction": {"enum": ["prev", "next"]},
+        "shift": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "prefixItems": [{"$ref": "#/$defs/direction"}, {"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": false
+                },
+                {
+                    "type": "array",
+                    "prefixItems": [{"$ref": "#/$defs/direction"}, {"const": "or_same"}, {"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": false
+                }
+            ]
+        },
+
+        "ifGuard": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "prefixItems": [{"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "items": false
+                },
+                {
+                    "type": "array",
+                    "prefixItems": [{"const": "not"}, {"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": false
+                },
+                {
+                    "type": "array",
+                    "prefixItems": [{"$ref": "#/$defs/direction"}, {"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": false
+                },
+                {
+                    "type": "array",
+                    "prefixItems": [{"$ref": "#/$defs/direction"}, {"const": "not"}, {"$ref": "#/$defs/dayAtom"}],
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": false
+                }
+            ]
+        },
+
+        "times": {
+            "oneOf": [
+                {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "primitives.schema.json#/$defs/time"}},
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["every"],
+                    "properties": {
+                        "every": {
+                            "oneOf": [
+                                {
+                                    "type": "array",
+                                    "prefixItems": [
+                                        {"type": "integer", "minimum": 1, "maximum": 24},
+                                        {"const": "hour"}
+                                    ],
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": false
+                                },
+                                {
+                                    "type": "array",
+                                    "prefixItems": [
+                                        {"type": "integer", "minimum": 1, "maximum": 1440},
+                                        {"const": "minute"}
+                                    ],
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": false
+                                },
+                                {
+                                    "type": "array",
+                                    "prefixItems": [
+                                        {"type": "integer", "minimum": 1, "maximum": 86400},
+                                        {"const": "second"}
+                                    ],
+                                    "minItems": 2,
+                                    "maxItems": 2,
+                                    "items": false
+                                }
+                            ]
+                        },
+                        "between": {
+                            "oneOf": [
+                                {"$ref": "primitives.schema.json#/$defs/window"},
+                                {"const": "business_hour"}
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

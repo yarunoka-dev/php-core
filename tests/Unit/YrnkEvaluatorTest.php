@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Unit;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTime;
@@ -44,6 +44,6 @@ class YrnkEvaluatorTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(new Definitions(), new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(new Calendar(), new DateTimeZone('Asia/Tokyo'));
     }
 }

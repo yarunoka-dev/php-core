@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
@@ -232,7 +232,7 @@ class HasMatchInTest extends TestCase
     {
         // "Every day at 0:00" configured for UTC. 20:00 JST on 7/12 =
         // 11:00 UTC on 7/12 → the next is 0:00 UTC on 7/13.
-        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('UTC'));
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('UTC'));
         $schedule = $this->schedule(['times' => ['00:00']]);
         $from = $this->at('2026-07-12T20:00:00+09:00');
 
@@ -245,7 +245,7 @@ class HasMatchInTest extends TestCase
     {
         // America/Phoenix is -07:00 without DST. The 22:00 point of the
         // 15th is 14:00 JST of the next day, the 16th.
-        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('America/Phoenix'));
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('America/Phoenix'));
         $schedule = $this->schedule(['days' => [15], 'times' => ['22:00']]);
         $from = $this->at('2026-07-16T00:00:00+09:00');
 
@@ -257,7 +257,7 @@ class HasMatchInTest extends TestCase
     public function a_fractional_offset_timezone_stands_its_points_correctly(): void
     {
         // Asia/Kathmandu is +05:45. The 9:00 point is 12:15 JST.
-        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('Asia/Kathmandu'));
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('Asia/Kathmandu'));
         $schedule = $this->schedule(['days' => [15], 'times' => ['09:00']]);
         $from = $this->at('2026-07-15T12:00:00+09:00');
 
@@ -273,7 +273,7 @@ class HasMatchInTest extends TestCase
         // America/New_York transitions 02:00 EST → 03:00 EDT on
         // 2026-03-08. The 02:30 point does not vanish; it stands at the
         // instant 03:30 EDT.
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['02:30']]);
         $from = $this->at('2026-03-08T00:00:00-05:00');
 
@@ -287,7 +287,7 @@ class HasMatchInTest extends TestCase
         // 02:00 EDT → 01:00 EST on 2026-11-01. The 01:30 point is the
         // single EDT one and does not stand at the second 01:30 (EST) an
         // hour later.
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [1], 'times' => ['01:30']]);
         $from = $this->at('2026-11-01T00:00:00-04:00');
 
@@ -308,7 +308,7 @@ class HasMatchInTest extends TestCase
         // The wall-clock grid stays at 24 points a day. The 01:00 hour
         // coming around again after the fall-back has no points; the next
         // point is at wall 02:00 (EST).
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [1], 'times' => ['every' => [1, 'hour']]]);
 
         $this->assertFalse($evaluator->hasMatchIn(
@@ -330,7 +330,7 @@ class HasMatchInTest extends TestCase
         // with the wall 03:00 / 03:30 points at the same instants. The
         // result is a set, so no separate point remains at the same
         // moment.
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['every' => [30, 'minute']]]);
 
         $this->assertTrue($evaluator->hasMatchIn(
@@ -355,7 +355,7 @@ class HasMatchInTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::ofDates([]),
                 businessHolidays: BusinessHolidays::ofDates([]),
                 businessDays: BusinessDays::ofDates([]),

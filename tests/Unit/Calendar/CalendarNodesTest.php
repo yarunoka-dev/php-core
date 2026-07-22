@@ -1,12 +1,12 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Definitions;
+namespace Yarunoka\Tests\Unit\Calendar;
 
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
-use Yarunoka\Definitions\Workweek;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Tests\Support\CountingResolver;
 use Yarunoka\Time\LocalDate;
@@ -15,7 +15,7 @@ use Yarunoka\Vocabulary\DayName;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class DefinitionsNodesTest extends TestCase
+class CalendarNodesTest extends TestCase
 {
     // ---- date set definitions (Holidays stands in for the four
     // structurally identical types) ----
@@ -172,7 +172,7 @@ class DefinitionsNodesTest extends TestCase
     #[Test]
     public function definitions_holds_each_definition_and_null_means_undefined(): void
     {
-        $definitions = new Definitions(
+        $calendar = new Calendar(
             holidays: Holidays::byResolver('yasumi-jp'),
             businessHolidays: null,
             businessDays: null,
@@ -181,8 +181,8 @@ class DefinitionsNodesTest extends TestCase
             custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
         );
 
-        $this->assertSame('yasumi-jp', $definitions->holidays?->resolver);
-        $this->assertNull($definitions->businessHolidays);
-        $this->assertArrayHasKey('founding-day', $definitions->custom);
+        $this->assertSame('yasumi-jp', $calendar->holidays?->resolver);
+        $this->assertNull($calendar->businessHolidays);
+        $this->assertArrayHasKey('founding-day', $calendar->custom);
     }
 }

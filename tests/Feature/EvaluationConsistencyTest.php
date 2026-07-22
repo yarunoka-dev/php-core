@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -112,7 +112,7 @@ class EvaluationConsistencyTest extends TestCase
         // the forward push of the point (RFC 5545) must agree between the
         // two.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['times' => ['02:30']]);
         $points = [
             ...$this->pointsBetween('02:30:00', '2026-03-01', '2026-03-14', $timezone),
@@ -165,7 +165,7 @@ class EvaluationConsistencyTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::ofDates(['2026-07-20', '2026-08-11']),
                 businessHolidays: BusinessHolidays::ofDates([]),
                 businessDays: BusinessDays::ofDates([]),

@@ -2,12 +2,12 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
-use Yarunoka\Definitions\Workweek;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\Workweek;
 use Yarunoka\Expression\CustomRef;
 use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
@@ -15,7 +15,7 @@ use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\DayName;
 use Yarunoka\Vocabulary\Ordinal;
@@ -183,7 +183,7 @@ class AtomDayEnumeratorTest extends TestCase
         ?array $workweek = null,
         array $custom = [],
     ): AtomDayEnumerator {
-        return new AtomDayEnumerator(new DayMatcher(new ResolvedDefinitions(new Definitions(
+        return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new Calendar(
             holidays: Holidays::ofDates($holidays),
             businessHolidays: BusinessHolidays::ofDates([]),
             businessDays: BusinessDays::ofDates($businessDays),

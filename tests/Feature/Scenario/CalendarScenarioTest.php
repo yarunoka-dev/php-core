@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Feature\Scenario;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\YrnkEvaluator;
@@ -118,7 +118,7 @@ class CalendarScenarioTest extends TestCase
         // 15:00. No point during the lunch break (12:00–13:00), and 17:00
         // is outside the half-open interval.
         $evaluator = new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 businessHours: new BusinessHours([
                     TimeWindow::fromStrings('09:00', '12:00'),
                     TimeWindow::fromStrings('13:00', '17:00'),
@@ -156,7 +156,7 @@ class CalendarScenarioTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::ofDates(self::JAPANESE_HOLIDAYS_2026),
                 businessHolidays: BusinessHolidays::ofDates([]),
                 businessDays: BusinessDays::ofDates([]),

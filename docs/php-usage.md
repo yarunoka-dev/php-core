@@ -18,7 +18,7 @@ representations (Expression / Time / Vocabulary and so on) are not.
 | behaviour | `Parser\ScheduleParser` | one element of schedules[] → YrnkSchedule |
 | behaviour | `Builder\YrnkBuilder` / `Builder\ScheduleBuilder` | tree → DSL. Round-tripping is the identity |
 | behaviour | `YrnkEvaluator` | the evaluator. A service holding configuration |
-| type | `Yrnk` / `YrnkSchedule` / `Definitions\*` / `Expression\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
+| type | `Yrnk` / `YrnkSchedule` / `Calendar\*` / `Expression\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
 | type | `Exceptions\*` | parse, validation, and evaluation failures |
 
 The Laravel bridge lives in the separate `yarunoka/laravel` package.
@@ -41,7 +41,7 @@ $parser = new YrnkParser(resolvers: [
 
 $document = $parser->parse($json);      // the typed tree; syntax + references validated
 $document->timezone;                    // DateTimeZone
-$document->definitions->holidays;       // ?Holidays
+$document->calendar->holidays;          // ?Holidays
 $payday = $document->schedules[0];      // YrnkSchedule
 
 (new YrnkBuilder)->toJson($document);   // back to the same array representation as the original JSON (the identity)
@@ -56,7 +56,7 @@ hands it to the service for evaluation.
 use Yarunoka\YrnkEvaluator;
 
 $evaluator = new YrnkEvaluator(
-    definitions: $document->definitions,   // or a Definitions composed from the app's configuration
+    calendar: $document->calendar,   // or a Calendar composed from the app's configuration
     timezone: $document->timezone,
     resolvers: [/* the same as the parser's */],
 );
@@ -95,12 +95,12 @@ uphold the value invariants, and the YrnkEvaluator validates the
 resolvability of references before evaluation.
 
 ```php
-use Yarunoka\Definitions\{CustomDefinition, Definitions, Holidays};
+use Yarunoka\Calendar\{Calendar, CustomDefinition, Holidays};
 use Yarunoka\Yrnk;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\YrnkSchedule;
 
-$definitions = new Definitions(
+$calendar = new Calendar(
     holidays: Holidays::byResolver('yasumi-jp'),                     // a resolver name reference
     // Holidays::ofDates(['2026-01-01', ...])                        // a fixed list
     // Holidays::deferred(fn (): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
@@ -108,9 +108,9 @@ $definitions = new Definitions(
 );
 
 $handmade = new Yrnk(
-    version: 1,
+    version: '1.0',
     timezone: new DateTimeZone('Asia/Tokyo'),
-    definitions: $definitions,
+    calendar: $calendar,
     schedules: [new YrnkSchedule(times: new AllDay, days: /* ... */)],
 );
 ```

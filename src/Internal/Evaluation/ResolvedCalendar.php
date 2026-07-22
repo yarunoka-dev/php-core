@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
@@ -24,7 +24,7 @@ use Closure;
  *
  * @internal
  */
-final class ResolvedDefinitions
+final class ResolvedCalendar
 {
     /** @var array<string, array<string, true>> Resolved date sets ('Y-m-d' => true) */
     private array $sets = [];
@@ -36,28 +36,28 @@ final class ResolvedDefinitions
      * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers
      */
     public function __construct(
-        private readonly Definitions $definitions,
+        private readonly Calendar $calendar,
         private readonly array $resolvers,
     ) {}
 
     public function holidayContains(LocalDate $date): bool
     {
-        return isset($this->dateSet('holidays', $this->definitions->holidays)[$date->toString()]);
+        return isset($this->dateSet('holidays', $this->calendar->holidays)[$date->toString()]);
     }
 
     public function businessHolidayContains(LocalDate $date): bool
     {
-        return isset($this->dateSet('business_holidays', $this->definitions->businessHolidays)[$date->toString()]);
+        return isset($this->dateSet('business_holidays', $this->calendar->businessHolidays)[$date->toString()]);
     }
 
     public function businessDayContains(LocalDate $date): bool
     {
-        return isset($this->dateSet('business_days', $this->definitions->businessDays)[$date->toString()]);
+        return isset($this->dateSet('business_days', $this->calendar->businessDays)[$date->toString()]);
     }
 
     public function customContains(string $name, LocalDate $date): bool
     {
-        $definition = $this->definitions->custom[$name]
+        $definition = $this->calendar->custom[$name]
             ?? throw new UndefinedNameException("Undefined name: {$name}");
 
         return isset($this->dateSet("custom.{$name}", $definition)[$date->toString()]);
@@ -66,7 +66,7 @@ final class ResolvedDefinitions
     public function isInWorkweek(DayName $dayOfWeek): bool
     {
         if ($this->workweekSet === null) {
-            $days = $this->definitions->workweek->days
+            $days = $this->calendar->workweek->days
                 ?? [DayName::Mon, DayName::Tue, DayName::Wed, DayName::Thu, DayName::Fri];
             $this->workweekSet = [];
 
@@ -83,7 +83,7 @@ final class ResolvedDefinitions
      */
     public function businessHourWindows(): array
     {
-        $businessHours = $this->definitions->businessHours
+        $businessHours = $this->calendar->businessHours
             ?? throw new MissingCalendarDataException('Using business_hour requires the business_hours definition');
 
         return $businessHours->windows;

@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Internal;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Expression\BusinessHourRef;
@@ -27,44 +27,44 @@ final class ReferenceChecker
      * @param  iterable<YrnkSchedule>  $schedules
      * @param  array<string, (\Closure(): list<string>)|YrnkResolverInterface>  $resolvers
      */
-    public static function ensureResolvable(iterable $schedules, Definitions $definitions, array $resolvers): void
+    public static function ensureResolvable(iterable $schedules, Calendar $calendar, array $resolvers): void
     {
         foreach ($schedules as $schedule) {
             foreach (self::atomsOf($schedule) as $atom) {
-                if ($atom instanceof CustomRef && ! isset($definitions->custom[$atom->name])) {
+                if ($atom instanceof CustomRef && ! isset($calendar->custom[$atom->name])) {
                     throw new UndefinedNameException("Undefined name: {$atom->name}");
                 }
 
                 if ($atom instanceof CalendarWord) {
-                    self::ensureCalendarWordDefined($atom, $definitions);
+                    self::ensureCalendarWordDefined($atom, $calendar);
                 }
             }
 
             if ($schedule->times instanceof EveryGrid
                 && $schedule->times->between instanceof BusinessHourRef
-                && $definitions->businessHours === null) {
+                && $calendar->businessHours === null) {
                 throw new MissingCalendarDataException(
                     'Using business_hour requires the business_hours definition',
                 );
             }
         }
 
-        foreach (self::resolverReferences($definitions) as $context => $name) {
+        foreach (self::resolverReferences($calendar) as $context => $name) {
             if (! isset($resolvers[$name])) {
                 throw new UndefinedNameException("Unregistered resolver name ({$context}): {$name}");
             }
         }
     }
 
-    private static function ensureCalendarWordDefined(CalendarWord $word, Definitions $definitions): void
+    private static function ensureCalendarWordDefined(CalendarWord $word, Calendar $calendar): void
     {
         $required = match ($word) {
             CalendarWord::Weekday, CalendarWord::Weekend => [],
-            CalendarWord::Holiday => ['holidays' => $definitions->holidays],
+            CalendarWord::Holiday => ['holidays' => $calendar->holidays],
             CalendarWord::BusinessDay, CalendarWord::BusinessHoliday => [
-                'holidays' => $definitions->holidays,
-                'business_holidays' => $definitions->businessHolidays,
-                'business_days' => $definitions->businessDays,
+                'holidays' => $calendar->holidays,
+                'business_holidays' => $calendar->businessHolidays,
+                'business_days' => $calendar->businessDays,
             ],
         };
 
@@ -98,19 +98,19 @@ final class ReferenceChecker
     /**
      * @return iterable<string, string> context label → resolver name
      */
-    private static function resolverReferences(Definitions $definitions): iterable
+    private static function resolverReferences(Calendar $calendar): iterable
     {
         foreach ([
-            'holidays' => $definitions->holidays,
-            'business_holidays' => $definitions->businessHolidays,
-            'business_days' => $definitions->businessDays,
+            'holidays' => $calendar->holidays,
+            'business_holidays' => $calendar->businessHolidays,
+            'business_days' => $calendar->businessDays,
         ] as $key => $definition) {
             if ($definition?->resolver !== null) {
                 yield $key => $definition->resolver;
             }
         }
 
-        foreach ($definitions->custom as $name => $definition) {
+        foreach ($calendar->custom as $name => $definition) {
             if ($definition->resolver !== null) {
                 yield "custom.{$name}" => $definition->resolver;
             }

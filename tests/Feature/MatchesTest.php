@@ -2,12 +2,12 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
-use Yarunoka\Definitions\Workweek;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Vocabulary\DayName;
@@ -49,6 +49,24 @@ class MatchesTest extends TestCase
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-25T00:00:00+09:00')));
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-25T18:42:07+09:00')));
         $this->assertFalse($evaluator->matches($schedule, $this->at('2026-07-24T18:42:07+09:00')));
+    }
+
+    #[Test]
+    public function allday_is_not_a_shorthand_for_a_timed_occurrence_at_midnight(): void
+    {
+        // The spec keeps the two kinds of occurrence distinct: a timed
+        // 00:00 point is an instant and matches that instant alone,
+        // while an all-day occurrence is day-level and time does not
+        // apply to it. The 00:00 placement of an all-day occurrence is
+        // its comparison instant for range questions, not a time.
+        $evaluator = $this->evaluator();
+        $timed = $this->schedule(['days' => [25], 'times' => ['00:00']]);
+        $allday = $this->schedule(['days' => [25], 'allday' => true]);
+
+        $this->assertTrue($evaluator->matches($timed, $this->at('2026-07-25T00:00:00+09:00')));
+        $this->assertFalse($evaluator->matches($timed, $this->at('2026-07-25T15:00:00+09:00')));
+        $this->assertTrue($evaluator->matches($allday, $this->at('2026-07-25T00:00:00+09:00')));
+        $this->assertTrue($evaluator->matches($allday, $this->at('2026-07-25T15:00:00+09:00')));
     }
 
     #[Test]
@@ -100,7 +118,7 @@ class MatchesTest extends TestCase
         // 2026-03-08. The wall time 02:30 does not exist; the point
         // stands at the pre-transition-offset interpretation = the
         // instant 03:30 EDT.
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['02:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-03-08T03:30:00-04:00')));
@@ -113,7 +131,7 @@ class MatchesTest extends TestCase
         // 02:00 EDT → 01:00 EST on 2026-11-01, so the wall time 01:30
         // occurs twice. The point counts only as its first occurrence
         // (EDT, -04:00).
-        $evaluator = new YrnkEvaluator(new Definitions(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [1], 'times' => ['01:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-11-01T01:30:00-04:00')));
@@ -373,7 +391,7 @@ class MatchesTest extends TestCase
     {
         $calls = 0;
         $evaluator = new YrnkEvaluator(
-            definitions: new Definitions(holidays: Holidays::byResolver('counting')),
+            calendar: new Calendar(holidays: Holidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
             resolvers: ['counting' => function () use (&$calls): array {
                 $calls++;
@@ -409,7 +427,7 @@ class MatchesTest extends TestCase
         array $custom = [],
     ): YrnkEvaluator {
         return new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::ofDates($holidays),
                 businessHolidays: BusinessHolidays::ofDates($businessHolidays),
                 businessDays: BusinessDays::ofDates($businessDays),

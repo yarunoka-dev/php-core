@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Definitions;
+namespace Yarunoka\Calendar;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Vocabulary\DayName;
@@ -8,7 +8,7 @@ use Yarunoka\Vocabulary\DayName;
 /**
  * The weekly pattern (the day-of-week set that sets the working default).
  * The bottom layer of the layer model. Left undefined (null on
- * Definitions), the default is Mon–Fri.
+ * Calendar), the default is Mon–Fri.
  */
 final readonly class Workweek
 {

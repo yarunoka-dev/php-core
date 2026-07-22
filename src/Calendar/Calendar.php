@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Definitions;
+namespace Yarunoka\Calendar;
 
 /**
  * The definitions part of a Yrnk document. Made of the built-in
@@ -12,7 +12,7 @@ namespace Yarunoka\Definitions;
  * explicit empty list (the statement that there are no such days). Only
  * an undefined workweek means the default (Mon–Fri) instead.
  */
-final readonly class Definitions
+final readonly class Calendar
 {
     /**
      * @param  array<string, CustomDefinition>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser

@@ -2,45 +2,45 @@
 
 namespace Yarunoka\Internal\Parser;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
-use Yarunoka\Definitions\Workweek;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
 
 /**
- * The parser for the definitions part (RawDefinitions). The top level is
+ * The parser for the definitions part (RawCalendar). The top level is
  * the closed set of reserved keys (the built-in definitions); under
  * custom is the open namespace.
  *
  * @internal
  */
-final class DefinitionsParser
+final class CalendarParser
 {
     private const array KNOWN_KEYS = [
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public static function parse(mixed $raw): Definitions
+    public static function parse(mixed $raw): Calendar
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
-            throw new InvalidYrnkException('definitions must be an object');
+            throw new InvalidYrnkException('calendar must be an object');
         }
 
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('Unknown keys in definitions: ' . implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('Unknown keys in the calendar: ' . implode(', ', $unknownKeys));
         }
 
         try {
-            return new Definitions(
+            return new Calendar(
                 holidays: array_key_exists('holidays', $raw)
                     ? self::parseDateSet($raw['holidays'], 'holidays', Holidays::class)
                     : null,

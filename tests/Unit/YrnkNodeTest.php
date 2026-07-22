@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Unit;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\Expression\AllDay;
@@ -18,13 +18,13 @@ class YrnkNodeTest extends TestCase
     public function a_document_holds_its_four_parts(): void
     {
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
-        $this->assertSame(1, $document->version);
+        $this->assertSame('1.0', $document->version);
         $this->assertSame('Asia/Tokyo', $document->timezone->getName());
         $this->assertCount(1, $document->schedules);
     }
@@ -35,9 +35,9 @@ class YrnkNodeTest extends TestCase
         $this->expectException(UnsupportedVersionException::class);
 
         new Yrnk(
-            version: 2,
+            version: '2.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
     }
@@ -48,9 +48,9 @@ class YrnkNodeTest extends TestCase
         // The transition semantics (RFC 5545 §3.3.5) live on the
         // evaluating side (MatchFinder).
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Europe/London'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -58,16 +58,49 @@ class YrnkNodeTest extends TestCase
     }
 
     #[Test]
-    public function accepts_a_fixed_offset_timezone(): void
+    public function accepts_a_backward_link_timezone(): void
     {
+        // Backward links are entries of the IANA tz database, and the
+        // spec checks names against the implementation's tz database.
         $document = new Yrnk(
-            version: 1,
-            timezone: new DateTimeZone('+09:00'),
-            definitions: new Definitions(),
+            version: '1.0',
+            timezone: new DateTimeZone('Japan'),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
-        $this->assertSame('+09:00', $document->timezone->getName());
+        $this->assertSame('Japan', $document->timezone->getName());
+    }
+
+    #[Test]
+    public function rejects_a_fixed_offset_timezone(): void
+    {
+        // PHP's DateTimeZone carries fixed offsets too, but the spec
+        // limits timezone to IANA names (a document anchored to UTC
+        // writes "UTC").
+        $this->expectException(InvalidValueException::class);
+
+        new Yrnk(
+            version: '1.0',
+            timezone: new DateTimeZone('+09:00'),
+            calendar: new Calendar(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
+        );
+    }
+
+    #[Test]
+    public function rejects_a_timezone_abbreviation(): void
+    {
+        // JST constructs as a DateTimeZone abbreviation but is not a tz
+        // database entry.
+        $this->expectException(InvalidValueException::class);
+
+        new Yrnk(
+            version: '1.0',
+            timezone: new DateTimeZone('JST'),
+            calendar: new Calendar(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
+        );
     }
 
     #[Test]
@@ -76,9 +109,9 @@ class YrnkNodeTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [],
         );
     }

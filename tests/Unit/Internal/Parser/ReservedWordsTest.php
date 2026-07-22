@@ -56,7 +56,7 @@ class ReservedWordsTest extends TestCase
     {
         // Detects drift between the schema and the PHP duplicate (the JSON
         // Schema is the authority on the syntax).
-        $enum = $this->reservedWordsInSchema('customName');
+        $enum = $this->reservedWordsInSchema('calendar.schema.json', 'customName');
 
         $this->assertSame([], array_diff(ReservedWords::WORDS, $enum), 'reserved word missing from the schema');
         $this->assertSame([], array_diff($enum, ReservedWords::WORDS), 'reserved word missing from PHP');
@@ -66,8 +66,8 @@ class ReservedWordsTest extends TestCase
     #[Test]
     public function the_day_atom_word_reserved_words_are_contained_in_the_custom_name_ones(): void
     {
-        $customWords = $this->reservedWordsInSchema('customName');
-        $dayAtomWords = $this->reservedWordsInSchema('dayAtomWord');
+        $customWords = $this->reservedWordsInSchema('calendar.schema.json', 'customName');
+        $dayAtomWords = $this->reservedWordsInSchema('schedule.schema.json', 'dayAtomWord');
 
         $this->assertSame([], array_diff($dayAtomWords, $customWords));
     }
@@ -75,10 +75,10 @@ class ReservedWordsTest extends TestCase
     /**
      * @return list<string>
      */
-    private function reservedWordsInSchema(string $definition): array
+    private function reservedWordsInSchema(string $file, string $definition): array
     {
         $value = json_decode(
-            (string) file_get_contents(dirname(__DIR__, 4) . '/schema/yarunoka.schema.json'),
+            (string) file_get_contents(dirname(__DIR__, 4) . "/schema/{$file}"),
             associative: true,
         );
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Definitions;
+namespace Yarunoka\Calendar;
 
 use Yarunoka\Internal\DateSetDefinition;
 

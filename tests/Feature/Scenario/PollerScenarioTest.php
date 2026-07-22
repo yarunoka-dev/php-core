@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Tests\Feature\Scenario;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Tests\Support\RoutinePoller;
 use Yarunoka\YrnkEvaluator;
@@ -96,7 +96,7 @@ class PollerScenarioTest extends TestCase
     {
         $calls = 0;
         $evaluator = new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::byResolver('db-holidays'),
                 businessHolidays: BusinessHolidays::ofDates([]),
                 businessDays: BusinessDays::ofDates([]),
@@ -131,7 +131,7 @@ class PollerScenarioTest extends TestCase
     private function poller(array $schedule, string $startedAt, ?DateInterval $grace = null): RoutinePoller
     {
         $evaluator = new YrnkEvaluator(
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::ofDates([]),
                 businessHolidays: BusinessHolidays::ofDates([]),
                 businessDays: BusinessDays::ofDates([]),

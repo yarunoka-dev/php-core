@@ -4,8 +4,8 @@ namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Builder\ScheduleBuilder;
 use Yarunoka\Builder\YrnkBuilder;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Parser\YrnkParser;
@@ -54,10 +54,10 @@ class RoundTripTest extends TestCase
     public static function documents(): array
     {
         return [
-            'full definitions with a payday and an anniversary' => [[
-                'version' => 1,
+            'a full calendar with a payday and an anniversary' => [[
+                'version' => '1.0',
                 'timezone' => 'Asia/Tokyo',
-                'definitions' => [
+                'calendar' => [
                     'holidays' => ['2026-01-01', '2026-01-12'],
                     'business_holidays' => [],
                     'business_days' => [],
@@ -71,9 +71,9 @@ class RoundTripTest extends TestCase
                 ],
             ]],
             'resolver name references' => [[
-                'version' => 1,
+                'version' => '1.0',
                 'timezone' => 'Asia/Tokyo',
-                'definitions' => [
+                'calendar' => [
                     'holidays' => 'yasumi-jp',
                     'custom' => ['garbage-day' => 'garbage-days'],
                 ],
@@ -82,7 +82,7 @@ class RoundTripTest extends TestCase
                 ],
             ]],
             'notation preservation (times order and every unit)' => [[
-                'version' => 1,
+                'version' => '1.0',
                 'timezone' => 'UTC',
                 'schedules' => [
                     ['times' => ['12:00', '09:00']],
@@ -91,9 +91,11 @@ class RoundTripTest extends TestCase
                 ],
             ]],
             'a business_hour reference and if' => [[
-                'version' => 1,
-                'timezone' => '+09:00',
-                'definitions' => [
+                'version' => '1.0',
+                // A backward link is a tz database entry and must round-trip
+                // as written (never canonicalized to Asia/Tokyo).
+                'timezone' => 'Japan',
+                'calendar' => [
                     'business_hours' => [['09:00', '18:00']],
                 ],
                 'schedules' => [
@@ -241,16 +243,16 @@ class RoundTripTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $definitions
+     * @param  array<string, mixed>  $calendar
      */
     #[Test]
     #[DataProvider('definitionsForms')]
-    public function a_definitions_round_trip_is_the_identity(array $definitions): void
+    public function a_definitions_round_trip_is_the_identity(array $calendar): void
     {
         $raw = [
-            'version' => 1,
+            'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
-            'definitions' => $definitions,
+            'calendar' => $calendar,
             'schedules' => [['times' => ['09:00']]],
         ];
         $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => []]);
@@ -280,9 +282,9 @@ class RoundTripTest extends TestCase
         // A Closure is not writable in the DSL, so it is outside the
         // identity; build outputs it as the resolved list.
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::deferred(static fn(): array => ['2026-01-01']),
             ),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -290,16 +292,16 @@ class RoundTripTest extends TestCase
 
         $built = (new YrnkBuilder())->build($document);
 
-        $this->assertSame(['holidays' => ['2026-01-01']], $built['definitions'] ?? null);
+        $this->assertSame(['holidays' => ['2026-01-01']], $built['calendar'] ?? null);
     }
 
     #[Test]
     public function to_json_parses_back_to_the_same_meaning(): void
     {
         $raw = [
-            'version' => 1,
+            'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
-            'definitions' => ['custom' => ['anniversary' => ['2026-10-01']]],
+            'calendar' => ['custom' => ['anniversary' => ['2026-10-01']]],
             'schedules' => [['days' => ['anniversary'], 'times' => ['09:00']]],
         ];
         $parser = new YrnkParser();

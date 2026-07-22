@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Builder;
 
-use Yarunoka\Internal\Builder\DefinitionsBuilder;
+use Yarunoka\Internal\Builder\CalendarBuilder;
 use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 
@@ -29,10 +29,10 @@ final class YrnkBuilder
             'timezone' => $document->timezone->getName(),
         ];
 
-        $definitions = DefinitionsBuilder::build($document->definitions);
+        $calendar = CalendarBuilder::build($document->calendar);
 
-        if ($definitions !== []) {
-            $raw['definitions'] = $definitions;
+        if ($calendar !== []) {
+            $raw['calendar'] = $calendar;
         }
 
         $raw['schedules'] = array_map(

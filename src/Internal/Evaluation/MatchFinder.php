@@ -57,8 +57,8 @@ final readonly class MatchFinder
      * Does this date-time match? Times are truncated to whole seconds for
      * comparison (the DSL's scheduled points are never finer than a
      * second). allday matches on the day alone and ignores the time, but
-     * the from / until clipping applies to its point (the start of the
-     * day, 00:00).
+     * the from / until clipping applies to its comparison instant (00:00
+     * of its day, resolved like any other wall-clock point).
      */
     public function matches(YrnkSchedule $schedule, DateTimeImmutable $at): bool
     {
@@ -494,13 +494,15 @@ final readonly class MatchFinder
      * The landing day of a base day (the forward landing computation).
      * Walks in the given direction until the landing condition holds.
      * or_same includes the base day itself; the strict form advances one
-     * day before searching.
+     * day before searching. The maximum displacement from the base day is
+     * the same 366 days for both forms, so the strict walk tests one
+     * candidate fewer.
      */
     private function landingOf(Shift $shift, LocalDate $base): ?LocalDate
     {
         $cursor = $shift->orSame ? $base : $base->addDays($shift->direction->step());
 
-        for ($i = 0; $i <= self::SHIFT_SEARCH_LIMIT_DAYS; $i++) {
+        for ($displacement = $shift->orSame ? 0 : 1; $displacement <= self::SHIFT_SEARCH_LIMIT_DAYS; $displacement++) {
             if ($this->dayMatcher->matches($shift->condition, $cursor)) {
                 return $cursor;
             }

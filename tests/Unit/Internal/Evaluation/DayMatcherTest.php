@@ -2,18 +2,18 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Expression\CustomRef;
 use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Evaluation\DayMatcher;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Time\LocalDate;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\DayName;
@@ -102,7 +102,7 @@ class DayMatcherTest extends TestCase
         array $businessDays = [],
         array $custom = [],
     ): DayMatcher {
-        return new DayMatcher(new ResolvedDefinitions(new Definitions(
+        return new DayMatcher(new ResolvedCalendar(new Calendar(
             holidays: Holidays::ofDates($holidays),
             businessHolidays: BusinessHolidays::ofDates($businessHolidays),
             businessDays: BusinessDays::ofDates($businessDays),

@@ -2,11 +2,11 @@
 
 namespace Yarunoka;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverInterface;
@@ -38,11 +38,11 @@ final class YrnkEvaluator
      * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
      */
     public function __construct(
-        private readonly Definitions $definitions,
+        private readonly Calendar $calendar,
         private readonly DateTimeZone $timezone,
         private readonly array $resolvers = [],
     ) {
-        $resolved = new ResolvedDefinitions($definitions, $resolvers);
+        $resolved = new ResolvedCalendar($calendar, $resolvers);
         $dayMatcher = new DayMatcher($resolved);
         $this->finder = new MatchFinder(
             $dayMatcher,
@@ -92,6 +92,6 @@ final class YrnkEvaluator
      */
     private function ensureResolvable(YrnkSchedule $schedule): void
     {
-        ReferenceChecker::ensureResolvable([$schedule], $this->definitions, $this->resolvers);
+        ReferenceChecker::ensureResolvable([$schedule], $this->calendar, $this->resolvers);
     }
 }

@@ -15,12 +15,12 @@ users to edit safely.
 Yarunoka is a small JSON DSL — **Yrnk** — that states such rules as data,
 plus an engine that answers questions about them:
 
-- **A document** carries a timezone, calendar **definitions**, and a list
-  of **schedules**. Definitions give meaning to the calendar vocabulary:
-  holidays, business holidays, extra business days, the workweek,
-  business hours, and custom named date sets. A date set is written as a
-  fixed date list or as the name of a resolver the application registers
-  at runtime.
+- **A document** carries a timezone, a **calendar**, and a list of
+  **schedules**. The calendar is the definitions that give meaning to the
+  calendar vocabulary: holidays, business holidays, extra business days,
+  the workweek, business hours, and custom named date sets. A date set is
+  written as a fixed date list or as the name of a resolver the
+  application registers at runtime.
 - **A schedule** combines a day expression (days of the month, weekdays,
   ordinal weekdays, calendar words such as `holiday`, day cycles), an
   optional **shift** rule ("the previous business day"), and the times of
@@ -59,9 +59,9 @@ use Yarunoka\YrnkEvaluator;
 
 $json = <<<'JSON'
 {
-    "version": 1,
+    "version": "1.0",
     "timezone": "Asia/Tokyo",
-    "definitions": {
+    "calendar": {
         "holidays": ["2026-01-01", "2026-07-20"],
         "business_holidays": [],
         "business_days": []
@@ -76,7 +76,7 @@ $document = (new YrnkParser())->parse($json);
 $payday = $document->schedules[0];
 
 $evaluator = new YrnkEvaluator(
-    definitions: $document->definitions,
+    calendar: $document->calendar,
     timezone: $document->timezone,
 );
 
@@ -95,7 +95,9 @@ $evaluator->hasMatchIn($payday, $lastRunAt, $now); // true
 - [Using the PHP implementation](docs/php-usage.md) — the public classes,
   the two contexts, and the typical firing-decision patterns
 - [The spec repository](https://github.com/yarunoka-dev/spec) — the DSL
-  specification
+  specification. The JSON Schemas under `schema/` are a verbatim copy of
+  the spec's (the spec declares that every language implementation
+  carries a copy)
 - The Laravel bridge is the separate
   [yarunoka/laravel](https://github.com/yarunoka-dev/php-laravel) package
 
