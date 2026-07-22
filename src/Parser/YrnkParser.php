@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Parser;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Internal\Parser\DefinitionsParser;
+use Yarunoka\Internal\Parser\CalendarParser;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Yrnk;
@@ -54,20 +54,20 @@ final class YrnkParser
             throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
-        $definitions = DefinitionsParser::parse($input['definitions'] ?? []);
+        $calendar = CalendarParser::parse($input['definitions'] ?? []);
 
         try {
             $document = new Yrnk(
                 version: $this->parseVersion($input),
                 timezone: $this->parseTimezone($input),
-                definitions: $definitions,
+                calendar: $calendar,
                 schedules: $this->parseSchedules($input),
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
         }
 
-        ReferenceChecker::ensureResolvable($document->schedules, $definitions, $this->resolvers);
+        ReferenceChecker::ensureResolvable($document->schedules, $calendar, $this->resolvers);
 
         return $document;
     }

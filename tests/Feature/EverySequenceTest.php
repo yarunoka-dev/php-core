@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -121,7 +121,7 @@ class EverySequenceTest extends TestCase
         // 2026-03-08. In an hourly sequence anchored at 3/7 01:30, the
         // wall 02:30 of 3/8 does not exist and is pushed to 03:30.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(definitions: new Definitions(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 01:30', 'every' => [1, 'hour']]);
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08 01:30:00', $timezone)));
@@ -135,7 +135,7 @@ class EverySequenceTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('Asia/Tokyo'));
     }
 
     private function at(string $dateTime): DateTimeImmutable

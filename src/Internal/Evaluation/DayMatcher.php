@@ -29,7 +29,7 @@ use Yarunoka\Vocabulary\CalendarWord;
  */
 final readonly class DayMatcher
 {
-    public function __construct(private ResolvedDefinitions $definitions) {}
+    public function __construct(private ResolvedCalendar $calendar) {}
 
     public function matches(DayAtom $atom, LocalDate $date): bool
     {
@@ -38,7 +38,7 @@ final readonly class DayMatcher
             $atom instanceof Weekday => $date->dayOfWeek() === $atom->dayName,
             $atom instanceof OrdinalWeekday => $this->matchesOrdinalWeekday($atom, $date),
             $atom instanceof LastDayOfMonth => $date->day === $date->daysInMonth(),
-            $atom instanceof CustomRef => $this->definitions->customContains($atom->name, $date),
+            $atom instanceof CustomRef => $this->calendar->customContains($atom->name, $date),
             $atom instanceof CalendarWord => $this->matchesCalendarWord($atom, $date),
             default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };
@@ -66,7 +66,7 @@ final readonly class DayMatcher
         return match ($word) {
             CalendarWord::Weekday => ! $date->dayOfWeek()->isWeekend(),
             CalendarWord::Weekend => $date->dayOfWeek()->isWeekend(),
-            CalendarWord::Holiday => $this->definitions->holidayContains($date),
+            CalendarWord::Holiday => $this->calendar->holidayContains($date),
             CalendarWord::BusinessDay => $this->isBusinessDay($date),
             CalendarWord::BusinessHoliday => ! $this->isBusinessDay($date),
         };
@@ -74,18 +74,18 @@ final readonly class DayMatcher
 
     private function isBusinessDay(LocalDate $date): bool
     {
-        if ($this->definitions->businessDayContains($date)) {
+        if ($this->calendar->businessDayContains($date)) {
             return true;
         }
 
-        if ($this->definitions->businessHolidayContains($date)) {
+        if ($this->calendar->businessHolidayContains($date)) {
             return false;
         }
 
-        if ($this->definitions->holidayContains($date)) {
+        if ($this->calendar->holidayContains($date)) {
             return false;
         }
 
-        return $this->definitions->isInWorkweek($date->dayOfWeek());
+        return $this->calendar->isInWorkweek($date->dayOfWeek());
     }
 }

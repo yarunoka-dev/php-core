@@ -39,8 +39,8 @@ class YrnkParserTest extends TestCase
 
         $this->assertSame(1, $document->version);
         $this->assertSame('Asia/Tokyo', $document->timezone->getName());
-        $this->assertSame('yasumi-jp', $document->definitions->holidays?->resolver);
-        $this->assertArrayHasKey('founding-day', $document->definitions->custom);
+        $this->assertSame('yasumi-jp', $document->calendar->holidays?->resolver);
+        $this->assertArrayHasKey('founding-day', $document->calendar->custom);
         $this->assertCount(2, $document->schedules);
     }
 
@@ -205,7 +205,7 @@ class YrnkParserTest extends TestCase
             'definitions' => ['custom' => ['garbage-day' => 'garbage-days']],
         ]));
 
-        $this->assertSame('garbage-days', $document->definitions->custom['garbage-day']->resolver);
+        $this->assertSame('garbage-days', $document->calendar->custom['garbage-day']->resolver);
     }
 
     // ---- resolvability of references ----

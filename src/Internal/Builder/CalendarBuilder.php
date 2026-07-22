@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Internal\Builder;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Time\LocalDate;
@@ -14,49 +14,49 @@ use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
 
 /**
- * The mirror image of DefinitionsParser. Definitions node →
- * RawDefinitions. A resolver name reference comes out as the name itself
+ * The mirror image of CalendarParser. Calendar node →
+ * RawCalendar. A resolver name reference comes out as the name itself
  * (output that preserves the intent, on the premise that the reader holds
  * the same resolver). A Closure (deferred) is not writable in the DSL, so
  * it is resolved and folded into a snapshot (a date list).
  *
  * @internal
  */
-final class DefinitionsBuilder
+final class CalendarBuilder
 {
     /**
      * @return array<string, mixed>
      */
-    public static function build(Definitions $definitions): array
+    public static function build(Calendar $calendar): array
     {
         $raw = [];
 
         foreach ([
-            'holidays' => $definitions->holidays,
-            'business_holidays' => $definitions->businessHolidays,
-            'business_days' => $definitions->businessDays,
+            'holidays' => $calendar->holidays,
+            'business_holidays' => $calendar->businessHolidays,
+            'business_days' => $calendar->businessDays,
         ] as $key => $definition) {
             if ($definition !== null) {
                 $raw[$key] = self::buildDateSet($definition, $key);
             }
         }
 
-        if ($definitions->workweek !== null) {
+        if ($calendar->workweek !== null) {
             $raw['workweek'] = array_map(
                 static fn(DayName $day): string => $day->value,
-                $definitions->workweek->days,
+                $calendar->workweek->days,
             );
         }
 
-        if ($definitions->businessHours !== null) {
+        if ($calendar->businessHours !== null) {
             $raw['business_hours'] = array_map(
                 static fn(TimeWindow $window): array => $window->toStrings(),
-                $definitions->businessHours->windows,
+                $calendar->businessHours->windows,
             );
         }
 
-        if ($definitions->custom !== []) {
-            foreach ($definitions->custom as $name => $definition) {
+        if ($calendar->custom !== []) {
+            foreach ($calendar->custom as $name => $definition) {
                 $raw['custom'][$name] = self::buildDateSet($definition, "custom.{$name}");
             }
         }

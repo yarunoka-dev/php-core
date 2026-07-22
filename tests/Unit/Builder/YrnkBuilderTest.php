@@ -3,8 +3,8 @@
 namespace Yarunoka\Tests\Unit\Builder;
 
 use Yarunoka\Builder\YrnkBuilder;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
@@ -20,7 +20,7 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(holidays: Holidays::ofDates([])),
+            calendar: new Calendar(holidays: Holidays::ofDates([])),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -38,7 +38,7 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('UTC'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -55,7 +55,7 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('UTC'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 

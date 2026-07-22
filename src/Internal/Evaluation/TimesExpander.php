@@ -24,7 +24,7 @@ use Yarunoka\Time\TimeWindow;
  */
 final readonly class TimesExpander
 {
-    public function __construct(private ResolvedDefinitions $definitions) {}
+    public function __construct(private ResolvedCalendar $calendar) {}
 
     /**
      * @return list<int> In ascending order
@@ -49,7 +49,7 @@ final readonly class TimesExpander
             $step = $times->amount * $times->unit->seconds();
             $windows = match (true) {
                 $times->between instanceof TimeWindow => [$times->between],
-                $times->between instanceof BusinessHourRef => $this->definitions->businessHourWindows(),
+                $times->between instanceof BusinessHourRef => $this->calendar->businessHourWindows(),
                 default => [TimeWindow::fromStrings('00:00', '24:00')],
             };
             $points = [];

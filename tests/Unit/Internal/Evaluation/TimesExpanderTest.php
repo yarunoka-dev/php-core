@@ -2,13 +2,13 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Expression\BusinessHourRef;
 use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\TimeWindow;
@@ -78,7 +78,7 @@ class TimesExpanderTest extends TestCase
      */
     private function expander(?array $businessHours = null): TimesExpander
     {
-        return new TimesExpander(new ResolvedDefinitions(new Definitions(
+        return new TimesExpander(new ResolvedCalendar(new Calendar(
             businessHours: $businessHours === null ? null : new BusinessHours(array_map(
                 static fn(array $pair): TimeWindow => TimeWindow::fromStrings($pair[0], $pair[1]),
                 $businessHours,

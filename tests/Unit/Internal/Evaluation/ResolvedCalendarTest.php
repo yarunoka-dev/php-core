@@ -2,17 +2,17 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\BusinessHours;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
-use Yarunoka\Definitions\Workweek;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\BusinessHours;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Tests\Support\CountingResolver;
 use Yarunoka\Time\LocalDate;
 use Yarunoka\Time\TimeWindow;
@@ -20,12 +20,12 @@ use Yarunoka\Vocabulary\DayName;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class ResolvedDefinitionsTest extends TestCase
+class ResolvedCalendarTest extends TestCase
 {
     #[Test]
     public function contains_per_layer_is_true_only_for_the_defined_dates(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(
+        $resolved = new ResolvedCalendar(new Calendar(
             holidays: Holidays::ofDates(['2026-01-01']),
             businessHolidays: BusinessHolidays::ofDates(['2026-08-13']),
             businessDays: BusinessDays::ofDates(['2026-07-11']),
@@ -40,7 +40,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function contains_for_custom_looks_up_the_set_per_name(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(
+        $resolved = new ResolvedCalendar(new Calendar(
             custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
         ), resolvers: []);
 
@@ -51,7 +51,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function an_undefined_custom_name_raises(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
+        $resolved = new ResolvedCalendar(new Calendar(), resolvers: []);
 
         $this->expectException(UndefinedNameException::class);
 
@@ -61,7 +61,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function the_workweek_default_is_monday_through_friday(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
+        $resolved = new ResolvedCalendar(new Calendar(), resolvers: []);
 
         $this->assertTrue($resolved->isInWorkweek(DayName::Mon));
         $this->assertTrue($resolved->isInWorkweek(DayName::Fri));
@@ -71,7 +71,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function the_workweek_can_be_replaced(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(
+        $resolved = new ResolvedCalendar(new Calendar(
             workweek: new Workweek([DayName::Tue, DayName::Sat]),
         ), resolvers: []);
 
@@ -82,10 +82,10 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function returns_the_business_hours_windows_and_raises_when_undefined(): void
     {
-        $withWindows = new ResolvedDefinitions(new Definitions(
+        $withWindows = new ResolvedCalendar(new Calendar(
             businessHours: new BusinessHours([TimeWindow::fromStrings('09:00', '18:00')]),
         ), resolvers: []);
-        $without = new ResolvedDefinitions(new Definitions(), resolvers: []);
+        $without = new ResolvedCalendar(new Calendar(), resolvers: []);
 
         $this->assertCount(1, $withWindows->businessHourWindows());
 
@@ -98,8 +98,8 @@ class ResolvedDefinitionsTest extends TestCase
     public function a_resolver_resolves_on_first_reference_and_is_called_at_most_once(): void
     {
         $calls = 0;
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('counting')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('counting')),
             resolvers: ['counting' => function () use (&$calls): array {
                 $calls++;
 
@@ -118,8 +118,8 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function an_unregistered_resolver_name_raises(): void
     {
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('unknown')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('unknown')),
             resolvers: [],
         );
 
@@ -131,8 +131,8 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function a_contract_violation_in_the_resolver_return_value_raises(): void
     {
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('broken')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('broken')),
             resolvers: ['broken' => static fn(): array => ['2026/01/01']],
         );
 
@@ -144,7 +144,7 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function referencing_an_undefined_layer_raises_the_safeguard_error(): void
     {
-        $resolved = new ResolvedDefinitions(new Definitions(), resolvers: []);
+        $resolved = new ResolvedCalendar(new Calendar(), resolvers: []);
 
         $this->expectException(MissingCalendarDataException::class);
 
@@ -154,8 +154,8 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function a_resolver_contract_instance_can_be_a_source_too(): void
     {
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('jp')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('jp')),
             resolvers: ['jp' => new CountingResolver(['2026-01-01'])],
         );
 
@@ -167,8 +167,8 @@ class ResolvedDefinitionsTest extends TestCase
     public function a_resolver_contract_instance_is_called_at_most_once_too(): void
     {
         $resolver = new CountingResolver(['2026-01-01']);
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('jp')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('jp')),
             resolvers: ['jp' => $resolver],
         );
 
@@ -181,8 +181,8 @@ class ResolvedDefinitionsTest extends TestCase
     #[Test]
     public function the_return_value_of_a_resolver_contract_instance_is_validated_too(): void
     {
-        $resolved = new ResolvedDefinitions(
-            new Definitions(holidays: Holidays::byResolver('broken')),
+        $resolved = new ResolvedCalendar(
+            new Calendar(holidays: Holidays::byResolver('broken')),
             resolvers: ['broken' => new CountingResolver(['2026/01/01'])],
         );
 

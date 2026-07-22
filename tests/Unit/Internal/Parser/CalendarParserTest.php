@@ -4,32 +4,32 @@ namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\ReservedNameException;
-use Yarunoka\Internal\Parser\DefinitionsParser;
+use Yarunoka\Internal\Parser\CalendarParser;
 use Yarunoka\Time\LocalDate;
 use Yarunoka\Vocabulary\DayName;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class DefinitionsParserTest extends TestCase
+class CalendarParserTest extends TestCase
 {
     #[Test]
     public function parses_a_date_list_of_a_built_in_definition(): void
     {
-        $definitions = DefinitionsParser::parse(['holidays' => ['2026-01-01']]);
+        $calendar = CalendarParser::parse(['holidays' => ['2026-01-01']]);
 
         $this->assertSame(['2026-01-01'], array_map(
             static fn(LocalDate $date): string => $date->toString(),
-            $definitions->holidays->dates ?? [],
+            $calendar->holidays->dates ?? [],
         ));
-        $this->assertNull($definitions->businessHolidays);
+        $this->assertNull($calendar->businessHolidays);
     }
 
     #[Test]
     public function parses_a_resolver_name_reference(): void
     {
-        $definitions = DefinitionsParser::parse(['business_days' => 'special-days']);
+        $calendar = CalendarParser::parse(['business_days' => 'special-days']);
 
-        $this->assertSame('special-days', $definitions->businessDays?->resolver);
+        $this->assertSame('special-days', $calendar->businessDays?->resolver);
     }
 
     #[Test]
@@ -37,30 +37,30 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['business_days' => '   ']);
+        CalendarParser::parse(['business_days' => '   ']);
     }
 
     #[Test]
     public function parses_workweek_and_business_hours(): void
     {
-        $definitions = DefinitionsParser::parse([
+        $calendar = CalendarParser::parse([
             'workweek' => ['tue', 'sat'],
             'business_hours' => [['09:00', '12:00'], ['13:00', '18:00']],
         ]);
 
-        $this->assertSame([DayName::Tue, DayName::Sat], $definitions->workweek?->days);
-        $this->assertCount(2, $definitions->businessHours->windows ?? []);
+        $this->assertSame([DayName::Tue, DayName::Sat], $calendar->workweek?->days);
+        $this->assertCount(2, $calendar->businessHours->windows ?? []);
     }
 
     #[Test]
     public function parses_custom_values_and_validates_the_key_names(): void
     {
-        $definitions = DefinitionsParser::parse([
+        $calendar = CalendarParser::parse([
             'custom' => ['founding-day' => ['2026-10-01'], 'garbage-day' => 'garbage-days'],
         ]);
 
-        $this->assertNotNull($definitions->custom['founding-day']->dates);
-        $this->assertSame('garbage-days', $definitions->custom['garbage-day']->resolver);
+        $this->assertNotNull($calendar->custom['founding-day']->dates);
+        $this->assertSame('garbage-days', $calendar->custom['garbage-day']->resolver);
     }
 
     #[Test]
@@ -68,7 +68,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['holiday' => []]);
+        CalendarParser::parse(['holiday' => []]);
     }
 
     #[Test]
@@ -76,7 +76,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['holidays' => '2026-01-01']);
+        CalendarParser::parse(['holidays' => '2026-01-01']);
     }
 
     #[Test]
@@ -84,7 +84,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['custom' => ['anniversary' => '2026-10-01']]);
+        CalendarParser::parse(['custom' => ['anniversary' => '2026-10-01']]);
     }
 
     #[Test]
@@ -92,7 +92,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['holidays' => ['2026-01-01', '2026-01-01']]);
+        CalendarParser::parse(['holidays' => ['2026-01-01', '2026-01-01']]);
     }
 
     #[Test]
@@ -100,7 +100,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        DefinitionsParser::parse(['custom' => ['holiday' => ['2026-01-01']]]);
+        CalendarParser::parse(['custom' => ['holiday' => ['2026-01-01']]]);
     }
 
     #[Test]
@@ -108,7 +108,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['workweek' => ['monday']]);
+        CalendarParser::parse(['workweek' => ['monday']]);
     }
 
     #[Test]
@@ -116,7 +116,7 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse(['holidays' => [20260101]]);
+        CalendarParser::parse(['holidays' => [20260101]]);
     }
 
     #[Test]
@@ -124,6 +124,6 @@ class DefinitionsParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        DefinitionsParser::parse([['holidays' => []]]);
+        CalendarParser::parse([['holidays' => []]]);
     }
 }

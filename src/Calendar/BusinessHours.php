@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Definitions;
+namespace Yarunoka\Calendar;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Time\TimeWindow;

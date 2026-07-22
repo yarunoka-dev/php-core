@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -125,7 +125,7 @@ class FromUntilTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(definitions: new Definitions(), timezone: new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('Asia/Tokyo'));
     }
 
     private function at(string $dateTime): DateTimeImmutable

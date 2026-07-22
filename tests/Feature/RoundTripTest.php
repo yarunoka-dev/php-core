@@ -4,8 +4,8 @@ namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Builder\ScheduleBuilder;
 use Yarunoka\Builder\YrnkBuilder;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Parser\YrnkParser;
@@ -243,16 +243,16 @@ class RoundTripTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $definitions
+     * @param  array<string, mixed>  $calendar
      */
     #[Test]
     #[DataProvider('definitionsForms')]
-    public function a_definitions_round_trip_is_the_identity(array $definitions): void
+    public function a_definitions_round_trip_is_the_identity(array $calendar): void
     {
         $raw = [
             'version' => 1,
             'timezone' => 'Asia/Tokyo',
-            'definitions' => $definitions,
+            'definitions' => $calendar,
             'schedules' => [['times' => ['09:00']]],
         ];
         $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => []]);
@@ -284,7 +284,7 @@ class RoundTripTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(
+            calendar: new Calendar(
                 holidays: Holidays::deferred(static fn(): array => ['2026-01-01']),
             ),
             schedules: [new YrnkSchedule(times: new AllDay())],

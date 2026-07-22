@@ -80,26 +80,26 @@ class SchemaConformanceTest extends TestCase
             'every 600 seconds' => [self::doc('{"times": {"every": [600, "second"]}}')],
             'the payday prev shift' => [self::doc(
                 '{"days": [25], "shift": ["prev", "or_same", "business_day"], "times": ["10:00"]}',
-                definitions: '{"holidays": [], "business_holidays": [], "business_days": []}',
+                calendar: '{"holidays": [], "business_holidays": [], "business_days": []}',
             )],
             'the day-before-a-break if' => [self::doc(
                 '{"days": ["business_day"], "if": ["next", "business_holiday"], "times": ["08:00"]}',
-                definitions: '{"holidays": ["2026-01-01"], "business_holidays": [], "business_days": []}',
+                calendar: '{"holidays": ["2026-01-01"], "business_holidays": [], "business_days": []}',
             )],
             'the holiday-skipping if' => [self::doc(
                 '{"days": ["mon"], "if": ["not", "holiday"], "times": ["07:30"]}',
-                definitions: '{"holidays": "yasumi-jp"}',
+                calendar: '{"holidays": "yasumi-jp"}',
             )],
             'the day before the end of the month (if without days)' => [self::doc('{"if": ["next", "last_day_of_month"], "times": ["09:00"]}')],
             'an allday on a specific date' => [self::doc('{"years": [2043], "months": [6], "days": [15], "allday": true}')],
             'between business_hour' => [self::doc(
                 '{"times": {"every": [1, "hour"], "between": "business_hour"}}',
-                definitions: '{"business_hours": [["09:00", "12:00"], ["13:00", "18:00"]]}',
+                calendar: '{"business_hours": [["09:00", "12:00"], ["13:00", "18:00"]]}',
             )],
             'a window ending at 24:00' => [self::doc('{"times": {"every": [1, "hour"], "between": ["22:00", "24:00"]}}')],
             'a custom definition and workweek' => [self::doc(
                 '{"days": ["founding-day"], "allday": true}',
-                definitions: '{"workweek": ["tue", "wed", "thu", "fri", "sat"], "custom": {"founding-day": ["2026-10-01"]}}',
+                calendar: '{"workweek": ["tue", "wed", "thu", "fri", "sat"], "custom": {"founding-day": ["2026-10-01"]}}',
             )],
             'a timezone with DST' => ['{"version": 1, "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
             'the per-unit maximum of every (hours)' => [self::doc('{"times": {"every": [24, "hour"]}}')],
@@ -174,18 +174,18 @@ class SchemaConformanceTest extends TestCase
             'a user-defined name in between' => [self::doc('{"times": {"every": [1, "hour"], "between": "afternoon"}}')],
             'a four-element shift' => [self::doc('{"days": [25], "shift": ["prev", "or_same", "business_day", "fri"], "times": ["09:00"]}')],
             'same in if' => [self::doc('{"days": ["mon"], "if": ["same", "holiday"], "times": ["09:00"]}')],
-            'an unknown definitions key' => [self::doc('{"times": ["09:00"]}', definitions: '{"holiday": []}')],
-            'a reserved word as a custom name' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"holiday": ["2026-01-01"]}}')],
-            'a whitespace-only custom name' => [self::doc('{"days": ["   "], "times": ["09:00"]}', definitions: '{"custom": {"   ": ["2026-01-01"]}}')],
-            'a date-shaped custom name' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"2026-01-01": ["2026-01-01"]}}')],
-            'a date with a trailing newline' => [self::doc('{"times": ["09:00"]}', definitions: '{"holidays": ["2026-01-01\\n"]}')],
-            'a duplicate date in a date set' => [self::doc('{"times": ["09:00"]}', definitions: '{"holidays": ["2026-01-01", "2026-01-01"]}')],
-            'a whitespace-only resolver name' => [self::doc('{"times": ["09:00"]}', definitions: '{"holidays": "   "}')],
-            'a single date string as a custom value' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"anniversary": "2026-10-01"}}')],
-            'an invalid day name in workweek' => [self::doc('{"times": ["09:00"]}', definitions: '{"workweek": ["monday"]}')],
+            'an unknown definitions key' => [self::doc('{"times": ["09:00"]}', calendar: '{"holiday": []}')],
+            'a reserved word as a custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"holiday": ["2026-01-01"]}}')],
+            'a whitespace-only custom name' => [self::doc('{"days": ["   "], "times": ["09:00"]}', calendar: '{"custom": {"   ": ["2026-01-01"]}}')],
+            'a date-shaped custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"2026-01-01": ["2026-01-01"]}}')],
+            'a date with a trailing newline' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": ["2026-01-01\\n"]}')],
+            'a duplicate date in a date set' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": ["2026-01-01", "2026-01-01"]}')],
+            'a whitespace-only resolver name' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": "   "}')],
+            'a single date string as a custom value' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"anniversary": "2026-10-01"}}')],
+            'an invalid day name in workweek' => [self::doc('{"times": ["09:00"]}', calendar: '{"workweek": ["monday"]}')],
             'the same window twice in business_hours' => [self::doc(
                 '{"times": ["09:00"]}',
-                definitions: '{"business_hours": [["09:00", "12:00"], ["09:00", "12:00"]]}',
+                calendar: '{"business_hours": [["09:00", "12:00"], ["09:00", "12:00"]]}',
             )],
             'a T separator in from' => [self::doc('{"from": "2026-07-14T00:00", "times": ["09:00"]}')],
             'a date-only from' => [self::doc('{"from": "2026-07-14", "times": ["09:00"]}')],
@@ -206,8 +206,8 @@ class SchemaConformanceTest extends TestCase
             'the interval every combined with times' => [self::doc('{"from": "2026-07-14 00:00", "every": [36, "hour"], "times": ["09:00"]}')],
             'the interval every combined with days' => [self::doc('{"from": "2026-07-14 00:00", "every": [36, "hour"], "days": ["mon"]}')],
             'the interval every without from' => [self::doc('{"every": [36, "hour"]}')],
-            'the reserved word day as a custom name' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"day": ["2026-01-01"]}}')],
-            'the reserved word from as a custom name' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"from": ["2026-01-01"]}}')],
+            'the reserved word day as a custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"day": ["2026-01-01"]}}')],
+            'the reserved word from as a custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"from": ["2026-01-01"]}}')],
         ];
     }
 
@@ -224,20 +224,20 @@ class SchemaConformanceTest extends TestCase
             'holiday without the holidays definition' => [self::doc('{"days": ["holiday"], "times": ["09:00"]}')],
             'business_day short of the three layers' => [self::doc(
                 '{"days": ["business_day"], "times": ["09:00"]}',
-                definitions: '{"holidays": []}',
+                calendar: '{"holidays": []}',
             )],
             'business_hour without the business_hours definition' => [self::doc(
                 '{"times": {"every": [1, "hour"], "between": "business_hour"}}',
             )],
-            'an unregistered resolver name' => [self::doc('{"times": ["09:00"]}', definitions: '{"holidays": "unknown-resolver"}')],
+            'an unregistered resolver name' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": "unknown-resolver"}')],
             'a timezone that does not exist' => ['{"version": 1, "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
             'a fixed-offset timezone' => ['{"version": 1, "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
             'a timezone abbreviation' => ['{"version": 1, "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
             'a window crossing midnight' => [self::doc('{"times": {"every": [1, "hour"], "between": ["20:00", "08:00"]}}')],
-            'a definition with a date that does not exist' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"anniversary": ["2026-02-30"]}}')],
+            'a definition with a date that does not exist' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"anniversary": ["2026-02-30"]}}')],
             'a definition with overlapping windows' => [self::doc(
                 '{"times": ["09:00"]}',
-                definitions: '{"business_hours": [["09:00", "13:00"], ["12:00", "18:00"]]}',
+                calendar: '{"business_hours": [["09:00", "13:00"], ["12:00", "18:00"]]}',
             )],
             'from and until at the same instant' => [self::doc(
                 '{"from": "2026-08-01 00:00", "until": "2026-08-01 00:00", "times": ["09:00"]}',
@@ -252,11 +252,11 @@ class SchemaConformanceTest extends TestCase
 
     // ---- helpers ----
 
-    private static function doc(string $scheduleJson, ?string $definitions = null): string
+    private static function doc(string $scheduleJson, ?string $calendar = null): string
     {
-        $definitionsPart = $definitions === null ? '' : ', "definitions": ' . $definitions;
+        $calendarPart = $calendar === null ? '' : ', "definitions": ' . $calendar;
 
-        return '{"version": 1, "timezone": "Asia/Tokyo"' . $definitionsPart . ', "schedules": [' . $scheduleJson . ']}';
+        return '{"version": 1, "timezone": "Asia/Tokyo"' . $calendarPart . ', "schedules": [' . $scheduleJson . ']}';
     }
 
     private function parser(): YrnkParser

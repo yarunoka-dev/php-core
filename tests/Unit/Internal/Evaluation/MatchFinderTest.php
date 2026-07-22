@@ -2,15 +2,15 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Definitions\BusinessDays;
-use Yarunoka\Definitions\BusinessHolidays;
-use Yarunoka\Definitions\CustomDefinition;
-use Yarunoka\Definitions\Definitions;
-use Yarunoka\Definitions\Holidays;
+use Yarunoka\Calendar\BusinessDays;
+use Yarunoka\Calendar\BusinessHolidays;
+use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\CustomDefinition;
+use Yarunoka\Calendar\Holidays;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
-use Yarunoka\Internal\Evaluation\ResolvedDefinitions;
+use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkSchedule;
@@ -474,7 +474,7 @@ class MatchFinderTest extends TestCase
      */
     private function finder(array $holidays = [], array $custom = []): MatchFinder
     {
-        $resolved = new ResolvedDefinitions(new Definitions(
+        $resolved = new ResolvedCalendar(new Calendar(
             holidays: Holidays::ofDates($holidays),
             businessHolidays: BusinessHolidays::ofDates([]),
             businessDays: BusinessDays::ofDates([]),

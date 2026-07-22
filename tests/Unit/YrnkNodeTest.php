@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Unit;
 
-use Yarunoka\Definitions\Definitions;
+use Yarunoka\Calendar\Calendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\Expression\AllDay;
@@ -20,7 +20,7 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -37,7 +37,7 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 2,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
     }
@@ -50,7 +50,7 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Europe/London'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -65,7 +65,7 @@ class YrnkNodeTest extends TestCase
         $document = new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Japan'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -83,7 +83,7 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 1,
             timezone: new DateTimeZone('+09:00'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
     }
@@ -98,7 +98,7 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 1,
             timezone: new DateTimeZone('JST'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
     }
@@ -111,7 +111,7 @@ class YrnkNodeTest extends TestCase
         new Yrnk(
             version: 1,
             timezone: new DateTimeZone('Asia/Tokyo'),
-            definitions: new Definitions(),
+            calendar: new Calendar(),
             schedules: [],
         );
     }
