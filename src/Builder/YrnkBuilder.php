@@ -32,7 +32,7 @@ final class YrnkBuilder
         $calendar = CalendarBuilder::build($document->calendar);
 
         if ($calendar !== []) {
-            $raw['definitions'] = $calendar;
+            $raw['calendar'] = $calendar;
         }
 
         $raw['schedules'] = array_map(

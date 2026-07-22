@@ -23,7 +23,7 @@ use Exception;
  */
 final class YrnkParser
 {
-    private const array KNOWN_KEYS = ['version', 'timezone', 'definitions', 'schedules'];
+    private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
 
     /**
      * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
@@ -54,7 +54,7 @@ final class YrnkParser
             throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
-        $calendar = CalendarParser::parse($input['definitions'] ?? []);
+        $calendar = CalendarParser::parse($input['calendar'] ?? []);
 
         try {
             $document = new Yrnk(
@@ -75,14 +75,14 @@ final class YrnkParser
     /**
      * @param  array<mixed>  $input
      */
-    private function parseVersion(array $input): int
+    private function parseVersion(array $input): string
     {
         if (! array_key_exists('version', $input)) {
             throw new InvalidYrnkException('version is required');
         }
 
-        if (! is_int($input['version'])) {
-            throw new InvalidYrnkException('version must be an integer');
+        if (! is_string($input['version'])) {
+            throw new InvalidYrnkException('version must be an "x.y" string (e.g. "1.0")');
         }
 
         return $input['version'];

@@ -1,0 +1,66 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.0/calendar.schema.json",
+    "title": "Yrnk calendar",
+    "description": "The set of date and time-window definitions that schedules refer to. The reserved keys (holidays, business_holidays, business_days, workweek, business_hours) are the built-in definitions with layer-model semantics; 'custom' is the open namespace for user-defined named date sets. A calendar contains wall-clock dates and times only and defines no timezone of its own; its entries are written on the premise of the document-level timezone.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "holidays": {"$ref": "#/$defs/dateSet"},
+        "business_holidays": {"$ref": "#/$defs/dateSet"},
+        "business_days": {"$ref": "#/$defs/dateSet"},
+        "workweek": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "primitives.schema.json#/$defs/dayName"}
+        },
+        "business_hours": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "primitives.schema.json#/$defs/window"}
+        },
+        "custom": {
+            "type": "object",
+            "propertyNames": {"$ref": "#/$defs/customName"},
+            "additionalProperties": {"$ref": "#/$defs/dateSet"}
+        }
+    },
+    "$defs": {
+        "date": {"type": "string", "minLength": 10, "maxLength": 10, "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "resolverName": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "not": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$"}
+        },
+        "dateSet": {
+            "oneOf": [
+                {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/date"}},
+                {"$ref": "#/$defs/resolverName"}
+            ]
+        },
+        "customName": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"enum": [
+                    "weekday", "weekend", "holiday", "business_day", "business_holiday", "business_hour",
+                    "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+                    "1st", "2nd", "3rd", "4th", "5th", "last",
+                    "last_day_of_month",
+                    "not", "prev", "next", "or_same",
+                    "hour", "minute", "second", "day",
+                    "version", "timezone", "calendar", "schedules",
+                    "years", "months", "days", "shift", "if", "times", "allday", "every", "between", "from", "until",
+                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "custom"
+                ]}},
+                {"not": {"pattern": "^\\d+$"}},
+                {"not": {"pattern": "^\\d{2}:\\d{2}$"}},
+                {"not": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}
+            ]
+        }
+    }
+}

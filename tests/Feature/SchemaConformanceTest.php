@@ -23,7 +23,11 @@ use PHPUnit\Framework\TestCase;
  */
 class SchemaConformanceTest extends TestCase
 {
-    private const string SCHEMA_ID = 'https://github.com/yarunoka-dev/php-core/schema/v1';
+    private const string SCHEMA_ID_BASE = 'https://yarunoka.dev/schema/1.0/';
+
+    private const array SCHEMA_FILES = [
+        'document.schema.json', 'calendar.schema.json', 'schedule.schema.json', 'primitives.schema.json',
+    ];
 
     #[Test]
     #[DataProvider('validDocuments')]
@@ -101,7 +105,7 @@ class SchemaConformanceTest extends TestCase
                 '{"days": ["founding-day"], "allday": true}',
                 calendar: '{"workweek": ["tue", "wed", "thu", "fri", "sat"], "custom": {"founding-day": ["2026-10-01"]}}',
             )],
-            'a timezone with DST' => ['{"version": 1, "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone with DST' => ['{"version": "1.0", "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
             'the per-unit maximum of every (hours)' => [self::doc('{"times": {"every": [24, "hour"]}}')],
             'the minute maximum of every' => [self::doc('{"times": {"every": [1440, "minute"]}}')],
             'the second maximum of every' => [self::doc('{"times": {"every": [86400, "second"]}}')],
@@ -133,14 +137,15 @@ class SchemaConformanceTest extends TestCase
     public static function syntaxInvalidDocuments(): array
     {
         return [
-            'a string version' => ['{"version": "1", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
-            'an unknown version' => ['{"version": 2, "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
-            'a missing timezone' => ['{"version": 1, "schedules": [{"times": ["09:00"]}]}'],
-            'a whitespace-only timezone' => ['{"version": 1, "timezone": "   ", "schedules": [{"times": ["09:00"]}]}'],
-            'missing schedules' => ['{"version": 1, "timezone": "Asia/Tokyo"}'],
-            'empty schedules' => ['{"version": 1, "timezone": "Asia/Tokyo", "schedules": []}'],
-            'a bare object as schedules' => ['{"version": 1, "timezone": "Asia/Tokyo", "schedules": {"times": ["09:00"]}}'],
-            'an unknown document key' => ['{"version": 1, "timezone": "Asia/Tokyo", "schedule": [], "schedules": [{"times": ["09:00"]}]}'],
+            'an integer version (the pre-1.0 spelling)' => ['{"version": 1, "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
+            'a bare major version' => ['{"version": "1", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
+            'an unknown version' => ['{"version": "2.0", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
+            'a missing timezone' => ['{"version": "1.0", "schedules": [{"times": ["09:00"]}]}'],
+            'a whitespace-only timezone' => ['{"version": "1.0", "timezone": "   ", "schedules": [{"times": ["09:00"]}]}'],
+            'missing schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo"}'],
+            'empty schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": []}'],
+            'a bare object as schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": {"times": ["09:00"]}}'],
+            'an unknown document key' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedule": [], "schedules": [{"times": ["09:00"]}]}'],
             'an unknown schedule key' => [self::doc('{"times": ["09:00"], "day": ["mon"]}')],
             'a scalar in days' => [self::doc('{"days": "mon", "times": ["09:00"]}')],
             'a scalar in months' => [self::doc('{"months": 2, "times": ["09:00"]}')],
@@ -174,7 +179,7 @@ class SchemaConformanceTest extends TestCase
             'a user-defined name in between' => [self::doc('{"times": {"every": [1, "hour"], "between": "afternoon"}}')],
             'a four-element shift' => [self::doc('{"days": [25], "shift": ["prev", "or_same", "business_day", "fri"], "times": ["09:00"]}')],
             'same in if' => [self::doc('{"days": ["mon"], "if": ["same", "holiday"], "times": ["09:00"]}')],
-            'an unknown definitions key' => [self::doc('{"times": ["09:00"]}', calendar: '{"holiday": []}')],
+            'an unknown calendar key' => [self::doc('{"times": ["09:00"]}', calendar: '{"holiday": []}')],
             'a reserved word as a custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"holiday": ["2026-01-01"]}}')],
             'a whitespace-only custom name' => [self::doc('{"days": ["   "], "times": ["09:00"]}', calendar: '{"custom": {"   ": ["2026-01-01"]}}')],
             'a date-shaped custom name' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"2026-01-01": ["2026-01-01"]}}')],
@@ -230,9 +235,9 @@ class SchemaConformanceTest extends TestCase
                 '{"times": {"every": [1, "hour"], "between": "business_hour"}}',
             )],
             'an unregistered resolver name' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": "unknown-resolver"}')],
-            'a timezone that does not exist' => ['{"version": 1, "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
-            'a fixed-offset timezone' => ['{"version": 1, "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
-            'a timezone abbreviation' => ['{"version": 1, "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone that does not exist' => ['{"version": "1.0", "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
+            'a fixed-offset timezone' => ['{"version": "1.0", "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone abbreviation' => ['{"version": "1.0", "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
             'a window crossing midnight' => [self::doc('{"times": {"every": [1, "hour"], "between": ["20:00", "08:00"]}}')],
             'a definition with a date that does not exist' => [self::doc('{"times": ["09:00"]}', calendar: '{"custom": {"anniversary": ["2026-02-30"]}}')],
             'a definition with overlapping windows' => [self::doc(
@@ -254,9 +259,9 @@ class SchemaConformanceTest extends TestCase
 
     private static function doc(string $scheduleJson, ?string $calendar = null): string
     {
-        $calendarPart = $calendar === null ? '' : ', "definitions": ' . $calendar;
+        $calendarPart = $calendar === null ? '' : ', "calendar": ' . $calendar;
 
-        return '{"version": 1, "timezone": "Asia/Tokyo"' . $calendarPart . ', "schedules": [' . $scheduleJson . ']}';
+        return '{"version": "1.0", "timezone": "Asia/Tokyo"' . $calendarPart . ', "schedules": [' . $scheduleJson . ']}';
     }
 
     private function parser(): YrnkParser
@@ -267,8 +272,11 @@ class SchemaConformanceTest extends TestCase
     private function schemaAccepts(string $json): bool
     {
         $validator = new Validator();
-        $validator->resolver()?->registerFile(self::SCHEMA_ID, dirname(__DIR__, 2) . '/schema/yarunoka.schema.json');
 
-        return $validator->validate(json_decode($json), self::SCHEMA_ID)->isValid();
+        foreach (self::SCHEMA_FILES as $file) {
+            $validator->resolver()?->registerFile(self::SCHEMA_ID_BASE . $file, dirname(__DIR__, 2) . "/schema/{$file}");
+        }
+
+        return $validator->validate(json_decode($json), self::SCHEMA_ID_BASE . 'document.schema.json')->isValid();
     }
 }

@@ -18,13 +18,13 @@ class YrnkNodeTest extends TestCase
     public function a_document_holds_its_four_parts(): void
     {
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
-        $this->assertSame(1, $document->version);
+        $this->assertSame('1.0', $document->version);
         $this->assertSame('Asia/Tokyo', $document->timezone->getName());
         $this->assertCount(1, $document->schedules);
     }
@@ -35,7 +35,7 @@ class YrnkNodeTest extends TestCase
         $this->expectException(UnsupportedVersionException::class);
 
         new Yrnk(
-            version: 2,
+            version: '2.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -48,7 +48,7 @@ class YrnkNodeTest extends TestCase
         // The transition semantics (RFC 5545 §3.3.5) live on the
         // evaluating side (MatchFinder).
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Europe/London'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -63,7 +63,7 @@ class YrnkNodeTest extends TestCase
         // Backward links are entries of the IANA tz database, and the
         // spec checks names against the implementation's tz database.
         $document = new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Japan'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -81,7 +81,7 @@ class YrnkNodeTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('+09:00'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -96,7 +96,7 @@ class YrnkNodeTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('JST'),
             calendar: new Calendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
@@ -109,7 +109,7 @@ class YrnkNodeTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         new Yrnk(
-            version: 1,
+            version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
             calendar: new Calendar(),
             schedules: [],

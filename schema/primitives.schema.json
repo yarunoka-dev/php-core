@@ -1,0 +1,18 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.0/primitives.schema.json",
+    "title": "Yrnk primitives",
+    "description": "Primitive value vocabulary shared by the calendar and schedule schemas: day names, wall-clock times, and time windows. Times are zero-padded HH:MM; '24:00' is a token allowed only as the end of a window. A window is a half-open interval [start, end) and must satisfy start < end (validated by implementations, not expressible here).",
+    "$defs": {
+        "dayName": {"enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]},
+        "time": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
+        "timeOrEndOfDay": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^(([01]\\d|2[0-3]):[0-5]\\d|24:00)$"},
+        "window": {
+            "type": "array",
+            "prefixItems": [{"$ref": "#/$defs/time"}, {"$ref": "#/$defs/timeOrEndOfDay"}],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+        }
+    }
+}

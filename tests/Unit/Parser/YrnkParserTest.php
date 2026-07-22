@@ -21,9 +21,9 @@ class YrnkParserTest extends TestCase
         $parser = new YrnkParser(resolvers: ['yasumi-jp' => fn(): array => ['2026-01-01']]);
 
         $document = $parser->parse([
-            'version' => 1,
+            'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
-            'definitions' => [
+            'calendar' => [
                 'holidays' => 'yasumi-jp',
                 'business_holidays' => [],
                 'business_days' => [],
@@ -37,7 +37,7 @@ class YrnkParserTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(1, $document->version);
+        $this->assertSame('1.0', $document->version);
         $this->assertSame('Asia/Tokyo', $document->timezone->getName());
         $this->assertSame('yasumi-jp', $document->calendar->holidays?->resolver);
         $this->assertArrayHasKey('founding-day', $document->calendar->custom);
@@ -48,7 +48,7 @@ class YrnkParserTest extends TestCase
     public function parses_from_a_json_string(): void
     {
         $document = (new YrnkParser())->parse(
-            '{"version": 1, "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}',
+            '{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}',
         );
 
         $this->assertCount(1, $document->schedules);
@@ -83,7 +83,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(UnsupportedVersionException::class);
 
-        (new YrnkParser())->parse($this->doc(['version' => 2]));
+        (new YrnkParser())->parse($this->doc(['version' => '2.0']));
     }
 
     #[Test]
@@ -144,14 +144,14 @@ class YrnkParserTest extends TestCase
         (new YrnkParser())->parse($this->doc(['schedules' => []]));
     }
 
-    // ---- definitions ----
+    // ---- calendar ----
 
     #[Test]
-    public function rejects_an_unknown_definitions_key(): void
+    public function rejects_an_unknown_calendar_key(): void
     {
         $this->expectException(InvalidYrnkException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['holiday' => []]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['holiday' => []]]));
     }
 
     #[Test]
@@ -159,7 +159,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['custom' => ['holiday' => ['2026-01-01']]]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['holiday' => ['2026-01-01']]]]));
     }
 
     #[Test]
@@ -167,7 +167,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['custom' => ['2026-01-01' => ['2026-01-01']]]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['2026-01-01' => ['2026-01-01']]]]));
     }
 
     #[Test]
@@ -177,7 +177,7 @@ class YrnkParserTest extends TestCase
         // array.
         $this->expectException(InvalidYrnkException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['custom' => ['anniversary' => '2026-10-01']]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['anniversary' => '2026-10-01']]]));
     }
 
     #[Test]
@@ -185,7 +185,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['workweek' => ['monday']]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['workweek' => ['monday']]]));
     }
 
     #[Test]
@@ -193,7 +193,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(UndefinedNameException::class);
 
-        (new YrnkParser())->parse($this->doc(['definitions' => ['holidays' => 'yasumi-jp']]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['holidays' => 'yasumi-jp']]));
     }
 
     #[Test]
@@ -202,7 +202,7 @@ class YrnkParserTest extends TestCase
         $parser = new YrnkParser(resolvers: ['garbage-days' => fn(): array => []]);
 
         $document = $parser->parse($this->doc([
-            'definitions' => ['custom' => ['garbage-day' => 'garbage-days']],
+            'calendar' => ['custom' => ['garbage-day' => 'garbage-days']],
         ]));
 
         $this->assertSame('garbage-days', $document->calendar->custom['garbage-day']->resolver);
@@ -236,7 +236,7 @@ class YrnkParserTest extends TestCase
         $this->expectException(MissingCalendarDataException::class);
 
         (new YrnkParser())->parse($this->doc([
-            'definitions' => ['holidays' => []],
+            'calendar' => ['holidays' => []],
             'schedules' => [['days' => ['business_day'], 'times' => ['09:00']]],
         ]));
     }
@@ -291,7 +291,7 @@ class YrnkParserTest extends TestCase
     {
         return [
             ...[
-                'version' => 1,
+                'version' => '1.0',
                 'timezone' => 'Asia/Tokyo',
                 'schedules' => [['times' => ['09:00']]],
             ],

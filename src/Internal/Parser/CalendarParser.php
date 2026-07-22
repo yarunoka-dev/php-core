@@ -30,13 +30,13 @@ final class CalendarParser
     public static function parse(mixed $raw): Calendar
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
-            throw new InvalidYrnkException('definitions must be an object');
+            throw new InvalidYrnkException('calendar must be an object');
         }
 
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
 
         if ($unknownKeys !== []) {
-            throw new InvalidYrnkException('Unknown keys in calendar: ' . implode(', ', $unknownKeys));
+            throw new InvalidYrnkException('Unknown keys in the calendar: ' . implode(', ', $unknownKeys));
         }
 
         try {

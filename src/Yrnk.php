@@ -15,7 +15,7 @@ use DateTimeZone;
  */
 final readonly class Yrnk
 {
-    public const int SUPPORTED_VERSION = 1;
+    public const string SUPPORTED_VERSION = '1.0';
 
     /** @var non-empty-list<YrnkSchedule> */
     public array $schedules;
@@ -24,14 +24,16 @@ final readonly class Yrnk
      * @param  list<YrnkSchedule>  $schedules  Unvalidated input. An empty list violates the invariants
      */
     public function __construct(
-        public int $version,
+        public string $version,
         public DateTimeZone $timezone,
         public Calendar $calendar,
         array $schedules,
     ) {
+        // The spec requires rejecting a declared version this
+        // implementation does not know rather than interpreting it.
         if ($version !== self::SUPPORTED_VERSION) {
             throw new UnsupportedVersionException(
-                sprintf('This implementation supports version %d only: %d', self::SUPPORTED_VERSION, $version),
+                sprintf('This implementation supports version %s only: %s', self::SUPPORTED_VERSION, $version),
             );
         }
 
