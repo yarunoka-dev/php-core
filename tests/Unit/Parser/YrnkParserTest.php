@@ -103,6 +103,30 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
+    public function rejects_a_fixed_offset_timezone(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['timezone' => '+09:00']));
+    }
+
+    #[Test]
+    public function rejects_a_timezone_abbreviation(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['timezone' => 'JST']));
+    }
+
+    #[Test]
+    public function accepts_a_backward_link_timezone(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['timezone' => 'Japan']));
+
+        $this->assertSame('Japan', $document->timezone->getName());
+    }
+
+    #[Test]
     public function rejects_a_bare_object_as_schedules(): void
     {
         // The same decision as removing scalar sugar: always written as a

@@ -231,6 +231,8 @@ class SchemaConformanceTest extends TestCase
             )],
             'an unregistered resolver name' => [self::doc('{"times": ["09:00"]}', definitions: '{"holidays": "unknown-resolver"}')],
             'a timezone that does not exist' => ['{"version": 1, "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
+            'a fixed-offset timezone' => ['{"version": 1, "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone abbreviation' => ['{"version": 1, "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
             'a window crossing midnight' => [self::doc('{"times": {"every": [1, "hour"], "between": ["20:00", "08:00"]}}')],
             'a definition with a date that does not exist' => [self::doc('{"times": ["09:00"]}', definitions: '{"custom": {"anniversary": ["2026-02-30"]}}')],
             'a definition with overlapping windows' => [self::doc(

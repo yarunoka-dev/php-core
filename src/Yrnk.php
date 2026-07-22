@@ -35,6 +35,16 @@ final readonly class Yrnk
             );
         }
 
+        // PHP's DateTimeZone also carries fixed offsets and abbreviations,
+        // but the spec limits timezone to IANA tz database names, so
+        // membership in the identifier list is checked here. Backward
+        // links (Japan, US/Eastern) are tz database entries and pass.
+        if (! in_array($timezone->getName(), DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true)) {
+            throw new InvalidValueException(
+                "timezone must be an IANA Time Zone Database name (a fixed offset cannot be written): {$timezone->getName()}",
+            );
+        }
+
         if ($schedules === []) {
             throw new InvalidValueException('schedules cannot be empty');
         }

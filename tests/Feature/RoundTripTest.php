@@ -92,7 +92,9 @@ class RoundTripTest extends TestCase
             ]],
             'a business_hour reference and if' => [[
                 'version' => 1,
-                'timezone' => '+09:00',
+                // A backward link is a tz database entry and must round-trip
+                // as written (never canonicalized to Asia/Tokyo).
+                'timezone' => 'Japan',
                 'definitions' => [
                     'business_hours' => [['09:00', '18:00']],
                 ],
