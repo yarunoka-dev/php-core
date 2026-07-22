@@ -1,0 +1,13 @@
+# Keep development files out of the distribution archive (composer archive,
+# GitHub zipball). Consumers receive the implementation, LICENSE, composer.json,
+# and the document schema only.
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/composer.lock export-ignore
+/docs export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore
+/vendor-bin export-ignore
