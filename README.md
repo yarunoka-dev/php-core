@@ -1,5 +1,11 @@
 # yarunoka/core
 
+[![CI](https://github.com/yarunoka-dev/php-core/actions/workflows/ci.yml/badge.svg)](https://github.com/yarunoka-dev/php-core/actions/workflows/ci.yml)
+[![Latest Version](https://img.shields.io/packagist/v/yarunoka/core)](https://packagist.org/packages/yarunoka/core)
+[![PHP Version](https://img.shields.io/packagist/php-v/yarunoka/core)](https://packagist.org/packages/yarunoka/core)
+[![License](https://img.shields.io/packagist/l/yarunoka/core)](LICENSE)
+[![Downloads](https://img.shields.io/packagist/dt/yarunoka/core)](https://packagist.org/packages/yarunoka/core)
+
 Calendar-aware schedule DSL and pure occurrence query engine.
 
 ## What is Yarunoka?
