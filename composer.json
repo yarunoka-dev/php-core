@@ -2,7 +2,23 @@
     "name": "yarunoka/core",
     "description": "Calendar-aware schedule DSL and pure occurrence query engine",
     "type": "library",
+    "keywords": [
+        "schedule",
+        "scheduling",
+        "dsl",
+        "calendar",
+        "holidays",
+        "business-days",
+        "recurrence",
+        "occurrence"
+    ],
     "license": "MIT",
+    "homepage": "https://github.com/yarunoka-dev/php-core",
+    "support": {
+        "issues": "https://github.com/yarunoka-dev/php-core/issues",
+        "source": "https://github.com/yarunoka-dev/php-core",
+        "docs": "https://github.com/yarunoka-dev/php-core/blob/main/docs/php-usage.md"
+    },
     "require": {
         "php": "^8.4"
     },
