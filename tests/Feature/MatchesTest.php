@@ -52,6 +52,24 @@ class MatchesTest extends TestCase
     }
 
     #[Test]
+    public function allday_is_not_a_shorthand_for_a_timed_occurrence_at_midnight(): void
+    {
+        // The spec keeps the two kinds of occurrence distinct: a timed
+        // 00:00 point is an instant and matches that instant alone,
+        // while an all-day occurrence is day-level and time does not
+        // apply to it. The 00:00 placement of an all-day occurrence is
+        // its comparison instant for range questions, not a time.
+        $evaluator = $this->evaluator();
+        $timed = $this->schedule(['days' => [25], 'times' => ['00:00']]);
+        $allday = $this->schedule(['days' => [25], 'allday' => true]);
+
+        $this->assertTrue($evaluator->matches($timed, $this->at('2026-07-25T00:00:00+09:00')));
+        $this->assertFalse($evaluator->matches($timed, $this->at('2026-07-25T15:00:00+09:00')));
+        $this->assertTrue($evaluator->matches($allday, $this->at('2026-07-25T00:00:00+09:00')));
+        $this->assertTrue($evaluator->matches($allday, $this->at('2026-07-25T15:00:00+09:00')));
+    }
+
+    #[Test]
     public function allday_ignores_the_time_on_a_shift_landing_day_too(): void
     {
         // 2026-07-25 is a Saturday → lands on 7/24 (Fri). 2026-09-25 is a

@@ -57,8 +57,8 @@ final readonly class MatchFinder
      * Does this date-time match? Times are truncated to whole seconds for
      * comparison (the DSL's scheduled points are never finer than a
      * second). allday matches on the day alone and ignores the time, but
-     * the from / until clipping applies to its point (the start of the
-     * day, 00:00).
+     * the from / until clipping applies to its comparison instant (00:00
+     * of its day, resolved like any other wall-clock point).
      */
     public function matches(YrnkSchedule $schedule, DateTimeImmutable $at): bool
     {
