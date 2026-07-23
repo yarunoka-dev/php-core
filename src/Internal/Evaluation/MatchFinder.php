@@ -16,7 +16,7 @@ use DateTimeZone;
 
 /**
  * Enumeration of candidate months and composition of if / shift / times
- * (the substance of matches / hasMatchIn).
+ * (the substance of matches / hasMatchIn / occurrencesIn).
  *
  * Interval questions are evaluated by the year → month → day hierarchy,
  * not by walking days: years / months narrow the (year, month) pairs
@@ -45,6 +45,14 @@ final readonly class MatchFinder
      * landing".
      */
     private const int SHIFT_SEARCH_LIMIT_DAYS = 366;
+
+    /**
+     * Bound on how far a sequence point's real elapsed time can deviate
+     * from its wall-clock elapsed time: two days, comfortably above the
+     * widest offset variation a zone's transition history can produce
+     * (UTC−12 to UTC+14).
+     */
+    private const int SEQUENCE_WALL_SLACK_SECONDS = 172800;
 
     public function __construct(
         private DayMatcher $dayMatcher,
@@ -160,6 +168,156 @@ final readonly class MatchFinder
         return $schedule->shift->direction === Direction::Next
             ? $this->hasSpilledMatchBefore($schedule, $seconds, $from, $to, $fromDay, $toDay)
             : $this->hasSpilledMatchAfter($schedule, $seconds, $from, $to, $fromDay, $toDay);
+    }
+
+    /**
+     * The occurrences in the closed interval [from, to] (both boundary
+     * instants included), in ascending order of comparison instant.
+     * Timed occurrences are answered as instants, all-day occurrences as
+     * dates (LocalDate).
+     *
+     * @return list<DateTimeImmutable|LocalDate>
+     */
+    public function occurrencesIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        // Fold the validity range [valid-from, until) into the closed
+        // window [from, to]. Points are whole seconds, so t < until ⇔
+        // t <= until − 1s; valid-from needs no adjustment (both bounds
+        // are inclusive).
+        if ($schedule->from !== null) {
+            $lower = $schedule->from->toInstant($this->timezone);
+
+            if ($lower > $from) {
+                $from = $lower;
+            }
+        }
+
+        if ($schedule->until !== null) {
+            $upper = $schedule->until->toInstant($this->timezone)->modify('-1 second');
+
+            if ($upper < $to) {
+                $to = $upper;
+            }
+        }
+
+        if ($from > $to) {
+            return [];
+        }
+
+        if ($schedule->times instanceof EverySequence) {
+            return $this->sequenceOccurrencesIn($schedule->from, $schedule->times, $from, $to);
+        }
+
+        $fromDay = LocalDate::fromDateTime($from->setTimezone($this->timezone));
+        $toDay = LocalDate::fromDateTime($to->setTimezone($this->timezone));
+        $days = $this->landedDaysWithin($schedule, $fromDay, $toDay);
+
+        if ($schedule->times instanceof AllDay) {
+            $dates = [];
+
+            foreach ($days as $day) {
+                $instant = $day->atTime(0, $this->timezone);
+
+                if ($instant >= $from && $instant <= $to) {
+                    $dates[] = $day;
+                }
+            }
+
+            return $dates;
+        }
+
+        // Points are keyed by timestamp: distinct wall times folded onto
+        // one instant by a DST gap (RFC 5545 §3.3.5) collapse, and the
+        // final ksort orders by instant even where the fold locally
+        // reverses the wall-clock order.
+        $seconds = $this->expander->secondsOf($schedule->times);
+        $instants = [];
+
+        foreach ($days as $day) {
+            foreach ($seconds as $second) {
+                $instant = $day->atTime($second, $this->timezone);
+
+                if ($instant >= $from && $instant <= $to) {
+                    $instants[$instant->getTimestamp()] = $instant;
+                }
+            }
+        }
+
+        ksort($instants);
+
+        return array_values($instants);
+    }
+
+    /**
+     * The landing days inside [fromDay, toDay], ascending and without
+     * duplicates. Months overlapping the window carry the base days
+     * whose landings can lie inside it; with a shift, base days of
+     * months on the opposite side of the shift direction can spill in,
+     * so those months are walked with the same cutoffs as the spilled
+     * interval checks below.
+     *
+     * @return list<LocalDate>
+     */
+    private function landedDaysWithin(YrnkSchedule $schedule, LocalDate $fromDay, LocalDate $toDay): array
+    {
+        $found = [];
+
+        for ($index = self::monthIndex($fromDay); $index <= self::monthIndex($toDay); $index++) {
+            [$year, $month] = self::yearMonthAt($index);
+            $this->collectWithin($this->landedDaysIn($schedule, $year, $month), $fromDay, $toDay, $found);
+        }
+
+        if ($schedule->shift?->direction === Direction::Next) {
+            for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
+                [$year, $month] = self::yearMonthAt($index);
+                $monthLast = LocalDate::of($year, $month, LocalDate::of($year, $month, 1)->daysInMonth());
+
+                if ($fromDay->isAfter($monthLast->addDays(self::SHIFT_SEARCH_LIMIT_DAYS))) {
+                    break;
+                }
+
+                $landed = $this->landedDaysIn($schedule, $year, $month);
+                $this->collectWithin($landed, $fromDay, $toDay, $found);
+
+                if ($landed !== [] && $fromDay->isAfter($landed[array_key_last($landed)])) {
+                    break;
+                }
+            }
+        }
+
+        if ($schedule->shift?->direction === Direction::Prev) {
+            for ($index = self::monthIndex($toDay) + 1; ; $index++) {
+                [$year, $month] = self::yearMonthAt($index);
+
+                if (LocalDate::of($year, $month, 1)->addDays(-self::SHIFT_SEARCH_LIMIT_DAYS)->isAfter($toDay)) {
+                    break;
+                }
+
+                $landed = $this->landedDaysIn($schedule, $year, $month);
+                $this->collectWithin($landed, $fromDay, $toDay, $found);
+
+                if ($landed !== [] && $landed[0]->isAfter($toDay)) {
+                    break;
+                }
+            }
+        }
+
+        ksort($found, SORT_STRING);
+
+        return array_values($found);
+    }
+
+    /**
+     * @param  list<LocalDate>  $days
+     * @param  array<string, LocalDate>  $found  Keyed by the ISO date, so cross-month duplicates collapse
+     */
+    private function collectWithin(array $days, LocalDate $fromDay, LocalDate $toDay, array &$found): void
+    {
+        foreach ($days as $day) {
+            if (! $fromDay->isAfter($day) && ! $day->isAfter($toDay)) {
+                $found[$day->toString()] = $day;
+            }
+        }
     }
 
     /**
@@ -554,13 +712,8 @@ final readonly class MatchFinder
         }
 
         // Upper bound: with the wall-clock seconds elapsed up to from
-        // plus two days of slack (wall clock and real time diverge by at
-        // most a few hours even across DST), that point is guaranteed to
-        // be after from.
-        $fromWall = $from->setTimezone($this->timezone);
-        $elapsedWall = $anchor->date->daysUntil(LocalDate::fromDateTime($fromWall)) * 86400
-            + self::secondsIntoDay($fromWall) - $anchor->secondsFromMidnight;
-        $high = intdiv(max(0, $elapsedWall) + 172800, $step) + 1;
+        // plus the slack, that point is guaranteed to be after from.
+        $high = intdiv(max(0, $this->wallElapsedTo($anchor, $from)) + self::SEQUENCE_WALL_SLACK_SECONDS, $step) + 1;
         $low = 0;
 
         // Invariant: instant(low) <= from < instant(high)
@@ -575,6 +728,61 @@ final readonly class MatchFinder
         }
 
         return $this->sequenceInstant($anchor, $high * $step) <= $to;
+    }
+
+    /**
+     * The points of the interval sequence (from + k × interval) inside
+     * the closed window [from, to], ascending by instant. A wall time
+     * pushed out of a DST gap can stand after a later wall time's
+     * instant (the row is monotonic on the wall clock only), so no
+     * order-dependent search is used: the candidate ks are bounded by
+     * wall-clock arithmetic widened by the slack, and the points inside
+     * the window are collected keyed by timestamp — deduplicating folded
+     * points and ordering by instant at once.
+     *
+     * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
+     * @return list<DateTimeImmutable>
+     */
+    private function sequenceOccurrencesIn(
+        ?LocalDateTime $anchor,
+        EverySequence $sequence,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): array {
+        if ($anchor === null) {
+            return [];
+        }
+
+        $step = $sequence->stepSeconds();
+        $first = max(0, intdiv($this->wallElapsedTo($anchor, $from) - self::SEQUENCE_WALL_SLACK_SECONDS, $step));
+        $last = intdiv($this->wallElapsedTo($anchor, $to) + self::SEQUENCE_WALL_SLACK_SECONDS, $step);
+
+        $instants = [];
+
+        for ($k = $first; $k <= $last; $k++) {
+            $instant = $this->sequenceInstant($anchor, $k * $step);
+
+            if ($instant >= $from && $instant <= $to) {
+                $instants[$instant->getTimestamp()] = $instant;
+            }
+        }
+
+        ksort($instants);
+
+        return array_values($instants);
+    }
+
+    /**
+     * Wall-clock seconds from the anchor to the instant's wall reading
+     * in the configured timezone (negative when the reading is earlier
+     * than the anchor).
+     */
+    private function wallElapsedTo(LocalDateTime $anchor, DateTimeImmutable $instant): int
+    {
+        $wall = $instant->setTimezone($this->timezone);
+
+        return $anchor->date->daysUntil(LocalDate::fromDateTime($wall)) * 86400
+            + self::secondsIntoDay($wall) - $anchor->secondsFromMidnight;
     }
 
     /**

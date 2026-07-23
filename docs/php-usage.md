@@ -63,12 +63,13 @@ $evaluator = new YrnkEvaluator(
 
 $evaluator->matches($payday, $now);                 // does this date-time match?
 $evaluator->hasMatchIn($payday, $lastRunAt, $now);  // was there one since the last run?
+$evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie from from through to?
 ```
 
 - The evaluation methods take a single YrnkSchedule. Questions about the
   top-level OR (the schedules list) are composed by the caller asking per
   branch (for a firing decision, the any of "fire when any has a matching
-  date-time")
+  date-time"; for an enumeration, a merge of the per-branch lists)
 - The YrnkEvaluator is a service living once in the application and
   reused (bound in the DI container). It memoizes resolver results inside
   the instance, and **a resolver is called at most once in the lifetime
@@ -84,6 +85,13 @@ $evaluator->hasMatchIn($payday, $lastRunAt, $now);  // was there one since the l
   does not count, a point at to counts. It looks only at the candidate
   (year, month) pairs of the interval, so asking about a schedule that
   "never comes" becomes no as soon as the candidates run out
+- `occurrencesIn` is the closed interval **[from, to]** — the caller
+  names two instants, and both are part of what it names (a caller that
+  means to exclude a boundary moves it). Timed occurrences are answered
+  as `DateTimeImmutable` instants on the configured timezone's clock,
+  all-day occurrences as `Time\LocalDate` dates — the two kinds never
+  merge — in ascending order of comparison instant (an all-day
+  occurrence stands at 00:00 of its day)
 - Scheduled points on DST transition days resolve per RFC 5545 §3.3.5 — a
   point at a nonexistent time is pushed forward, and a point at a time
   that occurs twice counts only as its first occurrence

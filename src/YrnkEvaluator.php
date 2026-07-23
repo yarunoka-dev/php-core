@@ -10,6 +10,7 @@ use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverInterface;
+use Yarunoka\Time\LocalDate;
 use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -18,12 +19,14 @@ use DateTimeZone;
 /**
  * The evaluator. A service holding configuration (the definitions and the
  * timezone), asked questions "about a schedule" by handing it a
- * YrnkSchedule. There are two questions — the single check (matches) and
- * the interval check (hasMatchIn). It reads the tree and interprets it
- * with the internal calculators and matchers the content calls for (the
- * layer model, calendar arithmetic, hierarchical evaluation, grid
- * expansion). Questions about the top-level OR (the schedules list) are
- * composed by the caller asking per branch (any).
+ * YrnkSchedule. There are three questions — the single check (matches),
+ * the interval check (hasMatchIn), and the enumeration (occurrencesIn).
+ * It reads the tree and interprets it with the internal calculators and
+ * matchers the content calls for (the layer model, calendar arithmetic,
+ * hierarchical evaluation, grid expansion). Questions about the top-level
+ * OR (the schedules list) are composed by the caller asking per branch
+ * (any for the checks; a merge of the per-branch lists for the
+ * enumeration).
  *
  * "Should this fire" does not live here. Firing, catch-up, and grace are
  * expressed by the caller through how it cuts the question interval
@@ -79,6 +82,30 @@ final class YrnkEvaluator
         $this->ensureResolvable($schedule);
 
         return $this->finder->hasMatchIn(
+            $schedule,
+            DateTimeImmutable::createFromInterface($from),
+            DateTimeImmutable::createFromInterface($to),
+        );
+    }
+
+    /**
+     * The occurrences in the closed interval [from, to], in ascending
+     * order of comparison instant. Timed occurrences are answered as
+     * instants on the configured timezone's clock, all-day occurrences
+     * as dates (LocalDate) — the two kinds never merge. Unlike
+     * hasMatchIn, whose start is excluded as the previous judgment's
+     * "now", both boundary instants are part of what the caller names:
+     * adjacent windows sharing a boundary instant both contain a point
+     * exactly on it, and a caller that means to exclude a boundary moves
+     * it.
+     *
+     * @return list<DateTimeImmutable|LocalDate>
+     */
+    public function occurrencesIn(YrnkSchedule $schedule, DateTimeInterface $from, DateTimeInterface $to): array
+    {
+        $this->ensureResolvable($schedule);
+
+        return $this->finder->occurrencesIn(
             $schedule,
             DateTimeImmutable::createFromInterface($from),
             DateTimeImmutable::createFromInterface($to),
