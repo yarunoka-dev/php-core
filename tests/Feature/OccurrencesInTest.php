@@ -250,6 +250,102 @@ class OccurrencesInTest extends TestCase
         );
     }
 
+    // ---- the interval sequence (every directly on a schedule) ----
+
+    #[Test]
+    public function sequence_points_inside_the_window_with_both_ends_included(): void
+    {
+        $schedule = $this->schedule(['from' => '2026-07-17 10:00', 'every' => [7, 'hour']]);
+
+        $this->assertSame(
+            ['2026-07-17T10:00:00+09:00', '2026-07-17T17:00:00+09:00', '2026-07-18T00:00:00+09:00'],
+            $this->rendered($this->evaluator()->occurrencesIn(
+                $schedule,
+                $this->at('2026-07-17T10:00:00+09:00'),
+                $this->at('2026-07-18T00:00:00+09:00'),
+            )),
+        );
+    }
+
+    #[Test]
+    public function a_window_far_from_the_anchor_is_answered_without_walking_from_it(): void
+    {
+        // 36 hours = 1.5 days: half a year later the row stands at 00:00
+        // and 12:00 on alternating days.
+        $schedule = $this->schedule(['from' => '2026-01-01 00:00', 'every' => [36, 'hour']]);
+
+        $this->assertSame(
+            ['2026-07-12T00:00:00+09:00', '2026-07-13T12:00:00+09:00', '2026-07-15T00:00:00+09:00'],
+            $this->rendered($this->evaluator()->occurrencesIn(
+                $schedule,
+                $this->at('2026-07-12T00:00:00+09:00'),
+                $this->at('2026-07-15T00:00:00+09:00'),
+            )),
+        );
+    }
+
+    #[Test]
+    public function the_validity_until_clips_a_sequence(): void
+    {
+        $schedule = $this->schedule([
+            'from' => '2026-07-17 10:00', 'until' => '2026-07-18 00:00', 'every' => [7, 'hour'],
+        ]);
+
+        // The 7/18 00:00 point is cut by the half-open [from, until).
+        $this->assertSame(
+            ['2026-07-17T10:00:00+09:00', '2026-07-17T17:00:00+09:00'],
+            $this->rendered($this->evaluator()->occurrencesIn(
+                $schedule,
+                $this->at('2026-07-17T00:00:00+09:00'),
+                $this->at('2026-07-19T00:00:00+09:00'),
+            )),
+        );
+    }
+
+    #[Test]
+    public function sequence_points_around_a_dst_gap_are_answered_in_instant_order(): void
+    {
+        // The 45-minute row crosses the 02:00 → 03:00 gap: wall 02:15
+        // does not exist and is pushed to 03:15 EDT, standing after the
+        // wall 03:00 point in real time. The answer follows the
+        // instants, not the wall order.
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $schedule = $this->schedule(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']]);
+
+        $this->assertSame(
+            [
+                '2026-03-08T00:00:00-05:00',
+                '2026-03-08T00:45:00-05:00',
+                '2026-03-08T01:30:00-05:00',
+                '2026-03-08T03:00:00-04:00',
+                '2026-03-08T03:15:00-04:00',
+            ],
+            $this->rendered($evaluator->occurrencesIn(
+                $schedule,
+                $this->at('2026-03-08T00:00:00-05:00'),
+                $this->at('2026-03-08T03:30:00-04:00'),
+            )),
+        );
+    }
+
+    #[Test]
+    public function wall_times_folded_by_the_gap_collapse_in_a_sequence_too(): void
+    {
+        // Wall 02:00 is pushed onto the wall 03:00 point's instant; the
+        // set contains that point once.
+        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $schedule = $this->schedule(['from' => '2026-03-08 01:00', 'every' => [60, 'minute']]);
+
+        $this->assertSame(
+            ['2026-03-08T01:00:00-05:00', '2026-03-08T03:00:00-04:00', '2026-03-08T04:00:00-04:00'],
+            $this->rendered($evaluator->occurrencesIn(
+                $schedule,
+                $this->at('2026-03-08T01:00:00-05:00'),
+                $this->at('2026-03-08T04:00:00-04:00'),
+            )),
+        );
+    }
+
     // ---- DST transitions (RFC 5545 §3.3.5) ----
 
     #[Test]

@@ -46,6 +46,14 @@ final readonly class MatchFinder
      */
     private const int SHIFT_SEARCH_LIMIT_DAYS = 366;
 
+    /**
+     * Bound on how far a sequence point's real elapsed time can deviate
+     * from its wall-clock elapsed time: two days, comfortably above the
+     * widest offset variation a zone's transition history can produce
+     * (UTC−12 to UTC+14).
+     */
+    private const int SEQUENCE_WALL_SLACK_SECONDS = 172800;
+
     public function __construct(
         private DayMatcher $dayMatcher,
         private AtomDayEnumerator $enumerator,
@@ -194,6 +202,10 @@ final readonly class MatchFinder
 
         if ($from > $to) {
             return [];
+        }
+
+        if ($schedule->times instanceof EverySequence) {
+            return $this->sequenceOccurrencesIn($schedule->from, $schedule->times, $from, $to);
         }
 
         $fromDay = LocalDate::fromDateTime($from->setTimezone($this->timezone));
@@ -700,13 +712,8 @@ final readonly class MatchFinder
         }
 
         // Upper bound: with the wall-clock seconds elapsed up to from
-        // plus two days of slack (wall clock and real time diverge by at
-        // most a few hours even across DST), that point is guaranteed to
-        // be after from.
-        $fromWall = $from->setTimezone($this->timezone);
-        $elapsedWall = $anchor->date->daysUntil(LocalDate::fromDateTime($fromWall)) * 86400
-            + self::secondsIntoDay($fromWall) - $anchor->secondsFromMidnight;
-        $high = intdiv(max(0, $elapsedWall) + 172800, $step) + 1;
+        // plus the slack, that point is guaranteed to be after from.
+        $high = intdiv(max(0, $this->wallElapsedTo($anchor, $from)) + self::SEQUENCE_WALL_SLACK_SECONDS, $step) + 1;
         $low = 0;
 
         // Invariant: instant(low) <= from < instant(high)
@@ -721,6 +728,61 @@ final readonly class MatchFinder
         }
 
         return $this->sequenceInstant($anchor, $high * $step) <= $to;
+    }
+
+    /**
+     * The points of the interval sequence (from + k × interval) inside
+     * the closed window [from, to], ascending by instant. A wall time
+     * pushed out of a DST gap can stand after a later wall time's
+     * instant (the row is monotonic on the wall clock only), so no
+     * order-dependent search is used: the candidate ks are bounded by
+     * wall-clock arithmetic widened by the slack, and the points inside
+     * the window are collected keyed by timestamp — deduplicating folded
+     * points and ordering by instant at once.
+     *
+     * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
+     * @return list<DateTimeImmutable>
+     */
+    private function sequenceOccurrencesIn(
+        ?LocalDateTime $anchor,
+        EverySequence $sequence,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): array {
+        if ($anchor === null) {
+            return [];
+        }
+
+        $step = $sequence->stepSeconds();
+        $first = max(0, intdiv($this->wallElapsedTo($anchor, $from) - self::SEQUENCE_WALL_SLACK_SECONDS, $step));
+        $last = intdiv($this->wallElapsedTo($anchor, $to) + self::SEQUENCE_WALL_SLACK_SECONDS, $step);
+
+        $instants = [];
+
+        for ($k = $first; $k <= $last; $k++) {
+            $instant = $this->sequenceInstant($anchor, $k * $step);
+
+            if ($instant >= $from && $instant <= $to) {
+                $instants[$instant->getTimestamp()] = $instant;
+            }
+        }
+
+        ksort($instants);
+
+        return array_values($instants);
+    }
+
+    /**
+     * Wall-clock seconds from the anchor to the instant's wall reading
+     * in the configured timezone (negative when the reading is earlier
+     * than the anchor).
+     */
+    private function wallElapsedTo(LocalDateTime $anchor, DateTimeImmutable $instant): int
+    {
+        $wall = $instant->setTimezone($this->timezone);
+
+        return $anchor->date->daysUntil(LocalDate::fromDateTime($wall)) * 86400
+            + self::secondsIntoDay($wall) - $anchor->secondsFromMidnight;
     }
 
     /**
