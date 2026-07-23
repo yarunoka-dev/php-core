@@ -4,6 +4,7 @@ namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Calendar\Calendar;
 use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Time\LocalDate;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -119,6 +120,68 @@ class FromUntilTest extends TestCase
 
         // 2026-07-13 is a Monday.
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-13 10:00:00')));
+    }
+
+    // ---- boundaries written at the end of a DST gap ----
+
+    #[Test]
+    public function an_until_at_the_end_of_the_gap_still_clips_exactly_there(): void
+    {
+        // America/New_York transitions 02:00 → 03:00 on 2026-03-08, and
+        // until is written at the wall time right after the gap. The
+        // range must end at 03:00 EDT exactly — not a gap-width later.
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse([
+            'days' => [8], 'times' => ['01:30', '03:30'], 'until' => '2026-03-08 03:00',
+        ]);
+        $windowStart = new DateTimeImmutable('2026-03-08T00:00:00-05:00');
+        $windowEnd = new DateTimeImmutable('2026-03-08T04:00:00-04:00');
+
+        // The 03:30 EDT point is at or after until and does not exist;
+        // all three queries agree.
+        $this->assertFalse($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T03:30:00-04:00')));
+        $this->assertSame(
+            ['2026-03-08T01:30:00-05:00'],
+            array_map(
+                static fn(DateTimeImmutable|LocalDate $occurrence): string => $occurrence instanceof LocalDate
+                    ? $occurrence->toString()
+                    : $occurrence->format('Y-m-d\TH:i:sP'),
+                $evaluator->occurrencesIn($schedule, $windowStart, $windowEnd),
+            ),
+        );
+        $this->assertFalse($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T02:00:00-05:00'),
+            $windowEnd,
+        ));
+    }
+
+    #[Test]
+    public function a_from_at_the_end_of_the_gap_still_starts_exactly_there(): void
+    {
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse([
+            'days' => [8], 'times' => ['03:00', '03:30'], 'from' => '2026-03-08 03:00',
+        ]);
+        $windowStart = new DateTimeImmutable('2026-03-08T00:00:00-05:00');
+        $windowEnd = new DateTimeImmutable('2026-03-08T04:00:00-04:00');
+
+        // Points at and after from exist — including the one exactly at
+        // from (03:00 EDT); all three queries agree.
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T03:00:00-04:00')));
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T03:30:00-04:00')));
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            $windowStart,
+            new DateTimeImmutable('2026-03-08T03:00:00-04:00'),
+        ));
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T03:00:00-04:00'),
+            $windowEnd,
+        ));
     }
 
     // ---- helpers ----

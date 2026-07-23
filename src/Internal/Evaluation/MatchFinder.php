@@ -71,16 +71,8 @@ final readonly class MatchFinder
     {
         if ($schedule->times instanceof EverySequence) {
             // Points are whole seconds, so "is there a point in
-            // (at−1 second, at]" = "is at a point". The subtraction runs
-            // on UTC: modify() works on the wall clock of the value's
-            // own timezone, and one second before the end of a DST gap
-            // reads as a nonexistent wall time that resolves a whole
-            // gap away.
-            return $this->hasMatchIn(
-                $schedule,
-                $at->setTimezone(new DateTimeZone('UTC'))->modify('-1 second'),
-                $at,
-            );
+            // (at−1 second, at]" = "is at a point".
+            return $this->hasMatchIn($schedule, self::secondBefore($at), $at);
         }
 
         $day = LocalDate::fromDateTime($at->setTimezone($this->timezone));
@@ -122,7 +114,7 @@ final readonly class MatchFinder
         // t >= valid-from ⇔ t > valid-from − 1s, and t < until ⇔
         // t <= until − 1s.
         if ($schedule->from !== null) {
-            $lower = $schedule->from->toInstant($this->timezone)->modify('-1 second');
+            $lower = self::secondBefore($schedule->from->toInstant($this->timezone));
 
             if ($lower > $from) {
                 $from = $lower;
@@ -130,7 +122,7 @@ final readonly class MatchFinder
         }
 
         if ($schedule->until !== null) {
-            $upper = $schedule->until->toInstant($this->timezone)->modify('-1 second');
+            $upper = self::secondBefore($schedule->until->toInstant($this->timezone));
 
             if ($upper < $to) {
                 $to = $upper;
@@ -200,7 +192,7 @@ final readonly class MatchFinder
         }
 
         if ($schedule->until !== null) {
-            $upper = $schedule->until->toInstant($this->timezone)->modify('-1 second');
+            $upper = self::secondBefore($schedule->until->toInstant($this->timezone));
 
             if ($upper < $to) {
                 $to = $upper;
@@ -819,6 +811,17 @@ final readonly class MatchFinder
     private static function wallEpochOf(LocalDateTime $wall): int
     {
         return LocalDate::of(1970, 1, 1)->daysUntil($wall->date) * 86400 + $wall->secondsFromMidnight;
+    }
+
+    /**
+     * The instant one second earlier. The subtraction runs on UTC:
+     * modify() works on the wall clock of the value's own timezone, and
+     * one second before the end of a DST gap reads as a nonexistent
+     * wall time that resolves a whole gap away.
+     */
+    private static function secondBefore(DateTimeImmutable $instant): DateTimeImmutable
+    {
+        return $instant->setTimezone(new DateTimeZone('UTC'))->modify('-1 second');
     }
 
     /**
