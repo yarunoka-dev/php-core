@@ -40,6 +40,11 @@ class YrnkEvaluatorTest extends TestCase
             new DateTime('2026-07-20 08:00:00', new DateTimeZone('Asia/Tokyo')),
             $mutable,
         ));
+        $this->assertCount(1, $this->evaluator()->occurrencesIn(
+            $schedule,
+            new DateTime('2026-07-20 08:00:00', new DateTimeZone('Asia/Tokyo')),
+            $mutable,
+        ));
     }
 
     private function evaluator(): YrnkEvaluator

@@ -16,7 +16,7 @@ use DateTimeZone;
 
 /**
  * Enumeration of candidate months and composition of if / shift / times
- * (the substance of matches / hasMatchIn).
+ * (the substance of matches / hasMatchIn / occurrencesIn).
  *
  * Interval questions are evaluated by the year → month → day hierarchy,
  * not by walking days: years / months narrow the (year, month) pairs
@@ -160,6 +160,152 @@ final readonly class MatchFinder
         return $schedule->shift->direction === Direction::Next
             ? $this->hasSpilledMatchBefore($schedule, $seconds, $from, $to, $fromDay, $toDay)
             : $this->hasSpilledMatchAfter($schedule, $seconds, $from, $to, $fromDay, $toDay);
+    }
+
+    /**
+     * The occurrences in the closed interval [from, to] (both boundary
+     * instants included), in ascending order of comparison instant.
+     * Timed occurrences are answered as instants, all-day occurrences as
+     * dates (LocalDate).
+     *
+     * @return list<DateTimeImmutable|LocalDate>
+     */
+    public function occurrencesIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        // Fold the validity range [valid-from, until) into the closed
+        // window [from, to]. Points are whole seconds, so t < until ⇔
+        // t <= until − 1s; valid-from needs no adjustment (both bounds
+        // are inclusive).
+        if ($schedule->from !== null) {
+            $lower = $schedule->from->toInstant($this->timezone);
+
+            if ($lower > $from) {
+                $from = $lower;
+            }
+        }
+
+        if ($schedule->until !== null) {
+            $upper = $schedule->until->toInstant($this->timezone)->modify('-1 second');
+
+            if ($upper < $to) {
+                $to = $upper;
+            }
+        }
+
+        if ($from > $to) {
+            return [];
+        }
+
+        $fromDay = LocalDate::fromDateTime($from->setTimezone($this->timezone));
+        $toDay = LocalDate::fromDateTime($to->setTimezone($this->timezone));
+        $days = $this->landedDaysWithin($schedule, $fromDay, $toDay);
+
+        if ($schedule->times instanceof AllDay) {
+            $dates = [];
+
+            foreach ($days as $day) {
+                $instant = $day->atTime(0, $this->timezone);
+
+                if ($instant >= $from && $instant <= $to) {
+                    $dates[] = $day;
+                }
+            }
+
+            return $dates;
+        }
+
+        // Points are keyed by timestamp: distinct wall times folded onto
+        // one instant by a DST gap (RFC 5545 §3.3.5) collapse, and the
+        // final ksort orders by instant even where the fold locally
+        // reverses the wall-clock order.
+        $seconds = $this->expander->secondsOf($schedule->times);
+        $instants = [];
+
+        foreach ($days as $day) {
+            foreach ($seconds as $second) {
+                $instant = $day->atTime($second, $this->timezone);
+
+                if ($instant >= $from && $instant <= $to) {
+                    $instants[$instant->getTimestamp()] = $instant;
+                }
+            }
+        }
+
+        ksort($instants);
+
+        return array_values($instants);
+    }
+
+    /**
+     * The landing days inside [fromDay, toDay], ascending and without
+     * duplicates. Months overlapping the window carry the base days
+     * whose landings can lie inside it; with a shift, base days of
+     * months on the opposite side of the shift direction can spill in,
+     * so those months are walked with the same cutoffs as the spilled
+     * interval checks below.
+     *
+     * @return list<LocalDate>
+     */
+    private function landedDaysWithin(YrnkSchedule $schedule, LocalDate $fromDay, LocalDate $toDay): array
+    {
+        $found = [];
+
+        for ($index = self::monthIndex($fromDay); $index <= self::monthIndex($toDay); $index++) {
+            [$year, $month] = self::yearMonthAt($index);
+            $this->collectWithin($this->landedDaysIn($schedule, $year, $month), $fromDay, $toDay, $found);
+        }
+
+        if ($schedule->shift?->direction === Direction::Next) {
+            for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
+                [$year, $month] = self::yearMonthAt($index);
+                $monthLast = LocalDate::of($year, $month, LocalDate::of($year, $month, 1)->daysInMonth());
+
+                if ($fromDay->isAfter($monthLast->addDays(self::SHIFT_SEARCH_LIMIT_DAYS))) {
+                    break;
+                }
+
+                $landed = $this->landedDaysIn($schedule, $year, $month);
+                $this->collectWithin($landed, $fromDay, $toDay, $found);
+
+                if ($landed !== [] && $fromDay->isAfter($landed[array_key_last($landed)])) {
+                    break;
+                }
+            }
+        }
+
+        if ($schedule->shift?->direction === Direction::Prev) {
+            for ($index = self::monthIndex($toDay) + 1; ; $index++) {
+                [$year, $month] = self::yearMonthAt($index);
+
+                if (LocalDate::of($year, $month, 1)->addDays(-self::SHIFT_SEARCH_LIMIT_DAYS)->isAfter($toDay)) {
+                    break;
+                }
+
+                $landed = $this->landedDaysIn($schedule, $year, $month);
+                $this->collectWithin($landed, $fromDay, $toDay, $found);
+
+                if ($landed !== [] && $landed[0]->isAfter($toDay)) {
+                    break;
+                }
+            }
+        }
+
+        ksort($found, SORT_STRING);
+
+        return array_values($found);
+    }
+
+    /**
+     * @param  list<LocalDate>  $days
+     * @param  array<string, LocalDate>  $found  Keyed by the ISO date, so cross-month duplicates collapse
+     */
+    private function collectWithin(array $days, LocalDate $fromDay, LocalDate $toDay, array &$found): void
+    {
+        foreach ($days as $day) {
+            if (! $fromDay->isAfter($day) && ! $day->isAfter($toDay)) {
+                $found[$day->toString()] = $day;
+            }
+        }
     }
 
     /**
