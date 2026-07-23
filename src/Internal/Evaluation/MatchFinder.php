@@ -47,12 +47,11 @@ final readonly class MatchFinder
     private const int SHIFT_SEARCH_LIMIT_DAYS = 366;
 
     /**
-     * Bound on how far a sequence point's real elapsed time can deviate
-     * from its wall-clock elapsed time: two days, comfortably above the
-     * widest offset variation a zone's transition history can produce
-     * (UTC−12 to UTC+14).
+     * Margin around a question range covering how far a wall reading
+     * can sit from its instant: two days, comfortably above the widest
+     * offset a zone can apply (UTC−12 to UTC+14).
      */
-    private const int SEQUENCE_WALL_SLACK_SECONDS = 172800;
+    private const int WALL_OFFSET_SLACK_SECONDS = 172800;
 
     public function __construct(
         private DayMatcher $dayMatcher,
@@ -786,8 +785,8 @@ final readonly class MatchFinder
         // getTransitions reports false (not a list) for offset- and
         // abbreviation-type zones; fold that into the empty list.
         $transitions = $this->timezone->getTransitions(
-            $lower - self::SEQUENCE_WALL_SLACK_SECONDS,
-            $upper + self::SEQUENCE_WALL_SLACK_SECONDS,
+            $lower - self::WALL_OFFSET_SLACK_SECONDS,
+            $upper + self::WALL_OFFSET_SLACK_SECONDS,
         ) ?: [];
 
         if ($transitions === []) {
@@ -824,13 +823,10 @@ final readonly class MatchFinder
 
     /**
      * The points of the interval sequence (from + k × interval) inside
-     * the closed window [from, to], ascending by instant. A wall time
-     * pushed out of a DST gap can stand after a later wall time's
-     * instant (the row is monotonic on the wall clock only), so no
-     * order-dependent search is used: the candidate ks are bounded by
-     * wall-clock arithmetic widened by the slack, and the points inside
-     * the window are collected keyed by timestamp — deduplicating folded
-     * points and ordering by instant at once.
+     * the closed window [from, to], ascending by instant: the
+     * per-segment runs collected keyed by timestamp — deduplicating
+     * points folded together by a DST gap and ordering interleaved runs
+     * by instant at once.
      *
      * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
      * @return list<DateTimeImmutable>
@@ -845,52 +841,23 @@ final readonly class MatchFinder
             return [];
         }
 
+        // Points are whole seconds: the closed [from, to] on instants is
+        // the integer range [from's second rounded up, to's second
+        // rounded down].
+        $lower = $from->getTimestamp() + ((int) $from->format('u') > 0 ? 1 : 0);
         $step = $sequence->stepSeconds();
-        $first = max(0, intdiv($this->wallElapsedTo($anchor, $from) - self::SEQUENCE_WALL_SLACK_SECONDS, $step));
-        $last = intdiv($this->wallElapsedTo($anchor, $to) + self::SEQUENCE_WALL_SLACK_SECONDS, $step);
-
         $instants = [];
 
-        for ($k = $first; $k <= $last; $k++) {
-            $instant = $this->sequenceInstant($anchor, $k * $step);
-
-            if ($instant >= $from && $instant <= $to) {
-                $instants[$instant->getTimestamp()] = $instant;
+        foreach ($this->sequencePointRunsIn($anchor, $step, $lower, $to->getTimestamp()) as [$first, $last, $offset]) {
+            for ($wall = $first; $wall <= $last; $wall += $step) {
+                $timestamp = $wall - $offset;
+                $instants[$timestamp] = (new DateTimeImmutable("@{$timestamp}"))->setTimezone($this->timezone);
             }
         }
 
         ksort($instants);
 
         return array_values($instants);
-    }
-
-    /**
-     * Wall-clock seconds from the anchor to the instant's wall reading
-     * in the configured timezone (negative when the reading is earlier
-     * than the anchor).
-     */
-    private function wallElapsedTo(LocalDateTime $anchor, DateTimeImmutable $instant): int
-    {
-        $wall = $instant->setTimezone($this->timezone);
-
-        return $anchor->date->daysUntil(LocalDate::fromDateTime($wall)) * 86400
-            + self::secondsIntoDay($wall) - $anchor->secondsFromMidnight;
-    }
-
-    /**
-     * The instant of the point $offsetSeconds past from by the wall
-     * clock.
-     */
-    private function sequenceInstant(LocalDateTime $anchor, int $offsetSeconds): DateTimeImmutable
-    {
-        $total = $anchor->secondsFromMidnight + $offsetSeconds;
-
-        return $anchor->date->addDays(intdiv($total, 86400))->atTime($total % 86400, $this->timezone);
-    }
-
-    private static function secondsIntoDay(DateTimeImmutable $wall): int
-    {
-        return (int) $wall->format('H') * 3600 + (int) $wall->format('i') * 60 + (int) $wall->format('s');
     }
 
     /**
