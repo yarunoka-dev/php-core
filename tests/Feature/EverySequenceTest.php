@@ -131,6 +131,121 @@ class EverySequenceTest extends TestCase
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08 04:30:00', $timezone)));
     }
 
+    #[Test]
+    public function a_step_that_does_not_divide_the_gap_keeps_matching_after_the_transition(): void
+    {
+        // The 45-minute row crosses the gap: walls …, 01:30, 02:15, 03:00,
+        // 03:45. The pushed 02:15 stands at 03:15 EDT — *after* the wall
+        // 03:00 point in real time — so the row is not in instant order
+        // and no order-dependent search may be used.
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']]);
+
+        // The overtaken wall 03:00 point.
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T03:00:00-04:00')));
+        // The pushed wall 02:15 point.
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T03:15:00-04:00')));
+        // 02:15 EDT is a real instant but not a point (the wall row reads
+        // 01:15 EST there).
+        $this->assertFalse($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08T02:15:00-04:00')));
+    }
+
+    #[Test]
+    public function the_interval_question_sees_every_point_around_the_gap_exactly_once(): void
+    {
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']]);
+
+        // After the 01:30 EST point the next is 03:00 EDT…
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T01:30:00-05:00'),
+            new DateTimeImmutable('2026-03-08T03:00:00-04:00'),
+        ));
+        $this->assertFalse($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T01:30:00-05:00'),
+            new DateTimeImmutable('2026-03-08T02:59:59-04:00'),
+        ));
+        // …and after 03:00 EDT the next is the pushed point at 03:15.
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T03:00:00-04:00'),
+            new DateTimeImmutable('2026-03-08T03:15:00-04:00'),
+        ));
+        $this->assertFalse($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T03:00:00-04:00'),
+            new DateTimeImmutable('2026-03-08T03:14:59-04:00'),
+        ));
+    }
+
+    #[Test]
+    public function an_overlap_wall_time_counts_only_as_its_first_occurrence(): void
+    {
+        // 02:00 EDT → 01:00 EST on 2026-11-01: the hourly row anchored at
+        // 00:30 stands its wall 01:30 point at the first (EDT) occurrence
+        // only, and the wall 02:30 point at 02:30 EST.
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-11-01 00:30', 'every' => [60, 'minute']]);
+
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-11-01T01:30:00-04:00')));
+        $this->assertFalse($evaluator->matches($schedule, new DateTimeImmutable('2026-11-01T01:30:00-05:00')));
+        // Nothing between the first 01:30 and the second wall 01:30…
+        $this->assertFalse($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-11-01T01:30:00-04:00'),
+            new DateTimeImmutable('2026-11-01T01:30:00-05:00'),
+        ));
+        // …and the next point after it is 02:30 EST.
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-11-01T01:30:00-04:00'),
+            new DateTimeImmutable('2026-11-01T02:30:00-05:00'),
+        ));
+    }
+
+    #[Test]
+    public function a_fixed_offset_timezone_still_answers_the_sequence_questions(): void
+    {
+        // DateTimeZone::getTransitions yields no list for offset-type
+        // zones; they are a single regime.
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('+09:00'));
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']]);
+
+        $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-07-15T12:00:00+09:00')));
+        $this->assertFalse($evaluator->matches($schedule, new DateTimeImmutable('2026-07-16T00:00:00+09:00')));
+        $this->assertTrue($evaluator->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-07-14T00:30:00+09:00'),
+            new DateTimeImmutable('2026-07-15T12:00:00+09:00'),
+        ));
+    }
+
+    #[Test]
+    public function the_enumeration_and_the_checks_agree_around_the_gap(): void
+    {
+        $timezone = new DateTimeZone('America/New_York');
+        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']]);
+
+        $occurrences = $evaluator->occurrencesIn(
+            $schedule,
+            new DateTimeImmutable('2026-03-08T00:00:00-05:00'),
+            new DateTimeImmutable('2026-03-08T04:00:00-04:00'),
+        );
+
+        $this->assertNotSame([], $occurrences);
+
+        foreach ($occurrences as $occurrence) {
+            $this->assertInstanceOf(DateTimeImmutable::class, $occurrence);
+            $this->assertTrue($evaluator->matches($schedule, $occurrence));
+        }
+    }
+
     // ---- helpers ----
 
     private function evaluator(): YrnkEvaluator

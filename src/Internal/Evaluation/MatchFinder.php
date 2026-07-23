@@ -72,8 +72,16 @@ final readonly class MatchFinder
     {
         if ($schedule->times instanceof EverySequence) {
             // Points are whole seconds, so "is there a point in
-            // (at−1 second, at]" = "is at a point".
-            return $this->hasMatchIn($schedule, $at->modify('-1 second'), $at);
+            // (at−1 second, at]" = "is at a point". The subtraction runs
+            // on UTC: modify() works on the wall clock of the value's
+            // own timezone, and one second before the end of a DST gap
+            // reads as a nonexistent wall time that resolves a whole
+            // gap away.
+            return $this->hasMatchIn(
+                $schedule,
+                $at->setTimezone(new DateTimeZone('UTC'))->modify('-1 second'),
+                $at,
+            );
         }
 
         $day = LocalDate::fromDateTime($at->setTimezone($this->timezone));
@@ -689,9 +697,13 @@ final readonly class MatchFinder
 
     /**
      * Is there a point of the interval sequence (from + k × interval) in
-     * (from, to]? The sequence is monotonically non-decreasing by
-     * wall-clock arithmetic, so binary-search the first point after from
-     * and check it is at or before to.
+     * (from, to]? Answered exactly, per offset segment: the row is laid
+     * out on the wall clock, whose offset to real time is
+     * piecewise-constant, so within one segment wall order and instant
+     * order agree and the question reduces to intersecting integer
+     * ranges. No instant-order assumption is made over the whole row —
+     * a wall time pushed out of a DST gap stands after later wall
+     * times' instants.
      *
      * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
      */
@@ -705,29 +717,109 @@ final readonly class MatchFinder
             return false;
         }
 
-        $step = $sequence->stepSeconds();
+        // Points are whole seconds: (from, to] on instants is the
+        // integer range [from's whole second + 1, to's whole second].
+        return $this->sequencePointRunsIn(
+            $anchor,
+            $sequence->stepSeconds(),
+            $from->getTimestamp() + 1,
+            $to->getTimestamp(),
+        ) !== [];
+    }
 
-        if ($this->sequenceInstant($anchor, 0) > $from) {
-            return $this->sequenceInstant($anchor, 0) <= $to;
+    /**
+     * The row's points whose instants lie in [lower, upper] (epoch
+     * seconds), as [firstWall, lastWall, offset] runs on the wall-epoch
+     * scale: the row points firstWall, firstWall + step, …, lastWall,
+     * each resolving to the instant wall − offset. Runs of different
+     * segments can interleave in instant terms (a pushed run stands past
+     * a later segment's first instants).
+     *
+     * @return list<array{int, int, int}>
+     */
+    private function sequencePointRunsIn(LocalDateTime $anchor, int $step, int $lower, int $upper): array
+    {
+        if ($lower > $upper) {
+            return [];
         }
 
-        // Upper bound: with the wall-clock seconds elapsed up to from
-        // plus the slack, that point is guaranteed to be after from.
-        $high = intdiv(max(0, $this->wallElapsedTo($anchor, $from)) + self::SEQUENCE_WALL_SLACK_SECONDS, $step) + 1;
-        $low = 0;
+        $anchorWall = self::wallEpochOf($anchor);
+        $runs = [];
 
-        // Invariant: instant(low) <= from < instant(high)
-        while ($low + 1 < $high) {
-            $mid = intdiv($low + $high, 2);
+        foreach ($this->wallOffsetSegments($lower, $upper) as [$segmentStart, $segmentEnd, $offset]) {
+            $first = max($segmentStart, $lower + $offset, $anchorWall);
+            $last = min($segmentEnd - 1, $upper + $offset);
 
-            if ($this->sequenceInstant($anchor, $mid * $step) > $from) {
-                $high = $mid;
-            } else {
-                $low = $mid;
+            if ($first > $last) {
+                continue;
             }
+
+            // Snap both ends onto the row (the first point at or after
+            // first, the last at or before last).
+            $first = $anchorWall + intdiv($first - $anchorWall + $step - 1, $step) * $step;
+            $last = $anchorWall + intdiv($last - $anchorWall, $step) * $step;
+
+            if ($first > $last) {
+                continue;
+            }
+
+            $runs[] = [$first, $last, $offset];
         }
 
-        return $this->sequenceInstant($anchor, $high * $step) <= $to;
+        return $runs;
+    }
+
+    /**
+     * The wall clock's offset regimes as [wallStart, wallEnd, offset]
+     * segments (wall-epoch bounds, end exclusive) covering every wall
+     * time that can resolve into the instant range [lower, upper]. The
+     * offset applied to a wall time changes at the boundary wall
+     * b = transition instant + max(offset before, offset after): below b
+     * the earlier offset applies — which both pushes gap wall times
+     * forward and reads an overlap wall time as its first occurrence
+     * (RFC 5545 §3.3.5).
+     *
+     * @return non-empty-list<array{int, int, int}>
+     */
+    private function wallOffsetSegments(int $lower, int $upper): array
+    {
+        // getTransitions reports false (not a list) for offset- and
+        // abbreviation-type zones; fold that into the empty list.
+        $transitions = $this->timezone->getTransitions(
+            $lower - self::SEQUENCE_WALL_SLACK_SECONDS,
+            $upper + self::SEQUENCE_WALL_SLACK_SECONDS,
+        ) ?: [];
+
+        if ($transitions === []) {
+            // Offset- and abbreviation-type zones carry no transition
+            // list; they are a single regime.
+            return [[PHP_INT_MIN, PHP_INT_MAX, $this->timezone->getOffset(new DateTimeImmutable("@{$lower}"))]];
+        }
+
+        $segments = [];
+        $start = PHP_INT_MIN;
+        $offset = $transitions[0]['offset'];
+
+        foreach (array_slice($transitions, 1) as $transition) {
+            $boundary = $transition['ts'] + max($offset, $transition['offset']);
+            $segments[] = [$start, $boundary, $offset];
+            $start = $boundary;
+            $offset = $transition['offset'];
+        }
+
+        $segments[] = [$start, PHP_INT_MAX, $offset];
+
+        return $segments;
+    }
+
+    /**
+     * The wall reading as seconds on a fake-UTC epoch scale (the wall
+     * calendar laid out with no offsets) — the scale the sequence row
+     * and the offset segments are intersected on.
+     */
+    private static function wallEpochOf(LocalDateTime $wall): int
+    {
+        return LocalDate::of(1970, 1, 1)->daysUntil($wall->date) * 86400 + $wall->secondsFromMidnight;
     }
 
     /**
