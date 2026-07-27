@@ -18,7 +18,7 @@ representations (Expression / Time / Vocabulary and so on) are not.
 | behaviour | `Parser\ScheduleParser` | one element of schedules[] → YrnkSchedule |
 | behaviour | `Builder\YrnkBuilder` / `Builder\ScheduleBuilder` | tree → DSL. Round-tripping is the identity |
 | behaviour | `YrnkEvaluator` | the evaluator. A service holding configuration |
-| type | `Yrnk` / `YrnkSchedule` / `Calendar\*` / `Expression\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
+| type | `Yrnk` / `YrnkSchedule` / `YrnkDate` / `YrnkDateTime` / `Calendar\*` / `Expression\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
 | type | `Exceptions\*` | parse, validation, and evaluation failures |
 
 The Laravel bridge lives in the separate `yarunoka/laravel` package.
@@ -88,8 +88,9 @@ $evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie fro
 - `occurrencesIn` is the closed interval **[from, to]** — the caller
   names two instants, and both are part of what it names (a caller that
   means to exclude a boundary moves it). Timed occurrences are answered
-  as `DateTimeImmutable` instants on the configured timezone's clock,
-  all-day occurrences as `Time\LocalDate` dates — the two kinds never
+  as `YrnkDateTime` instants on the configured timezone's clock, all-day
+  occurrences as `YrnkDate` dates (both are `DateTimeImmutable`
+  subclasses, and the kind is read from the type) — the two kinds never
   merge — in ascending order of comparison instant (an all-day
   occurrence stands at 00:00 of its day)
 - Scheduled points on DST transition days resolve per RFC 5545 §3.3.5 — a

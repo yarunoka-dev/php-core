@@ -25,7 +25,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 03:00:00')));
@@ -44,7 +44,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 12:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         $this->assertFalse($evaluator->matches($schedule, $this->at('2026-07-14 03:00:00')));
@@ -59,7 +59,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-24 00:00',
             'days' => [['every', 3, 'day']],
             'times' => ['10:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         // 7/24, 7/27, 7/30, 8/2, 8/5, …
@@ -77,7 +77,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['08:00', '20:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 08:00:00')));
@@ -93,7 +93,7 @@ class DayCycleTest extends TestCase
             'months' => [8],
             'days' => [['every', 2, 'day']],
             'times' => ['10:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         // July's matching days are removed by months.
@@ -112,7 +112,7 @@ class DayCycleTest extends TestCase
             'days' => [['every', 2, 'day']],
             'if' => ['not', 'holiday'],
             'times' => ['10:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator(holidays: ['2026-07-20']);
 
         // 7/20 (a matching day, but a holiday) is skipped. The next stays
@@ -129,7 +129,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 00:00',
             'days' => [['every', 1, 'day']],
             'times' => ['10:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         $this->assertFalse($evaluator->matches($schedule, $this->at('2026-07-13 10:00:00')));
@@ -144,7 +144,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day'], 'mon'],
             'times' => ['10:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         // 7/27 is a Monday (not a cycle day: 13 days from from).
@@ -163,7 +163,7 @@ class DayCycleTest extends TestCase
             'until' => '2026-07-18 03:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-16 03:00:00')));
@@ -179,7 +179,7 @@ class DayCycleTest extends TestCase
             'from' => '2026-07-14 00:00',
             'days' => [['every', 2, 'day']],
             'times' => ['03:00'],
-        ]);
+        ], self::tz());
         $evaluator = $this->evaluator();
 
         // (7/14 04:00, 7/16 03:00] contains 7/16 03:00.
@@ -197,7 +197,7 @@ class DayCycleTest extends TestCase
     {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: $holidays === [] ? null : Holidays::ofDates($holidays),
+                holidays: $holidays === [] ? null : Holidays::ofDates($holidays, self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -206,5 +206,10 @@ class DayCycleTest extends TestCase
     private function at(string $dateTime): DateTimeImmutable
     {
         return new DateTimeImmutable($dateTime, new DateTimeZone('Asia/Tokyo'));
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

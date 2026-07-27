@@ -9,7 +9,7 @@ use Yarunoka\Expression\EverySequence;
 use Yarunoka\Expression\IfGuard;
 use Yarunoka\Expression\Shift;
 use Yarunoka\Expression\TimesSpec;
-use Yarunoka\Time\LocalDateTime;
+use Yarunoka\YrnkDateTime;
 
 /**
  * The definition corresponding 1:1 to one element of the DSL's
@@ -38,8 +38,8 @@ final readonly class YrnkSchedule
         public ?DayExpression $days = null,
         public ?Shift $shift = null,
         public ?IfGuard $if = null,
-        public ?LocalDateTime $from = null,
-        public ?LocalDateTime $until = null,
+        public ?YrnkDateTime $from = null,
+        public ?YrnkDateTime $until = null,
     ) {
         $this->years = self::validateAxis($years, 'years', 1, 9999);
         $this->months = self::validateAxis($months, 'months', 1, 12);
@@ -50,7 +50,7 @@ final readonly class YrnkSchedule
 
     private function ensureRangeOrdered(): void
     {
-        if ($this->from !== null && $this->until !== null && ! $this->from->isBefore($this->until)) {
+        if ($this->from !== null && $this->until !== null && $this->from >= $this->until) {
             throw new InvalidValueException('from must be earlier than until');
         }
     }

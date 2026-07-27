@@ -13,6 +13,7 @@ use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\YrnkSchedule;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +26,7 @@ class ReferenceCheckerTest extends TestCase
             [$this->schedule(['days' => ['holiday', 'founding-day'], 'times' => ['09:00']])],
             new Calendar(
                 holidays: Holidays::byResolver('yasumi-jp'),
-                custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
+                custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'], self::utc())],
             ),
             resolvers: ['yasumi-jp' => static fn(): array => []],
         );
@@ -63,7 +64,7 @@ class ReferenceCheckerTest extends TestCase
         try {
             ReferenceChecker::ensureResolvable(
                 [$this->schedule(['days' => ['business_day'], 'times' => ['09:00']])],
-                new Calendar(holidays: Holidays::ofDates([])),
+                new Calendar(holidays: Holidays::ofDates([], self::utc())),
                 resolvers: [],
             );
             $this->fail('MissingCalendarDataException was not thrown');
@@ -138,6 +139,11 @@ class ReferenceCheckerTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::utc());
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

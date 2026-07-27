@@ -98,8 +98,8 @@ class PollerScenarioTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new Calendar(
                 holidays: Holidays::byResolver('db-holidays'),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
             resolvers: ['db-holidays' => function () use (&$calls): array {
@@ -110,7 +110,7 @@ class PollerScenarioTest extends TestCase
         );
         $poller = new RoutinePoller(
             $evaluator,
-            (new ScheduleParser())->parse(['days' => ['business_day'], 'times' => ['08:00']]),
+            (new ScheduleParser())->parse(['days' => ['business_day'], 'times' => ['08:00']], self::tz()),
             $this->at('2026-07-16T00:00:00+09:00'),
         );
 
@@ -132,18 +132,23 @@ class PollerScenarioTest extends TestCase
     {
         $evaluator = new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates([]),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
+                holidays: Holidays::ofDates([], self::tz()),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
 
-        return new RoutinePoller($evaluator, (new ScheduleParser())->parse($schedule), $this->at($startedAt), $grace);
+        return new RoutinePoller($evaluator, (new ScheduleParser())->parse($schedule, self::tz()), $this->at($startedAt), $grace);
     }
 
     private function at(string $iso): DateTimeImmutable
     {
         return new DateTimeImmutable($iso);
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

@@ -475,19 +475,19 @@ class MatchFinderTest extends TestCase
     private function finder(array $holidays = [], array $custom = []): MatchFinder
     {
         $resolved = new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays),
-            businessHolidays: BusinessHolidays::ofDates([]),
-            businessDays: BusinessDays::ofDates([]),
+            holidays: Holidays::ofDates($holidays, self::utc()),
+            businessHolidays: BusinessHolidays::ofDates([], self::utc()),
+            businessDays: BusinessDays::ofDates([], self::utc()),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: []);
+        ), resolvers: [], timezone: self::utc());
         $dayMatcher = new DayMatcher($resolved);
 
         return new MatchFinder(
             $dayMatcher,
-            new AtomDayEnumerator($dayMatcher),
+            new AtomDayEnumerator($dayMatcher, self::utc()),
             new TimesExpander($resolved),
             new DateTimeZone('Asia/Tokyo'),
         );
@@ -498,11 +498,16 @@ class MatchFinderTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::utc());
     }
 
     private function at(string $iso): DateTimeImmutable
     {
         return new DateTimeImmutable($iso);
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

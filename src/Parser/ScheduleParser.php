@@ -11,8 +11,9 @@ use Yarunoka\Internal\Parser\EverySequenceParser;
 use Yarunoka\Internal\Parser\IfGuardParser;
 use Yarunoka\Internal\Parser\ShiftParser;
 use Yarunoka\Internal\Parser\TimesParser;
-use Yarunoka\Time\LocalDateTime;
+use Yarunoka\YrnkDateTime;
 use Yarunoka\YrnkSchedule;
+use DateTimeZone;
 
 /**
  * Parses one element of the DSL's schedules[] (RawSchedule) into a
@@ -25,10 +26,13 @@ final class ScheduleParser
 {
     private const array KNOWN_KEYS = ['from', 'until', 'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every'];
 
+    /** The from / until literal: zero-padded, a single space, no seconds. */
+    private const string BOUNDARY_PATTERN = '/\\A\\d{4}-\\d{2}-\\d{2} (?:[01]\\d|2[0-3]):[0-5]\\d\\z/';
+
     /**
      * @param  array<mixed>  $raw
      */
-    public function parse(array $raw): YrnkSchedule
+    public function parse(array $raw, DateTimeZone $timezone): YrnkSchedule
     {
         if ($raw !== [] && array_is_list($raw)) {
             throw new InvalidYrnkException('A schedule must be an object');
@@ -48,8 +52,8 @@ final class ScheduleParser
                 days: array_key_exists('days', $raw) ? DayExpressionParser::parse($raw['days']) : null,
                 shift: array_key_exists('shift', $raw) ? ShiftParser::parse($raw['shift']) : null,
                 if: array_key_exists('if', $raw) ? IfGuardParser::parse($raw['if']) : null,
-                from: $this->parseBoundary($raw, 'from'),
-                until: $this->parseBoundary($raw, 'until'),
+                from: $this->parseBoundary($raw, 'from', $timezone),
+                until: $this->parseBoundary($raw, 'until', $timezone),
             );
         } catch (InvalidValueException $e) {
             // A node invariant violation is reported as a document syntax
@@ -94,7 +98,7 @@ final class ScheduleParser
     /**
      * @param  array<mixed>  $raw
      */
-    private function parseBoundary(array $raw, string $key): ?LocalDateTime
+    private function parseBoundary(array $raw, string $key, DateTimeZone $timezone): ?YrnkDateTime
     {
         if (! array_key_exists($key, $raw)) {
             return null;
@@ -106,7 +110,14 @@ final class ScheduleParser
             throw new InvalidYrnkException("{$key} must be a \"YYYY-MM-DD HH:MM\" string: {$given}");
         }
 
-        return LocalDateTime::fromString($raw[$key]);
+        // The DSL spells a boundary without seconds. YrnkDateTime itself
+        // accepts them (occurrences of the interval every land on a
+        // non-zero second), so the document's grammar is checked here.
+        if (preg_match(self::BOUNDARY_PATTERN, $raw[$key]) !== 1) {
+            throw new InvalidYrnkException("{$key} must be a \"YYYY-MM-DD HH:MM\" string: {$raw[$key]}");
+        }
+
+        return new YrnkDateTime($raw[$key], $timezone);
     }
 
     /**

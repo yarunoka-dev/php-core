@@ -13,6 +13,7 @@ use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -83,6 +84,11 @@ class TimesExpanderTest extends TestCase
                 static fn(array $pair): TimeWindow => TimeWindow::fromStrings($pair[0], $pair[1]),
                 $businessHours,
             )),
-        ), resolvers: []));
+        ), resolvers: [], timezone: self::utc()));
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

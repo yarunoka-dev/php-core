@@ -129,7 +129,7 @@ class CalendarScenarioTest extends TestCase
         $schedule = (new ScheduleParser())->parse([
             'days' => ['weekday'],
             'times' => ['every' => [2, 'hour'], 'between' => 'business_hour'],
-        ]);
+        ], self::tz());
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-07-13T09:00:00+09:00')));
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-07-13T11:00:00+09:00')));
@@ -150,16 +150,16 @@ class CalendarScenarioTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::tz());
     }
 
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates(self::JAPANESE_HOLIDAYS_2026),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
+                holidays: Holidays::ofDates(self::JAPANESE_HOLIDAYS_2026, self::tz()),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -195,5 +195,10 @@ class CalendarScenarioTest extends TestCase
             static fn(DateTimeImmutable $day): string => $day->format('Y-m-d'),
             $hits,
         ));
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

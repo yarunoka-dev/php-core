@@ -9,9 +9,10 @@ use Yarunoka\Calendar\Holidays;
 use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Tests\Support\CountingResolver;
-use Yarunoka\Time\LocalDate;
+use Yarunoka\YrnkDate;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -23,10 +24,10 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function of_dates_holds_date_strings_as_a_list_of_local_dates(): void
     {
-        $holidays = Holidays::ofDates(['2026-01-01', '2026-01-12']);
+        $holidays = Holidays::ofDates(['2026-01-01', '2026-01-12'], self::utc());
 
         $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
-            static fn(LocalDate $date): string => $date->toString(),
+            static fn(YrnkDate $date): string => $date->format('Y-m-d'),
             $holidays->dates ?? [],
         ));
         $this->assertNull($holidays->resolver);
@@ -38,7 +39,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        Holidays::ofDates(['2026-1-1']);
+        Holidays::ofDates(['2026-1-1'], self::utc());
     }
 
     #[Test]
@@ -178,11 +179,16 @@ class CalendarNodesTest extends TestCase
             businessDays: null,
             workweek: null,
             businessHours: null,
-            custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
+            custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'], self::utc())],
         );
 
         $this->assertSame('yasumi-jp', $calendar->holidays?->resolver);
         $this->assertNull($calendar->businessHolidays);
         $this->assertArrayHasKey('founding-day', $calendar->custom);
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

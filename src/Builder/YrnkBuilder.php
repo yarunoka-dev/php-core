@@ -29,7 +29,7 @@ final class YrnkBuilder
             'timezone' => $document->timezone->getName(),
         ];
 
-        $calendar = CalendarBuilder::build($document->calendar);
+        $calendar = CalendarBuilder::build($document->calendar, $document->timezone);
 
         if ($calendar !== []) {
             $raw['calendar'] = $calendar;

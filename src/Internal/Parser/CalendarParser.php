@@ -13,6 +13,7 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
+use DateTimeZone;
 
 /**
  * The parser for the definitions part (RawCalendar). The top level is
@@ -27,7 +28,7 @@ final class CalendarParser
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public static function parse(mixed $raw): Calendar
+    public static function parse(mixed $raw, DateTimeZone $timezone): Calendar
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
@@ -42,19 +43,19 @@ final class CalendarParser
         try {
             return new Calendar(
                 holidays: array_key_exists('holidays', $raw)
-                    ? self::parseDateSet($raw['holidays'], 'holidays', Holidays::class)
+                    ? self::parseDateSet($raw['holidays'], 'holidays', Holidays::class, $timezone)
                     : null,
                 businessHolidays: array_key_exists('business_holidays', $raw)
-                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', BusinessHolidays::class)
+                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', BusinessHolidays::class, $timezone)
                     : null,
                 businessDays: array_key_exists('business_days', $raw)
-                    ? self::parseDateSet($raw['business_days'], 'business_days', BusinessDays::class)
+                    ? self::parseDateSet($raw['business_days'], 'business_days', BusinessDays::class, $timezone)
                     : null,
                 workweek: array_key_exists('workweek', $raw) ? self::parseWorkweek($raw['workweek']) : null,
                 businessHours: array_key_exists('business_hours', $raw)
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
-                custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom']) : [],
+                custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom'], $timezone) : [],
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
@@ -67,7 +68,7 @@ final class CalendarParser
      * @param  class-string<T>  $class
      * @return T
      */
-    private static function parseDateSet(mixed $raw, string $key, string $class): object
+    private static function parseDateSet(mixed $raw, string $key, string $class, DateTimeZone $timezone): object
     {
         if (is_string($raw)) {
             if (preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $raw) === 1) {
@@ -90,7 +91,7 @@ final class CalendarParser
 
             /** @var list<string> $raw */
             // @phpstan-ignore return.type (the same false positive as byResolver)
-            return $class::ofDates($raw);
+            return $class::ofDates($raw, $timezone);
         }
 
         throw new InvalidYrnkException("{$key} must be a date list or a resolver name");
@@ -140,7 +141,7 @@ final class CalendarParser
     /**
      * @return array<string, CustomDefinition>
      */
-    private static function parseCustom(mixed $raw): array
+    private static function parseCustom(mixed $raw, DateTimeZone $timezone): array
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('custom must be an object of name to date list');
@@ -153,7 +154,7 @@ final class CalendarParser
             // name validation rejects them.
             $name = (string) $name;
             ReservedWords::ensureUsable($name);
-            $custom[$name] = self::parseDateSet($value, "custom.{$name}", CustomDefinition::class);
+            $custom[$name] = self::parseDateSet($value, "custom.{$name}", CustomDefinition::class, $timezone);
         }
 
         return $custom;

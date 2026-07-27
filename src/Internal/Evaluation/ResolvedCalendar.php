@@ -12,10 +12,11 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Resolvers\YrnkResolverInterface;
-use Yarunoka\Time\LocalDate;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
+use Yarunoka\YrnkDate;
 use Closure;
+use DateTimeZone;
 
 /**
  * Resolution and memoization of the definitions. A resolver / Closure is
@@ -38,29 +39,30 @@ final class ResolvedCalendar
     public function __construct(
         private readonly Calendar $calendar,
         private readonly array $resolvers,
+        private readonly DateTimeZone $timezone,
     ) {}
 
-    public function holidayContains(LocalDate $date): bool
+    public function holidayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('holidays', $this->calendar->holidays)[$date->toString()]);
+        return isset($this->dateSet('holidays', $this->calendar->holidays)[$date->format('Y-m-d')]);
     }
 
-    public function businessHolidayContains(LocalDate $date): bool
+    public function businessHolidayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('business_holidays', $this->calendar->businessHolidays)[$date->toString()]);
+        return isset($this->dateSet('business_holidays', $this->calendar->businessHolidays)[$date->format('Y-m-d')]);
     }
 
-    public function businessDayContains(LocalDate $date): bool
+    public function businessDayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('business_days', $this->calendar->businessDays)[$date->toString()]);
+        return isset($this->dateSet('business_days', $this->calendar->businessDays)[$date->format('Y-m-d')]);
     }
 
-    public function customContains(string $name, LocalDate $date): bool
+    public function customContains(string $name, YrnkDate $date): bool
     {
         $definition = $this->calendar->custom[$name]
             ?? throw new UndefinedNameException("Undefined name: {$name}");
 
-        return isset($this->dateSet("custom.{$name}", $definition)[$date->toString()]);
+        return isset($this->dateSet("custom.{$name}", $definition)[$date->format('Y-m-d')]);
     }
 
     public function isInWorkweek(DayName $dayOfWeek): bool
@@ -120,7 +122,7 @@ final class ResolvedCalendar
             $set = [];
 
             foreach ($definition->dates as $date) {
-                $set[$date->toString()] = true;
+                $set[$date->format('Y-m-d')] = true;
             }
 
             return $set;
@@ -149,7 +151,7 @@ final class ResolvedCalendar
             }
 
             try {
-                $set[LocalDate::fromString($date)->toString()] = true;
+                $set[(new YrnkDate($date, $this->timezone))->format('Y-m-d')] = true;
             } catch (InvalidValueException $e) {
                 throw new InvalidCalendarDataException("{$key}: {$e->getMessage()}");
             }

@@ -21,6 +21,7 @@ use Yarunoka\Vocabulary\DayName;
 use Yarunoka\Vocabulary\Direction;
 use Yarunoka\Vocabulary\Ordinal;
 use Yarunoka\Vocabulary\TimeUnit;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -41,7 +42,7 @@ class ScheduleParserTest extends TestCase
         $schedule = $this->parser->parse([
             'days' => [25, 'mon', 'holiday', ['3rd', 'mon'], 'last_day_of_month', 'founding-day'],
             'times' => ['10:00'],
-        ]);
+        ], self::utc());
 
         $atoms = $schedule->days->atoms ?? [];
 
@@ -58,7 +59,7 @@ class ScheduleParserTest extends TestCase
     {
         // Resolving references is the job of the holders of the
         // definitions (YrnkParser / YrnkEvaluator).
-        $schedule = $this->parser->parse(['days' => ['name-defined-nowhere'], 'times' => ['10:00']]);
+        $schedule = $this->parser->parse(['days' => ['name-defined-nowhere'], 'times' => ['10:00']], self::utc());
 
         $this->assertInstanceOf(CustomRef::class, $schedule->days?->atoms[0] ?? null);
     }
@@ -70,7 +71,7 @@ class ScheduleParserTest extends TestCase
         // array.
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => 'mon', 'times' => ['10:00']]);
+        $this->parser->parse(['days' => 'mon', 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -78,7 +79,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => [], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => [], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -86,7 +87,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => ['3rd', 'mon'], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => ['3rd', 'mon'], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -94,7 +95,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => ['not', 'holiday'], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => ['not', 'holiday'], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -104,7 +105,7 @@ class ScheduleParserTest extends TestCase
         // referred to.
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => ['2026-10-01'], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => ['2026-10-01'], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -112,7 +113,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => [['mon', '3rd']], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => [['mon', '3rd']], 'times' => ['10:00']], self::utc());
     }
 
     // ---- years / months ----
@@ -120,7 +121,7 @@ class ScheduleParserTest extends TestCase
     #[Test]
     public function years_and_months_become_integer_enumerations(): void
     {
-        $schedule = $this->parser->parse(['years' => [2043], 'months' => [2, 4], 'times' => ['10:00']]);
+        $schedule = $this->parser->parse(['years' => [2043], 'months' => [2, 4], 'times' => ['10:00']], self::utc());
 
         $this->assertSame([2043], $schedule->years);
         $this->assertSame([2, 4], $schedule->months);
@@ -131,7 +132,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['months' => 2, 'times' => ['10:00']]);
+        $this->parser->parse(['months' => 2, 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -139,7 +140,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['months' => [13], 'times' => ['10:00']]);
+        $this->parser->parse(['months' => [13], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
@@ -147,7 +148,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['years' => ['2043'], 'times' => ['10:00']]);
+        $this->parser->parse(['years' => ['2043'], 'times' => ['10:00']], self::utc());
     }
 
     // ---- shift / if ----
@@ -159,7 +160,7 @@ class ScheduleParserTest extends TestCase
             'days' => [25],
             'shift' => ['prev', 'or_same', 'business_day'],
             'times' => ['10:00'],
-        ]);
+        ], self::utc());
 
         $this->assertEquals(
             new Shift(Direction::Prev, orSame: true, condition: CalendarWord::BusinessDay),
@@ -174,7 +175,7 @@ class ScheduleParserTest extends TestCase
             'days' => [25],
             'shift' => ['prev', 'business_day'],
             'times' => ['10:00'],
-        ]);
+        ], self::utc());
 
         $this->assertEquals(
             new Shift(Direction::Prev, orSame: false, condition: CalendarWord::BusinessDay),
@@ -187,16 +188,16 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => [25], 'shift' => ['business_day'], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => [25], 'shift' => ['business_day'], 'times' => ['10:00']], self::utc());
     }
 
     #[Test]
     public function parses_the_four_forms_of_if(): void
     {
-        $onlyCondition = $this->parser->parse(['days' => [13], 'if' => ['fri'], 'times' => ['10:00']]);
-        $negated = $this->parser->parse(['days' => ['mon'], 'if' => ['not', 'holiday'], 'times' => ['10:00']]);
-        $directed = $this->parser->parse(['if' => ['next', 'last_day_of_month'], 'times' => ['10:00']]);
-        $both = $this->parser->parse(['if' => ['next', 'not', 'holiday'], 'times' => ['10:00']]);
+        $onlyCondition = $this->parser->parse(['days' => [13], 'if' => ['fri'], 'times' => ['10:00']], self::utc());
+        $negated = $this->parser->parse(['days' => ['mon'], 'if' => ['not', 'holiday'], 'times' => ['10:00']], self::utc());
+        $directed = $this->parser->parse(['if' => ['next', 'last_day_of_month'], 'times' => ['10:00']], self::utc());
+        $both = $this->parser->parse(['if' => ['next', 'not', 'holiday'], 'times' => ['10:00']], self::utc());
 
         $this->assertEquals(
             new IfGuard(null, negated: false, condition: new Weekday(DayName::Fri)),
@@ -221,7 +222,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => ['mon'], 'if' => ['same', 'holiday'], 'times' => ['10:00']]);
+        $this->parser->parse(['days' => ['mon'], 'if' => ['same', 'holiday'], 'times' => ['10:00']], self::utc());
     }
 
     // ---- times / allday ----
@@ -229,7 +230,7 @@ class ScheduleParserTest extends TestCase
     #[Test]
     public function an_enumeration_of_fixed_times_becomes_fixed_times(): void
     {
-        $schedule = $this->parser->parse(['times' => ['12:00', '09:00']]);
+        $schedule = $this->parser->parse(['times' => ['12:00', '09:00']], self::utc());
 
         $this->assertInstanceOf(FixedTimes::class, $schedule->times);
         $this->assertSame(12 * 3600, $schedule->times->times[0]->secondsFromMidnight);
@@ -240,7 +241,7 @@ class ScheduleParserTest extends TestCase
     {
         $schedule = $this->parser->parse([
             'times' => ['every' => [90, 'minute'], 'between' => ['08:00', '20:00']],
-        ]);
+        ], self::utc());
 
         $this->assertInstanceOf(EveryGrid::class, $schedule->times);
         $this->assertSame(90, $schedule->times->amount);
@@ -251,7 +252,7 @@ class ScheduleParserTest extends TestCase
     #[Test]
     public function between_business_hour_becomes_a_reference_node(): void
     {
-        $schedule = $this->parser->parse(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']]);
+        $schedule = $this->parser->parse(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']], self::utc());
 
         $this->assertInstanceOf(EveryGrid::class, $schedule->times);
         $this->assertInstanceOf(BusinessHourRef::class, $schedule->times->between);
@@ -263,13 +264,13 @@ class ScheduleParserTest extends TestCase
         // User-defined window names were removed from the DSL.
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['times' => ['every' => [1, 'hour'], 'between' => 'afternoon']]);
+        $this->parser->parse(['times' => ['every' => [1, 'hour'], 'between' => 'afternoon']], self::utc());
     }
 
     #[Test]
     public function allday_becomes_all_day(): void
     {
-        $schedule = $this->parser->parse(['allday' => true]);
+        $schedule = $this->parser->parse(['allday' => true], self::utc());
 
         $this->assertInstanceOf(AllDay::class, $schedule->times);
     }
@@ -279,7 +280,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['times' => ['10:00'], 'allday' => true]);
+        $this->parser->parse(['times' => ['10:00'], 'allday' => true], self::utc());
     }
 
     #[Test]
@@ -287,7 +288,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['days' => ['mon']]);
+        $this->parser->parse(['days' => ['mon']], self::utc());
     }
 
     #[Test]
@@ -295,7 +296,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['allday' => false]);
+        $this->parser->parse(['allday' => false], self::utc());
     }
 
     #[Test]
@@ -303,7 +304,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['times' => ['9:00']]);
+        $this->parser->parse(['times' => ['9:00']], self::utc());
     }
 
     #[Test]
@@ -311,7 +312,7 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['times' => ['every' => [2, 'hours']]]);
+        $this->parser->parse(['times' => ['every' => [2, 'hours']]], self::utc());
     }
 
     // ---- the structure of a schedule ----
@@ -321,6 +322,11 @@ class ScheduleParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        $this->parser->parse(['times' => ['10:00'], 'day' => ['mon']]);
+        $this->parser->parse(['times' => ['10:00'], 'day' => ['mon']], self::utc());
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

@@ -7,7 +7,7 @@ use Yarunoka\Calendar\BusinessHolidays;
 use Yarunoka\Calendar\Calendar;
 use Yarunoka\Calendar\Holidays;
 use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Time\LocalDate;
+use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
@@ -99,7 +99,7 @@ class OccurrencesInTest extends TestCase
             $this->at('2026-07-27T00:00:00+09:00'),
         );
 
-        $this->assertContainsOnlyInstancesOf(LocalDate::class, $occurrences);
+        $this->assertContainsOnlyInstancesOf(YrnkDate::class, $occurrences);
         // The window end is included: the comparison instant of 7/27 is
         // exactly at to.
         $this->assertSame(['2026-07-13', '2026-07-20', '2026-07-27'], $this->rendered($occurrences));
@@ -409,9 +409,9 @@ class OccurrencesInTest extends TestCase
     {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates([]),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
+                holidays: Holidays::ofDates([], self::tz()),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -422,7 +422,7 @@ class OccurrencesInTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::tz());
     }
 
     private function at(string $iso): DateTimeImmutable
@@ -434,16 +434,21 @@ class OccurrencesInTest extends TestCase
      * Renders occurrences kind-faithfully: an instant as ISO 8601 with
      * its offset, a date as YYYY-MM-DD.
      *
-     * @param  list<DateTimeImmutable|LocalDate>  $occurrences
+     * @param  list<YrnkDate|DateTimeImmutable>  $occurrences
      * @return list<string>
      */
     private function rendered(array $occurrences): array
     {
         return array_map(
-            static fn(DateTimeImmutable|LocalDate $occurrence): string => $occurrence instanceof LocalDate
-                ? $occurrence->toString()
+            static fn(DateTimeImmutable|YrnkDate $occurrence): string => $occurrence instanceof YrnkDate
+                ? $occurrence->format('Y-m-d')
                 : $occurrence->format('Y-m-d\TH:i:sP'),
             $occurrences,
         );
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

@@ -7,8 +7,9 @@ use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
-use Yarunoka\Time\LocalDate;
 use Yarunoka\Vocabulary\DayName;
+use Yarunoka\YrnkDate;
+use DateTimeZone;
 
 /**
  * Atom × (year, month) → the enumeration of matching days of that month
@@ -22,7 +23,10 @@ use Yarunoka\Vocabulary\DayName;
  */
 final readonly class AtomDayEnumerator
 {
-    public function __construct(private DayMatcher $dayMatcher) {}
+    public function __construct(
+        private DayMatcher $dayMatcher,
+        private DateTimeZone $timezone,
+    ) {}
 
     /**
      * @return list<int> Day numbers in ascending order
@@ -45,11 +49,11 @@ final readonly class AtomDayEnumerator
      */
     private function weekdayDays(DayName $dayName, int $year, int $month): array
     {
-        $first = LocalDate::of($year, $month, 1);
-        $offset = ($dayName->isoNumber() - $first->dayOfWeek()->isoNumber() + 7) % 7;
+        $first = $this->dayAt($year, $month, 1);
+        $offset = ($dayName->isoNumber() - (int) $first->format('N') + 7) % 7;
         $days = [];
 
-        for ($day = 1 + $offset; $day <= $first->daysInMonth(); $day += 7) {
+        for ($day = 1 + $offset; $day <= (int) $first->format('t'); $day += 7) {
             $days[] = $day;
         }
 
@@ -80,7 +84,7 @@ final readonly class AtomDayEnumerator
         $daysInMonth = $this->daysInMonth($year, $month);
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
-            if ($this->dayMatcher->matches($atom, LocalDate::of($year, $month, $day))) {
+            if ($this->dayMatcher->matches($atom, $this->dayAt($year, $month, $day))) {
                 $days[] = $day;
             }
         }
@@ -90,6 +94,11 @@ final readonly class AtomDayEnumerator
 
     private function daysInMonth(int $year, int $month): int
     {
-        return LocalDate::of($year, $month, 1)->daysInMonth();
+        return (int) $this->dayAt($year, $month, 1)->format('t');
+    }
+
+    private function dayAt(int $year, int $month, int $day): YrnkDate
+    {
+        return new YrnkDate(sprintf('%04d-%02d-%02d', $year, $month, $day), $this->timezone);
     }
 }
