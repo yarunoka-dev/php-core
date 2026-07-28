@@ -1,9 +1,9 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Resolvers;
+namespace Yarunoka\Tests\Unit\Internal\Resolvers;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Resolvers\YasumiHolidaysResolver;
+use Yarunoka\Internal\Resolvers\YasumiHolidaysResolver;
 use Yarunoka\Resolvers\YrnkHolidaysResolverInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

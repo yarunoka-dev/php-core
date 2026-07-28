@@ -1,8 +1,9 @@
 <?php
 
-namespace Yarunoka\Resolvers;
+namespace Yarunoka\Internal\Resolvers;
 
 use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Resolvers\YrnkHolidaysResolverInterface;
 use RuntimeException;
 use Yasumi\Yasumi;
 
@@ -15,6 +16,8 @@ use Yasumi\Yasumi;
  * evaluated — years outside the range are silently treated as "no
  * holidays", so the range must always cover the years the evaluation
  * reaches.
+ *
+ * @internal
  */
 final readonly class YasumiHolidaysResolver implements YrnkHolidaysResolverInterface
 {
