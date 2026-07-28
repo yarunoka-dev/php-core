@@ -29,28 +29,36 @@ use DateTimeZone;
  *
  * "Should this fire" does not live here. Firing, catch-up, and grace are
  * expressed by the caller through how it cuts the question interval
- * (hasMatchIn(last_run_at, now) is the firing decision). Resolver results
- * are memoized for the lifetime of this instance (at most once).
+ * (hasMatchIn(last_run_at, now) is the firing decision). Definitions
+ * resolve per question and are not carried between them, so an answer
+ * always rests on what the resolvers say at the time it is asked.
  */
 final class YrnkEvaluator
 {
-    private readonly MatchFinder $finder;
-
     /**
-     * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
+     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
      */
     public function __construct(
         private readonly YrnkCalendar $calendar,
         private readonly DateTimeZone $timezone,
         private readonly array $resolvers = [],
-    ) {
-        $resolved = new ResolvedCalendar($calendar, $resolvers, $timezone);
+    ) {}
+
+    /**
+     * The machinery for one question. Definitions resolve into it as the
+     * question reaches them and go away with it, so an answer never rests
+     * on what an earlier question happened to resolve.
+     */
+    private function finder(): MatchFinder
+    {
+        $resolved = new ResolvedCalendar($this->calendar, $this->resolvers, $this->timezone);
         $dayMatcher = new DayMatcher($resolved);
-        $this->finder = new MatchFinder(
+
+        return new MatchFinder(
             $dayMatcher,
-            new AtomDayEnumerator($dayMatcher, $timezone),
+            new AtomDayEnumerator($dayMatcher, $this->timezone),
             new TimesExpander($resolved),
-            $timezone,
+            $this->timezone,
         );
     }
 
@@ -66,7 +74,7 @@ final class YrnkEvaluator
     {
         $this->ensureResolvable($schedule);
 
-        return $this->finder->matches($schedule, DateTimeImmutable::createFromInterface($at));
+        return $this->finder()->matches($schedule, DateTimeImmutable::createFromInterface($at));
     }
 
     /**
@@ -80,7 +88,7 @@ final class YrnkEvaluator
     {
         $this->ensureResolvable($schedule);
 
-        return $this->finder->hasMatchIn(
+        return $this->finder()->hasMatchIn(
             $schedule,
             DateTimeImmutable::createFromInterface($from),
             DateTimeImmutable::createFromInterface($to),
@@ -104,7 +112,7 @@ final class YrnkEvaluator
     {
         $this->ensureResolvable($schedule);
 
-        return $this->finder->occurrencesIn(
+        return $this->finder()->occurrencesIn(
             $schedule,
             DateTimeImmutable::createFromInterface($from),
             DateTimeImmutable::createFromInterface($to),

@@ -36,7 +36,7 @@ use Yarunoka\YrnkBuilder;
 use Yarunoka\YrnkParser;
 
 $parser = new YrnkParser(resolvers: [
-    'yasumi-jp' => fn (): array => /* compute the holiday list with yasumi or the like */,
+    'yasumi-jp' => fn (YrnkDate $from, YrnkDate $to): array => /* the holiday list for that range */,
 ]);
 
 $document = $parser->parse($json);      // the typed tree; syntax + references validated
@@ -71,10 +71,10 @@ $evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie fro
   branch (for a firing decision, the any of "fire when any has a matching
   date-time"; for an enumeration, a merge of the per-branch lists)
 - The YrnkEvaluator is a service living once in the application and
-  reused (bound in the DI container). It memoizes resolver results inside
-  the instance, and **a resolver is called at most once in the lifetime
-  of the instance**. Freshness rides on the binding scope (in a resident
-  process, request scope keeps it naturally fresh)
+  reused (bound in the DI container). **Definitions resolve per question
+  and are not carried between them**, so every answer rests on what the
+  resolvers say at the time it is asked. A caller that would rather not
+  look the same data up again holds it inside its own resolver
 - Beyond the day decision, `matches` lets the schedule decide whether the
   time takes part — with times, the value must equal one of the points
   expanded on the configured timezone's wall clock (to the second;
@@ -112,7 +112,7 @@ use Yarunoka\YrnkSchedule;
 $calendar = new YrnkCalendar(
     holidays: YrnkHolidays::byResolver('yasumi-jp'),                     // a resolver name reference
     // YrnkHolidays::ofDates(['2026-01-01', ...])                        // a fixed list
-    // YrnkHolidays::deferred(fn (): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
+    // YrnkHolidays::deferred(fn (YrnkDate $from, YrnkDate $to): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
     custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'])],
 );
 
@@ -124,9 +124,10 @@ $handmade = new Yrnk(
 );
 ```
 
-- A resolver or deferred closure takes **no arguments and returns dates
-  covering the range being evaluated** (which years to return is decided
-  entirely by the side writing it)
+- A resolver or deferred closure is given **the range it should cover**
+  (`resolve(YrnkDate $from, YrnkDate $to)`) and returns the dates in it.
+  It is asked again for a range it has not covered, so it only ever needs
+  to compute what it was asked for
 - Building a Yrnk containing deferred entries folds them into snapshots
   of the resolved lists (a Closure is not writable in the DSL)
 

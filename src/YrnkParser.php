@@ -25,7 +25,7 @@ final class YrnkParser
     private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
 
     /**
-     * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
+     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
      */
     public function __construct(
         private readonly array $resolvers = [],

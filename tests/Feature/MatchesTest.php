@@ -11,6 +11,7 @@ use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Vocabulary\YrnkDayName;
+use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
@@ -387,13 +388,13 @@ class MatchesTest extends TestCase
     // ---- lazy resolver resolution ----
 
     #[Test]
-    public function a_resolver_is_not_called_at_construction_and_at_most_once_during_evaluation(): void
+    public function a_resolver_is_not_called_at_construction_and_answers_each_question_afresh(): void
     {
         $calls = 0;
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function () use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
                 $calls++;
 
                 return ['2026-01-01'];
@@ -406,6 +407,32 @@ class MatchesTest extends TestCase
         $evaluator->matches($schedule, $this->at('2026-01-01T10:00:00+09:00'));
         $evaluator->matches($schedule, $this->at('2026-01-02T10:00:00+09:00'));
         $evaluator->matches($schedule, $this->at('2026-05-05T10:00:00+09:00'));
+
+        // Three questions, each resolving the year it lands in. Holding
+        // the list across questions is the resolver's own business.
+        $this->assertSame(3, $calls);
+    }
+
+    #[Test]
+    public function a_resolver_is_asked_once_for_a_year_within_one_question(): void
+    {
+        $calls = 0;
+        $evaluator = new YrnkEvaluator(
+            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
+            timezone: new DateTimeZone('Asia/Tokyo'),
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+                $calls++;
+
+                return ['2026-01-01'];
+            }],
+        );
+        $schedule = $this->schedule(['days' => ['holiday'], 'times' => ['10:00']]);
+
+        $evaluator->occurrencesIn(
+            $schedule,
+            $this->at('2026-01-01T00:00:00+09:00'),
+            $this->at('2026-12-31T23:59:59+09:00'),
+        );
 
         $this->assertSame(1, $calls);
     }

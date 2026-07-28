@@ -2,8 +2,8 @@
 
 namespace Yarunoka\Internal\Resolvers;
 
-use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Resolvers\YrnkHolidaysResolverInterface;
+use Yarunoka\YrnkDate;
 use RuntimeException;
 use Yasumi\Yasumi;
 
@@ -12,10 +12,8 @@ use Yasumi\Yasumi;
  * library default). azuyalabs/yasumi is a suggest dependency, installed
  * only when this class is used.
  *
- * The caller chooses the year range so that it covers what is being
- * evaluated — years outside the range are silently treated as "no
- * holidays", so the range must always cover the years the evaluation
- * reaches.
+ * The years covered follow the range asked for, so no year the evaluation
+ * reaches is left out.
  *
  * @internal
  */
@@ -24,29 +22,20 @@ final readonly class YasumiHolidaysResolver implements YrnkHolidaysResolverInter
     /**
      * @param  string  $provider  A yasumi provider name (e.g. 'Japan')
      */
-    public function __construct(
-        private string $provider,
-        private int $fromYear,
-        private int $toYear,
-    ) {
+    public function __construct(private string $provider)
+    {
         if (! class_exists(Yasumi::class)) {
             throw new RuntimeException(
                 'Using YasumiHolidaysResolver requires installing azuyalabs/yasumi (composer require azuyalabs/yasumi)',
             );
         }
-
-        if ($fromYear > $toYear) {
-            throw new InvalidValueException(
-                "Start of the year range must not be after its end: {$fromYear}-{$toYear}",
-            );
-        }
     }
 
-    public function resolve(): array
+    public function resolve(YrnkDate $from, YrnkDate $to): array
     {
         $dates = [];
 
-        for ($year = $this->fromYear; $year <= $this->toYear; $year++) {
+        for ($year = (int) $from->format('Y'); $year <= (int) $to->format('Y'); $year++) {
             foreach (Yasumi::create($this->provider, $year)->getHolidayDates() as $date) {
                 $dates[] = $date;
             }

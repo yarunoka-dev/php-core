@@ -2,18 +2,24 @@
 
 namespace Yarunoka\Resolvers;
 
+use Yarunoka\YrnkDate;
+
 /**
  * The contract for supplying a date set. Usable as the resolution target
  * of a resolver name reference in the definitions, or — alongside a
- * Closure — as the source of a deferred list. An implementation is
- * responsible for returning dates covering the range being evaluated
- * (which years to return is the implementation's own decision). The
- * format of the return value is validated by the evaluating side.
+ * Closure — as the source of a deferred list. The range asked for is the
+ * range the answer has to cover; dates outside it are ignored, and dates
+ * missing inside it read as "not in this set". The format of the return
+ * value is validated by the evaluating side.
+ *
+ * An implementation is called again whenever a range it has not covered
+ * is reached, so it is free to compute only what it is asked for. Holding
+ * results across calls is the implementation's own decision.
  */
 interface YrnkResolverInterface
 {
     /**
-     * @return list<string> YYYY-MM-DD dates covering the range being evaluated
+     * @return list<string> YYYY-MM-DD dates within [from, to]
      */
-    public function resolve(): array;
+    public function resolve(YrnkDate $from, YrnkDate $to): array;
 }

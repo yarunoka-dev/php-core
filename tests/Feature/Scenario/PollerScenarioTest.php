@@ -8,6 +8,8 @@ use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Tests\Support\RoutinePoller;
+use Yarunoka\Tests\Support\HoldingResolver;
+use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
 use DateInterval;
 use DateTimeImmutable;
@@ -92,9 +94,9 @@ class PollerScenarioTest extends TestCase
     }
 
     #[Test]
-    public function the_resolver_resolves_once_however_many_days_are_polled(): void
+    public function a_resolver_that_holds_its_own_answer_is_read_once_however_many_days_are_polled(): void
     {
-        $calls = 0;
+        $resolver = new HoldingResolver(['2026-07-20']);
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
                 holidays: YrnkHolidays::byResolver('db-holidays'),
@@ -102,11 +104,9 @@ class PollerScenarioTest extends TestCase
                 businessDays: YrnkBusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['db-holidays' => function () use (&$calls): array {
-                $calls++;
-
-                return ['2026-07-20'];
-            }],
+            // A resolver is asked per question, so a poller that does not
+            // want a lookup per tick holds the answer itself.
+            resolvers: ['db-holidays' => $resolver],
         );
         $poller = new RoutinePoller(
             $evaluator,
@@ -114,13 +114,13 @@ class PollerScenarioTest extends TestCase
             $this->at('2026-07-16T00:00:00+09:00'),
         );
 
-        $this->assertSame(0, $calls);
+        $this->assertSame(0, $resolver->computations);
 
         $poller->tick($this->at('2026-07-16T08:00:00+09:00'));
         $poller->tick($this->at('2026-07-17T08:00:00+09:00'));
         $poller->tick($this->at('2026-07-21T08:00:00+09:00'));
 
-        $this->assertSame(1, $calls);
+        $this->assertSame(1, $resolver->computations);
     }
 
     // ---- helpers ----
