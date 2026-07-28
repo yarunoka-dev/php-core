@@ -3,7 +3,6 @@
 namespace Yarunoka\Internal\Evaluation;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\BusinessHourRef;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Schedule\FixedTimes;
@@ -15,10 +14,11 @@ use Yarunoka\Time\YrnkTimeWindow;
  * Expansion of times into the scheduled points within one day (seconds
  * from midnight). The nodes keep the written notation, so sorting and
  * laying out the grid happen here. The grid anchors at the start of the
- * window; windows are the half-open interval [start, end). allday
- * carries no time of its own: a range answers for it by whether its day
- * overlaps that range, so the finder decides it without expanding any
- * point here.
+ * window; windows are the half-open interval [start, end). The two time
+ * parts that lay out no point within a day never reach here — allday,
+ * which a range answers for by whether its day overlaps it, and the
+ * interval every, which counts across days on its own arithmetic; the
+ * finder decides both before asking.
  *
  * @internal
  */
@@ -31,10 +31,6 @@ final readonly class TimesExpander
      */
     public function secondsOf(TimesSpecInterface $times): array
     {
-        if ($times instanceof AllDay) {
-            return [0];
-        }
-
         if ($times instanceof FixedTimes) {
             $seconds = array_map(
                 static fn(TimeOfDay $time): int => $time->secondsFromMidnight,
@@ -65,6 +61,10 @@ final readonly class TimesExpander
             return $points;
         }
 
-        throw new InvalidValueException('Unknown times node: ' . get_debug_type($times));
+        // allday and the interval every are decided by the finder before
+        // it gets here — neither lays out points within a day.
+        throw new InvalidValueException(
+            'The times expander only lays out points within a day: ' . get_debug_type($times),
+        );
     }
 }
