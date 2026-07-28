@@ -5,6 +5,7 @@ namespace Yarunoka\Internal;
 use Yarunoka\Calendar\Calendar;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Expression\BusinessHourRef;
 use Yarunoka\Expression\CustomRef;
 use Yarunoka\Expression\DayAtom;
@@ -51,7 +52,7 @@ final class ReferenceChecker
 
         foreach (self::resolverReferences($calendar) as $context => $name) {
             if (! isset($resolvers[$name])) {
-                throw new UndefinedNameException("Unregistered resolver name ({$context}): {$name}");
+                throw new UnregisteredResolverException("Unregistered resolver name ({$context}): {$name}");
             }
         }
     }

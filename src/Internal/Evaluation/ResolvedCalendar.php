@@ -11,6 +11,7 @@ use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
@@ -130,7 +131,7 @@ final class ResolvedCalendar
 
         $resolve = $definition->resolver !== null
             ? ($this->resolvers[$definition->resolver]
-                ?? throw new UndefinedNameException("Unregistered resolver name ({$key}): {$definition->resolver}"))
+                ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}"))
             : $definition->closure;
 
         if ($resolve === null) {

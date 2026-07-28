@@ -7,4 +7,4 @@ namespace Yarunoka\Exceptions;
  * than silently interpreted — a safeguard against the PHP and TS
  * implementations evolving separately.
  */
-class UnsupportedVersionException extends YarunokaException {}
+class UnsupportedVersionException extends InvalidYrnkException {}

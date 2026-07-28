@@ -7,4 +7,4 @@ namespace Yarunoka\Exceptions;
  * reserved word, or it looks like a literal — digits only, date-shaped, or
  * time-shaped).
  */
-class ReservedNameException extends YarunokaException {}
+class ReservedNameException extends InvalidYrnkException {}
