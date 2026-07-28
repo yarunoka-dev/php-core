@@ -19,6 +19,9 @@ use DateTimeZone;
  */
 final class YrnkDateTime extends DateTimeImmutable
 {
+    /**
+     * @internal
+     */
     public function __construct(string $dateTime, DateTimeZone $timezone)
     {
         // The parent accepts relative wording ("tomorrow"), offsets, and

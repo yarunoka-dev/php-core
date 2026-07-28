@@ -25,6 +25,9 @@ trait DateSetDefinition
 
     public readonly ?string $resolver;
 
+    /**
+     * @internal
+     */
     public readonly ?Closure $closure;
 
     /**

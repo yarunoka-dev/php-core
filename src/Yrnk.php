@@ -24,6 +24,7 @@ final readonly class Yrnk
      * @param  list<YrnkSchedule>  $schedules  Unvalidated input. An empty list violates the invariants
      */
     public function __construct(
+        /** @internal */
         public string $version,
         public DateTimeZone $timezone,
         public YrnkCalendar $calendar,
