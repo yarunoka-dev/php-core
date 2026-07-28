@@ -13,8 +13,13 @@ use Yarunoka\Exceptions\InvalidValueException;
  */
 final readonly class DayCycle implements DayAtomInterface
 {
-    public function __construct(public int $intervalDays)
-    {
+    /**
+     * @internal
+     */
+    public function __construct(
+        /** @internal */
+        public int $intervalDays,
+    ) {
         if ($intervalDays < 1) {
             throw new InvalidValueException("Count of every must be an integer of at least 1: {$intervalDays}");
         }

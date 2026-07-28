@@ -11,8 +11,13 @@ use Yarunoka\Vocabulary\Ordinal;
  */
 final readonly class OrdinalWeekday implements DayAtomInterface
 {
+    /**
+     * @internal
+     */
     public function __construct(
+        /** @internal */
         public Ordinal $ordinal,
+        /** @internal */
         public YrnkDayName $dayName,
     ) {}
 }

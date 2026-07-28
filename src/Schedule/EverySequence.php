@@ -16,8 +16,13 @@ use Yarunoka\Vocabulary\TimeUnit;
  */
 final readonly class EverySequence implements TimesSpecInterface
 {
+    /**
+     * @internal
+     */
     public function __construct(
+        /** @internal */
         public int $amount,
+        /** @internal */
         public TimeUnit $unit,
     ) {
         if ($amount < 1) {

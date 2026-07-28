@@ -12,9 +12,13 @@ use Yarunoka\Exceptions\InvalidValueException;
 final readonly class TimeOfDay
 {
     private function __construct(
+        /** @internal */
         public int $secondsFromMidnight,
     ) {}
 
+    /**
+     * @internal
+     */
     public static function fromString(string $time): self
     {
         if (preg_match('/\A([01]\d|2[0-3]):([0-5]\d)\z/', $time, $matches) !== 1) {
@@ -26,6 +30,8 @@ final readonly class TimeOfDay
 
     /**
      * The HH:MM notation paired with fromString (used by the builder).
+     *
+     * @internal
      */
     public function toString(): string
     {

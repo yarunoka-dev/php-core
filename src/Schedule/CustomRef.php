@@ -12,8 +12,13 @@ use Yarunoka\Exceptions\InvalidValueException;
  */
 final readonly class CustomRef implements DayAtomInterface
 {
-    public function __construct(public string $name)
-    {
+    /**
+     * @internal
+     */
+    public function __construct(
+        /** @internal */
+        public string $name,
+    ) {
         if (preg_match('/\\S/u', $name) !== 1) {
             throw new InvalidValueException('Custom definition reference name cannot be empty or whitespace only');
         }

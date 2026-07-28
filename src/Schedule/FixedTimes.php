@@ -11,11 +11,17 @@ use Yarunoka\Time\TimeOfDay;
  */
 final readonly class FixedTimes implements TimesSpecInterface
 {
-    /** @var non-empty-list<TimeOfDay> */
+    /**
+     * @var non-empty-list<TimeOfDay>
+     *
+     * @internal
+     */
     public array $times;
 
     /**
      * @param  list<TimeOfDay>  $times  Unvalidated input. Empty or duplicated enumerations violate the invariants
+     *
+     * @internal
      */
     public function __construct(array $times)
     {

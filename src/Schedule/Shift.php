@@ -14,9 +14,15 @@ use Yarunoka\Vocabulary\Direction;
  */
 final readonly class Shift
 {
+    /**
+     * @internal
+     */
     public function __construct(
+        /** @internal */
         public Direction $direction,
+        /** @internal */
         public bool $orSame,
+        /** @internal */
         public DayAtomInterface $condition,
     ) {
         if ($condition instanceof DayCycle) {

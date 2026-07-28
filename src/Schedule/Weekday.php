@@ -9,5 +9,11 @@ use Yarunoka\Vocabulary\YrnkDayName;
  */
 final readonly class Weekday implements DayAtomInterface
 {
-    public function __construct(public YrnkDayName $dayName) {}
+    /**
+     * @internal
+     */
+    public function __construct(
+        /** @internal */
+        public YrnkDayName $dayName,
+    ) {}
 }

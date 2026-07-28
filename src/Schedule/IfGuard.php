@@ -12,9 +12,15 @@ use Yarunoka\Vocabulary\Direction;
  */
 final readonly class IfGuard
 {
+    /**
+     * @internal
+     */
     public function __construct(
+        /** @internal */
         public ?Direction $direction,
+        /** @internal */
         public bool $negated,
+        /** @internal */
         public DayAtomInterface $condition,
     ) {
         if ($condition instanceof DayCycle) {
