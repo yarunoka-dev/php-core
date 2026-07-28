@@ -1,22 +1,22 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Internal\Parser;
+namespace Yarunoka\Tests\Unit\Calendar;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\ReservedNameException;
-use Yarunoka\Internal\Parser\CalendarParser;
+use Yarunoka\Calendar\YrnkCalendarParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class CalendarParserTest extends TestCase
+class YrnkCalendarParserTest extends TestCase
 {
     #[Test]
     public function parses_a_date_list_of_a_built_in_definition(): void
     {
-        $calendar = CalendarParser::parse(['holidays' => ['2026-01-01']], self::utc());
+        $calendar = (new YrnkCalendarParser())->parse(['holidays' => ['2026-01-01']], self::utc());
 
         $this->assertSame(['2026-01-01'], array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
@@ -28,7 +28,7 @@ class CalendarParserTest extends TestCase
     #[Test]
     public function parses_a_resolver_name_reference(): void
     {
-        $calendar = CalendarParser::parse(['business_days' => 'special-days'], self::utc());
+        $calendar = (new YrnkCalendarParser())->parse(['business_days' => 'special-days'], self::utc());
 
         $this->assertSame('special-days', $calendar->businessDays?->resolver);
     }
@@ -38,13 +38,13 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['business_days' => '   '], self::utc());
+        (new YrnkCalendarParser())->parse(['business_days' => '   '], self::utc());
     }
 
     #[Test]
     public function parses_workweek_and_business_hours(): void
     {
-        $calendar = CalendarParser::parse([
+        $calendar = (new YrnkCalendarParser())->parse([
             'workweek' => ['tue', 'sat'],
             'business_hours' => [['09:00', '12:00'], ['13:00', '18:00']],
         ], self::utc());
@@ -56,7 +56,7 @@ class CalendarParserTest extends TestCase
     #[Test]
     public function parses_custom_values_and_validates_the_key_names(): void
     {
-        $calendar = CalendarParser::parse([
+        $calendar = (new YrnkCalendarParser())->parse([
             'custom' => ['founding-day' => ['2026-10-01'], 'garbage-day' => 'garbage-days'],
         ], self::utc());
 
@@ -69,7 +69,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['holiday' => []], self::utc());
+        (new YrnkCalendarParser())->parse(['holiday' => []], self::utc());
     }
 
     #[Test]
@@ -77,7 +77,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['holidays' => '2026-01-01'], self::utc());
+        (new YrnkCalendarParser())->parse(['holidays' => '2026-01-01'], self::utc());
     }
 
     #[Test]
@@ -85,7 +85,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['custom' => ['anniversary' => '2026-10-01']], self::utc());
+        (new YrnkCalendarParser())->parse(['custom' => ['anniversary' => '2026-10-01']], self::utc());
     }
 
     #[Test]
@@ -93,7 +93,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['holidays' => ['2026-01-01', '2026-01-01']], self::utc());
+        (new YrnkCalendarParser())->parse(['holidays' => ['2026-01-01', '2026-01-01']], self::utc());
     }
 
     #[Test]
@@ -101,7 +101,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        CalendarParser::parse(['custom' => ['holiday' => ['2026-01-01']]], self::utc());
+        (new YrnkCalendarParser())->parse(['custom' => ['holiday' => ['2026-01-01']]], self::utc());
     }
 
     #[Test]
@@ -109,7 +109,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['workweek' => ['monday']], self::utc());
+        (new YrnkCalendarParser())->parse(['workweek' => ['monday']], self::utc());
     }
 
     #[Test]
@@ -117,7 +117,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse(['holidays' => [20260101]], self::utc());
+        (new YrnkCalendarParser())->parse(['holidays' => [20260101]], self::utc());
     }
 
     #[Test]
@@ -125,7 +125,7 @@ class CalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        CalendarParser::parse([['holidays' => []]], self::utc());
+        (new YrnkCalendarParser())->parse([['holidays' => []]], self::utc());
     }
 
     private static function utc(): DateTimeZone

@@ -2,7 +2,7 @@
 
 namespace Yarunoka;
 
-use Yarunoka\Internal\Builder\CalendarBuilder;
+use Yarunoka\Calendar\YrnkCalendarBuilder;
 use Yarunoka\Schedule\YrnkScheduleBuilder;
 
 /**
@@ -16,6 +16,7 @@ final class YrnkBuilder
 {
     public function __construct(
         private readonly YrnkScheduleBuilder $scheduleBuilder = new YrnkScheduleBuilder(),
+        private readonly YrnkCalendarBuilder $calendarBuilder = new YrnkCalendarBuilder(),
     ) {}
 
     /**
@@ -28,7 +29,7 @@ final class YrnkBuilder
             'timezone' => $document->timezone->getName(),
         ];
 
-        $calendar = CalendarBuilder::build($document->calendar, $document->timezone);
+        $calendar = $this->calendarBuilder->build($document->calendar, $document->timezone);
 
         if ($calendar !== []) {
             $raw['calendar'] = $calendar;

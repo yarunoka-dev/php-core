@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Internal\Builder;
+namespace Yarunoka\Tests\Unit\Calendar;
 
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
@@ -8,14 +8,14 @@ use Yarunoka\Calendar\YrnkCustomDefinition;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
-use Yarunoka\Internal\Builder\CalendarBuilder;
+use Yarunoka\Calendar\YrnkCalendarBuilder;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class CalendarBuilderTest extends TestCase
+class YrnkCalendarBuilderTest extends TestCase
 {
     #[Test]
     public function builds_each_definition_into_its_raw_dsl_shape_omitting_null_keys(): void
@@ -32,13 +32,13 @@ class CalendarBuilderTest extends TestCase
             'workweek' => ['tue', 'sat'],
             'business_hours' => [['09:00', '18:00']],
             'custom' => ['founding-day' => ['2026-10-01']],
-        ], CalendarBuilder::build($calendar, self::utc()));
+        ], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
     }
 
     #[Test]
     public function empty_definitions_become_empty(): void
     {
-        $this->assertSame([], CalendarBuilder::build(new YrnkCalendar(), self::utc()));
+        $this->assertSame([], (new YrnkCalendarBuilder())->build(new YrnkCalendar(), self::utc()));
     }
 
     #[Test]
@@ -46,7 +46,7 @@ class CalendarBuilderTest extends TestCase
     {
         $calendar = new YrnkCalendar(holidays: YrnkHolidays::byResolver('yasumi-jp'));
 
-        $this->assertSame(['holidays' => 'yasumi-jp'], CalendarBuilder::build($calendar, self::utc()));
+        $this->assertSame(['holidays' => 'yasumi-jp'], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
     }
 
     #[Test]
@@ -56,7 +56,7 @@ class CalendarBuilderTest extends TestCase
             holidays: YrnkHolidays::deferred(static fn(): array => ['2026-01-01']),
         );
 
-        $this->assertSame(['holidays' => ['2026-01-01']], CalendarBuilder::build($calendar, self::utc()));
+        $this->assertSame(['holidays' => ['2026-01-01']], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
     }
 
     #[Test]
@@ -68,7 +68,7 @@ class CalendarBuilderTest extends TestCase
 
         $this->expectException(InvalidCalendarDataException::class);
 
-        CalendarBuilder::build($calendar, self::utc());
+        (new YrnkCalendarBuilder())->build($calendar, self::utc());
     }
 
     #[Test]
@@ -80,7 +80,7 @@ class CalendarBuilderTest extends TestCase
 
         $this->expectException(InvalidCalendarDataException::class);
 
-        CalendarBuilder::build($calendar, self::utc());
+        (new YrnkCalendarBuilder())->build($calendar, self::utc());
     }
 
     private static function utc(): DateTimeZone

@@ -1,12 +1,7 @@
 <?php
 
-namespace Yarunoka\Internal\Builder;
+namespace Yarunoka\Calendar;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
-use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
-use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\YrnkDate;
@@ -20,15 +15,13 @@ use DateTimeZone;
  * (output that preserves the intent, on the premise that the reader holds
  * the same resolver). A Closure (deferred) is not writable in the DSL, so
  * it is resolved and folded into a snapshot (a date list).
- *
- * @internal
  */
-final class CalendarBuilder
+final class YrnkCalendarBuilder
 {
     /**
      * @return array<string, mixed>
      */
-    public static function build(YrnkCalendar $calendar, DateTimeZone $timezone): array
+    public function build(YrnkCalendar $calendar, DateTimeZone $timezone): array
     {
         $raw = [];
 

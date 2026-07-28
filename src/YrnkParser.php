@@ -5,7 +5,7 @@ namespace Yarunoka;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Internal\Parser\CalendarParser;
+use Yarunoka\Calendar\YrnkCalendarParser;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Schedule\YrnkScheduleParser;
@@ -30,6 +30,7 @@ final class YrnkParser
     public function __construct(
         private readonly array $resolvers = [],
         private readonly YrnkScheduleParser $scheduleParser = new YrnkScheduleParser(),
+        private readonly YrnkCalendarParser $calendarParser = new YrnkCalendarParser(),
     ) {}
 
     /**
@@ -57,7 +58,7 @@ final class YrnkParser
         // points on the document's clock, so neither can be parsed
         // without it.
         $timezone = $this->parseTimezone($input);
-        $calendar = CalendarParser::parse($input['calendar'] ?? [], $timezone);
+        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone);
 
         try {
             $document = new Yrnk(
