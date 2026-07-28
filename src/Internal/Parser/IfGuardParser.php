@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\IfGuard;
+use Yarunoka\Schedule\IfGuard;
 use Yarunoka\Vocabulary\Direction;
 
 /**

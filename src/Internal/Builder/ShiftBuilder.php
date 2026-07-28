@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Internal\Builder;
 
-use Yarunoka\Expression\Shift;
+use Yarunoka\Schedule\Shift;
 
 /**
  * The mirror image of ShiftParser. Shift node → RawShift.

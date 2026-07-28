@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 /**
  * The "business_hour" reference of between. The actual windows (the

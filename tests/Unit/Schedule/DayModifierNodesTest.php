@@ -1,13 +1,13 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Expression;
+namespace Yarunoka\Tests\Unit\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\DayExpression;
-use Yarunoka\Expression\IfGuard;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\Shift;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\DayExpression;
+use Yarunoka\Schedule\IfGuard;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\Shift;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Direction;

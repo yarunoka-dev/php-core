@@ -4,10 +4,10 @@ namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;

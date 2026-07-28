@@ -3,11 +3,11 @@
 namespace Yarunoka\Internal\Evaluation;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
 
@@ -29,7 +29,7 @@ final readonly class TimesExpander
     /**
      * @return list<int> In ascending order
      */
-    public function secondsOf(TimesSpec $times): array
+    public function secondsOf(TimesSpecInterface $times): array
     {
         if ($times instanceof AllDay) {
             return [0];

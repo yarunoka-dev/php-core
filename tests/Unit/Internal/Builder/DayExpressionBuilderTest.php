@@ -2,9 +2,9 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Builder;
 
-use Yarunoka\Expression\DayExpression;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\DayExpression;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Builder\DayExpressionBuilder;
 use Yarunoka\Vocabulary\YrnkDayName;
 use PHPUnit\Framework\Attributes\Test;

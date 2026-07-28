@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\DayCycle;
+use Yarunoka\Schedule\DayCycle;
 
 /**
  * The parser for the day-cycle tuple (["every", 2, "day"] — every N

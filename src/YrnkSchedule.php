@@ -3,12 +3,12 @@
 namespace Yarunoka;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\DayCycle;
-use Yarunoka\Expression\DayExpression;
-use Yarunoka\Expression\EverySequence;
-use Yarunoka\Expression\IfGuard;
-use Yarunoka\Expression\Shift;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\DayCycle;
+use Yarunoka\Schedule\DayExpression;
+use Yarunoka\Schedule\EverySequence;
+use Yarunoka\Schedule\IfGuard;
+use Yarunoka\Schedule\Shift;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\YrnkDateTime;
 
 /**
@@ -32,7 +32,7 @@ final readonly class YrnkSchedule
      * @param  list<int>|null  $months  1–12. Likewise
      */
     public function __construct(
-        public TimesSpec $times,
+        public TimesSpecInterface $times,
         ?array $years = null,
         ?array $months = null,
         public ?DayExpression $days = null,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Vocabulary\Direction;
@@ -15,7 +15,7 @@ final readonly class IfGuard
     public function __construct(
         public ?Direction $direction,
         public bool $negated,
-        public DayAtom $condition,
+        public DayAtomInterface $condition,
     ) {
         if ($condition instanceof DayCycle) {
             throw new InvalidValueException('["every", N, "day"] is allowed only in the days enumeration (not as an if condition)');

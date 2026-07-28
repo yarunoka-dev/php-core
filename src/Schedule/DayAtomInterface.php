@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 /**
  * An atom of a day expression. Marker for the values that can appear in the
@@ -8,4 +8,4 @@ namespace Yarunoka\Expression;
  * condition in the DSL. Nodes carry structure only; evaluation is done by
  * YrnkEvaluator.
  */
-interface DayAtom {}
+interface DayAtomInterface {}

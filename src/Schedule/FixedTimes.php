@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Time\TimeOfDay;
@@ -9,7 +9,7 @@ use Yarunoka\Time\TimeOfDay;
  * An enumeration of fixed times. Kept in written order so that
  * round-tripping is the identity (sorting is evaluation's job).
  */
-final readonly class FixedTimes implements TimesSpec
+final readonly class FixedTimes implements TimesSpecInterface
 {
     /** @var non-empty-list<TimeOfDay> */
     public array $times;

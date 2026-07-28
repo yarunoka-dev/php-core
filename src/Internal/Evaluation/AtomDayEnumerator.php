@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Internal\Evaluation;
 
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
 use DateTimeZone;
@@ -31,7 +31,7 @@ final readonly class AtomDayEnumerator
     /**
      * @return list<int> Day numbers in ascending order
      */
-    public function daysIn(DayAtom $atom, int $year, int $month): array
+    public function daysIn(DayAtomInterface $atom, int $year, int $month): array
     {
         return match (true) {
             $atom instanceof MonthDay => $atom->dayOfMonth <= $this->daysInMonth($year, $month)
@@ -78,7 +78,7 @@ final readonly class AtomDayEnumerator
     /**
      * @return list<int>
      */
-    private function scanDays(DayAtom $atom, int $year, int $month): array
+    private function scanDays(DayAtomInterface $atom, int $year, int $month): array
     {
         $days = [];
         $daysInMonth = $this->daysInMonth($year, $month);

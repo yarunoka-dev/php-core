@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Builder;
 use Yarunoka\Builder\YrnkBuilder;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Expression\AllDay;
+use Yarunoka\Schedule\AllDay;
 use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;

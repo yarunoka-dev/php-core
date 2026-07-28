@@ -1,15 +1,15 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Expression;
+namespace Yarunoka\Tests\Unit\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\DayExpression;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\DayExpression;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
@@ -100,11 +100,11 @@ class DayAtomNodesTest extends TestCase
     #[Test]
     public function every_atom_is_a_day_atom(): void
     {
-        $this->assertInstanceOf(DayAtom::class, new MonthDay(25));
-        $this->assertInstanceOf(DayAtom::class, new Weekday(YrnkDayName::Mon));
-        $this->assertInstanceOf(DayAtom::class, new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri));
-        $this->assertInstanceOf(DayAtom::class, new LastDayOfMonth());
-        $this->assertInstanceOf(DayAtom::class, new CustomRef('founding-day'));
-        $this->assertInstanceOf(DayAtom::class, CalendarWord::Holiday);
+        $this->assertInstanceOf(DayAtomInterface::class, new MonthDay(25));
+        $this->assertInstanceOf(DayAtomInterface::class, new Weekday(YrnkDayName::Mon));
+        $this->assertInstanceOf(DayAtomInterface::class, new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri));
+        $this->assertInstanceOf(DayAtomInterface::class, new LastDayOfMonth());
+        $this->assertInstanceOf(DayAtomInterface::class, new CustomRef('founding-day'));
+        $this->assertInstanceOf(DayAtomInterface::class, CalendarWord::Holiday);
     }
 }

@@ -3,8 +3,8 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\IfGuard;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\IfGuard;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Parser\IfGuardParser;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;

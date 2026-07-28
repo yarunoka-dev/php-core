@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 
@@ -11,7 +11,7 @@ use Yarunoka\Exceptions\InvalidValueException;
  * YrnkSchedule). Allowed only as an element of the `days` enumeration (not
  * as a `shift` landing condition or an `if` condition).
  */
-final readonly class DayCycle implements DayAtom
+final readonly class DayCycle implements DayAtomInterface
 {
     public function __construct(public int $intervalDays)
     {

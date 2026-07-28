@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Time\YrnkTimeWindow;
@@ -12,7 +12,7 @@ use Yarunoka\Vocabulary\TimeUnit;
  * round-tripping is the identity). A null between means the whole day
  * [00:00, 24:00).
  */
-final readonly class EveryGrid implements TimesSpec
+final readonly class EveryGrid implements TimesSpecInterface
 {
     public function __construct(
         public int $amount,

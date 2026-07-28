@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Vocabulary\TimeUnit;
@@ -14,7 +14,7 @@ use Yarunoka\Vocabulary\TimeUnit;
  * its per-day re-anchoring semantics and does not apply to a
  * from-anchored sequence.
  */
-final readonly class EverySequence implements TimesSpec
+final readonly class EverySequence implements TimesSpecInterface
 {
     public function __construct(
         public int $amount,

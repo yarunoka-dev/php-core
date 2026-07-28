@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Builder;
 
-use Yarunoka\Expression\Shift;
+use Yarunoka\Schedule\Shift;
 use Yarunoka\Internal\Builder\ShiftBuilder;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\Direction;

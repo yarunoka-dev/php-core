@@ -3,10 +3,10 @@
 namespace Yarunoka\Tests\Unit\Internal\Builder;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Internal\Builder\TimesBuilder;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;

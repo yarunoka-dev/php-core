@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\EverySequence;
+use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Vocabulary\TimeUnit;
 
 /**

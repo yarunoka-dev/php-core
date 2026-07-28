@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 
@@ -10,7 +10,7 @@ use Yarunoka\Exceptions\InvalidValueException;
  * is validated by the holder of the definitions (YrnkParser /
  * YrnkEvaluator).
  */
-final readonly class CustomRef implements DayAtom
+final readonly class CustomRef implements DayAtomInterface
 {
     public function __construct(public string $name)
     {

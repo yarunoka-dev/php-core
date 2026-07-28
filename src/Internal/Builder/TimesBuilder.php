@@ -3,10 +3,10 @@
 namespace Yarunoka\Internal\Builder;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Time\TimeOfDay;
 
 /**
@@ -20,7 +20,7 @@ final class TimesBuilder
     /**
      * @return list<string>|array{every: array{int, string}, between?: string|array{string, string}}
      */
-    public static function build(TimesSpec $times): array
+    public static function build(TimesSpecInterface $times): array
     {
         if ($times instanceof FixedTimes) {
             return array_map(

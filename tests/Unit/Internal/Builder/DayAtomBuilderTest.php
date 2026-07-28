@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Builder;
 
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Builder\DayAtomBuilder;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;

@@ -6,10 +6,10 @@ use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\EveryGrid;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\YrnkSchedule;
@@ -81,7 +81,7 @@ final class ReferenceChecker
     }
 
     /**
-     * @return iterable<DayAtom>
+     * @return iterable<DayAtomInterface>
      */
     private static function atomsOf(YrnkSchedule $schedule): iterable
     {

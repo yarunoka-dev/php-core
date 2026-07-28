@@ -3,9 +3,9 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Internal\Parser\TimesParser;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;

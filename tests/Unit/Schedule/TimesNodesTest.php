@@ -1,13 +1,13 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Expression;
+namespace Yarunoka\Tests\Unit\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
@@ -113,8 +113,8 @@ class TimesNodesTest extends TestCase
     #[Test]
     public function every_time_specification_is_a_times_spec(): void
     {
-        $this->assertInstanceOf(TimesSpec::class, new FixedTimes([TimeOfDay::fromString('09:00')]));
-        $this->assertInstanceOf(TimesSpec::class, new EveryGrid(1, TimeUnit::Hour, between: null));
-        $this->assertInstanceOf(TimesSpec::class, new AllDay());
+        $this->assertInstanceOf(TimesSpecInterface::class, new FixedTimes([TimeOfDay::fromString('09:00')]));
+        $this->assertInstanceOf(TimesSpecInterface::class, new EveryGrid(1, TimeUnit::Hour, between: null));
+        $this->assertInstanceOf(TimesSpecInterface::class, new AllDay());
     }
 }

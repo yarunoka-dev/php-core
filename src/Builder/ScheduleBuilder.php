@@ -2,8 +2,8 @@
 
 namespace Yarunoka\Builder;
 
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\EverySequence;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Internal\Builder\DayExpressionBuilder;
 use Yarunoka\Internal\Builder\IfGuardBuilder;
 use Yarunoka\Internal\Builder\ShiftBuilder;

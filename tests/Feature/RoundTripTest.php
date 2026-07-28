@@ -6,7 +6,7 @@ use Yarunoka\Builder\ScheduleBuilder;
 use Yarunoka\Builder\YrnkBuilder;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Expression\AllDay;
+use Yarunoka\Schedule\AllDay;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Parser\YrnkParser;
 use Yarunoka\Yrnk;

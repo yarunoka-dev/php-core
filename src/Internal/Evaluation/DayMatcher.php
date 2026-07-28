@@ -3,12 +3,12 @@
 namespace Yarunoka\Internal\Evaluation;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
@@ -32,7 +32,7 @@ final readonly class DayMatcher
 {
     public function __construct(private ResolvedCalendar $calendar) {}
 
-    public function matches(DayAtom $atom, YrnkDate $date): bool
+    public function matches(DayAtomInterface $atom, YrnkDate $date): bool
     {
         return match (true) {
             $atom instanceof MonthDay => self::dayOfMonth($date) === $atom->dayOfMonth,
