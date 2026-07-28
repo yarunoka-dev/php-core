@@ -16,11 +16,11 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The enumeration query (occurrencesIn): the occurrence set cut to the
- * closed window [from, to], timed occurrences answered as instants and
- * all-day occurrences as dates, in ascending order of comparison
- * instant. Results are rendered to strings so that both the values and
- * the returned kinds (instant vs date) are asserted at once.
+ * The enumeration query (occurrencesIn): the occurrence set cut to what
+ * the caller names, from a through b, timed occurrences answered as
+ * instants and all-day occurrences as dates, in ascending order of
+ * comparison instant. Results are rendered to strings so that both the
+ * values and the returned kinds (instant vs date) are asserted at once.
  */
 class OccurrencesInTest extends TestCase
 {

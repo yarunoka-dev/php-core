@@ -100,7 +100,7 @@ class TimezoneAnomalyTest extends TestCase
         $schedule = $this->allday($year, $month, $day, $timezone);
 
         // The window opens a month early so that the occurrence is never
-        // the excluded left end of the half-open interval.
+        // the excluded start of the period.
         $this->assertTrue($this->coversTheMonth($schedule, $timezone, $year, $month));
     }
 

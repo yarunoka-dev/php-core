@@ -15,11 +15,11 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Cross-checks of hasMatchIn (the interval check): the worked examples of
- * the design report, catch-up question patterns, interval boundaries, and
- * timezone boundaries. "The next point is here" is verified as a boundary
- * pair cutting to just before the point (yes up to the point itself, no
- * up to one second before it).
+ * Cross-checks of hasMatchIn (the judgment over a period): the worked
+ * examples of the design report, catch-up question patterns, period
+ * boundaries, and timezone boundaries. "The next point is here" is
+ * verified as a boundary pair cutting to just before the point (yes up
+ * to the point itself, no up to one second before it).
  */
 class HasMatchInTest extends TestCase
 {
@@ -187,7 +187,7 @@ class HasMatchInTest extends TestCase
         ));
     }
 
-    // ---- the boundaries of the question interval (from, to] ----
+    // ---- the boundaries of the period (after a, through b) ----
 
     #[Test]
     public function a_point_exactly_at_the_lower_bound_is_not_counted_and_one_at_the_upper_bound_is(): void
