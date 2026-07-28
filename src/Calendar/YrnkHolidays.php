@@ -8,7 +8,7 @@ use Yarunoka\Internal\DateSetDefinition;
  * The holidays definition — public holidays. In the layer model, the
  * "closed by default" layer (a built-in definition).
  */
-final class Holidays
+final class YrnkHolidays
 {
     use DateSetDefinition;
 }

@@ -4,8 +4,8 @@ namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Builder\ScheduleBuilder;
 use Yarunoka\Builder\YrnkBuilder;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Parser\YrnkParser;
@@ -284,8 +284,8 @@ class RoundTripTest extends TestCase
         $document = new Yrnk(
             version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            calendar: new Calendar(
-                holidays: Holidays::deferred(static fn(): array => ['2026-01-01']),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::deferred(static fn(): array => ['2026-01-01']),
             ),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );

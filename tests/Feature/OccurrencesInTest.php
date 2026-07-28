@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
@@ -309,7 +309,7 @@ class OccurrencesInTest extends TestCase
         // does not exist and is pushed to 03:15 EDT, standing after the
         // wall 03:00 point in real time. The answer follows the
         // instants, not the wall order.
-        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']]);
 
         $this->assertSame(
@@ -333,7 +333,7 @@ class OccurrencesInTest extends TestCase
     {
         // Wall 02:00 is pushed onto the wall 03:00 point's instant; the
         // set contains that point once.
-        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['from' => '2026-03-08 01:00', 'every' => [60, 'minute']]);
 
         $this->assertSame(
@@ -353,7 +353,7 @@ class OccurrencesInTest extends TestCase
     {
         // America/New_York transitions 02:00 EST → 03:00 EDT on
         // 2026-03-08: the 02:30 point is pushed onto the 03:30 one.
-        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['02:30', '03:30']]);
 
         $this->assertSame(['2026-03-08T03:30:00-04:00'], $this->rendered($evaluator->occurrencesIn(
@@ -408,10 +408,10 @@ class OccurrencesInTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::ofDates([], self::tz()),
-                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
-                businessDays: BusinessDays::ofDates([], self::tz()),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::ofDates([], self::tz()),
+                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

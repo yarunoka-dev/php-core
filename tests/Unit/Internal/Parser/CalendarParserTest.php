@@ -6,7 +6,7 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\ReservedNameException;
 use Yarunoka\Internal\Parser\CalendarParser;
 use Yarunoka\YrnkDate;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +49,7 @@ class CalendarParserTest extends TestCase
             'business_hours' => [['09:00', '12:00'], ['13:00', '18:00']],
         ], self::utc());
 
-        $this->assertSame([DayName::Tue, DayName::Sat], $calendar->workweek?->days);
+        $this->assertSame([YrnkDayName::Tue, YrnkDayName::Sat], $calendar->workweek?->days);
         $this->assertCount(2, $calendar->businessHours->windows ?? []);
     }
 

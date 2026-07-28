@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -112,7 +112,7 @@ class EvaluationConsistencyTest extends TestCase
         // the forward push of the point (RFC 5545) must agree between the
         // two.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['times' => ['02:30']], $timezone);
         $points = [
             ...$this->pointsBetween('02:30:00', '2026-03-01', '2026-03-14', $timezone),
@@ -165,11 +165,11 @@ class EvaluationConsistencyTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
-                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
-                businessDays: BusinessDays::ofDates([], self::tz()),
-                custom: ['anniversary' => CustomDefinition::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
+                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                custom: ['anniversary' => YrnkCustomDefinition::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

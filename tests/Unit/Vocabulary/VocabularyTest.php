@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Unit\Vocabulary;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Direction;
 use Yarunoka\Vocabulary\Ordinal;
 use Yarunoka\Vocabulary\TimeUnit;
@@ -15,8 +15,8 @@ class VocabularyTest extends TestCase
     #[Test]
     public function day_name_is_lookupable_by_iso_number(): void
     {
-        $this->assertSame(DayName::Mon, DayName::fromIsoNumber(1));
-        $this->assertSame(DayName::Sun, DayName::fromIsoNumber(7));
+        $this->assertSame(YrnkDayName::Mon, YrnkDayName::fromIsoNumber(1));
+        $this->assertSame(YrnkDayName::Sun, YrnkDayName::fromIsoNumber(7));
     }
 
     #[Test]
@@ -24,7 +24,7 @@ class VocabularyTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        DayName::fromIsoNumber(8);
+        YrnkDayName::fromIsoNumber(8);
     }
 
     #[Test]
@@ -32,24 +32,24 @@ class VocabularyTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        DayName::fromIsoNumber(0);
+        YrnkDayName::fromIsoNumber(0);
     }
 
     #[Test]
     public function day_name_iso_number_pairs_with_from_iso_number(): void
     {
-        $this->assertSame(1, DayName::Mon->isoNumber());
-        $this->assertSame(7, DayName::Sun->isoNumber());
-        $this->assertSame(DayName::Wed, DayName::fromIsoNumber(DayName::Wed->isoNumber()));
+        $this->assertSame(1, YrnkDayName::Mon->isoNumber());
+        $this->assertSame(7, YrnkDayName::Sun->isoNumber());
+        $this->assertSame(YrnkDayName::Wed, YrnkDayName::fromIsoNumber(YrnkDayName::Wed->isoNumber()));
     }
 
     #[Test]
     public function day_name_is_weekend_only_for_saturday_and_sunday(): void
     {
-        $this->assertTrue(DayName::Sat->isWeekend());
-        $this->assertTrue(DayName::Sun->isWeekend());
-        $this->assertFalse(DayName::Mon->isWeekend());
-        $this->assertFalse(DayName::Fri->isWeekend());
+        $this->assertTrue(YrnkDayName::Sat->isWeekend());
+        $this->assertTrue(YrnkDayName::Sun->isWeekend());
+        $this->assertFalse(YrnkDayName::Mon->isWeekend());
+        $this->assertFalse(YrnkDayName::Fri->isWeekend());
     }
 
     #[Test]

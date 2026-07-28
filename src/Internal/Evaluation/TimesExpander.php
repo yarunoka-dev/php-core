@@ -9,7 +9,7 @@ use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Expression\TimesSpec;
 use Yarunoka\Time\TimeOfDay;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 
 /**
  * Expansion of times into the scheduled points within one day (seconds
@@ -48,9 +48,9 @@ final readonly class TimesExpander
         if ($times instanceof EveryGrid) {
             $step = $times->amount * $times->unit->seconds();
             $windows = match (true) {
-                $times->between instanceof TimeWindow => [$times->between],
+                $times->between instanceof YrnkTimeWindow => [$times->between],
                 $times->between instanceof BusinessHourRef => $this->calendar->businessHourWindows(),
-                default => [TimeWindow::fromStrings('00:00', '24:00')],
+                default => [YrnkTimeWindow::fromStrings('00:00', '24:00')],
             };
             $points = [];
 

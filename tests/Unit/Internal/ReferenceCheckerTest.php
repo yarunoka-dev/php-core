@@ -2,17 +2,17 @@
 
 namespace Yarunoka\Tests\Unit\Internal;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHours;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHours;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
@@ -25,9 +25,9 @@ class ReferenceCheckerTest extends TestCase
     {
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday', 'founding-day'], 'times' => ['09:00']])],
-            new Calendar(
-                holidays: Holidays::byResolver('yasumi-jp'),
-                custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'], self::utc())],
+            new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('yasumi-jp'),
+                custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
             ),
             resolvers: ['yasumi-jp' => static fn(): array => []],
         );
@@ -42,7 +42,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['founding-day'], 'times' => ['09:00']])],
-            new Calendar(),
+            new YrnkCalendar(),
             resolvers: [],
         );
     }
@@ -54,7 +54,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday'], 'times' => ['09:00']])],
-            new Calendar(),
+            new YrnkCalendar(),
             resolvers: [],
         );
     }
@@ -65,7 +65,7 @@ class ReferenceCheckerTest extends TestCase
         try {
             ReferenceChecker::ensureResolvable(
                 [$this->schedule(['days' => ['business_day'], 'times' => ['09:00']])],
-                new Calendar(holidays: Holidays::ofDates([], self::utc())),
+                new YrnkCalendar(holidays: YrnkHolidays::ofDates([], self::utc())),
                 resolvers: [],
             );
             $this->fail('MissingCalendarDataException was not thrown');
@@ -82,7 +82,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => [25], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['09:00']])],
-            new Calendar(),
+            new YrnkCalendar(),
             resolvers: [],
         );
     }
@@ -94,7 +94,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']])],
-            new Calendar(),
+            new YrnkCalendar(),
             resolvers: [],
         );
     }
@@ -104,7 +104,7 @@ class ReferenceCheckerTest extends TestCase
     {
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['every' => [1, 'hour'], 'between' => 'business_hour']])],
-            new Calendar(businessHours: new BusinessHours([TimeWindow::fromStrings('09:00', '18:00')])),
+            new YrnkCalendar(businessHours: new YrnkBusinessHours([YrnkTimeWindow::fromStrings('09:00', '18:00')])),
             resolvers: [],
         );
 
@@ -118,7 +118,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['weekday'], 'times' => ['09:00']])],
-            new Calendar(businessDays: BusinessDays::byResolver('unknown')),
+            new YrnkCalendar(businessDays: YrnkBusinessDays::byResolver('unknown')),
             resolvers: [],
         );
     }
@@ -130,7 +130,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['09:00']])],
-            new Calendar(custom: ['garbage-day' => CustomDefinition::byResolver('unknown')]),
+            new YrnkCalendar(custom: ['garbage-day' => YrnkCustomDefinition::byResolver('unknown')]),
             resolvers: [],
         );
     }

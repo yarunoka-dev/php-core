@@ -9,7 +9,7 @@ use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Expression\TimesSpec;
 use Yarunoka\Time\TimeOfDay;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 
 /**
@@ -103,7 +103,7 @@ final class TimesParser
         return [$amount, $unit];
     }
 
-    private static function parseBetween(mixed $raw): TimeWindow|BusinessHourRef
+    private static function parseBetween(mixed $raw): YrnkTimeWindow|BusinessHourRef
     {
         if ($raw === 'business_hour') {
             return new BusinessHourRef();
@@ -116,7 +116,7 @@ final class TimesParser
         if (is_array($raw) && array_is_list($raw) && count($raw) === 2
             && is_string($raw[0]) && is_string($raw[1])) {
             try {
-                return TimeWindow::fromStrings($raw[0], $raw[1]);
+                return YrnkTimeWindow::fromStrings($raw[0], $raw[1]);
             } catch (InvalidValueException $e) {
                 throw new InvalidYrnkException($e->getMessage());
             }

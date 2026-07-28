@@ -2,13 +2,13 @@
 
 namespace Yarunoka\Tests\Feature\Scenario;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\BusinessHours;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessHours;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
@@ -118,10 +118,10 @@ class CalendarScenarioTest extends TestCase
         // 15:00. No point during the lunch break (12:00–13:00), and 17:00
         // is outside the half-open interval.
         $evaluator = new YrnkEvaluator(
-            calendar: new Calendar(
-                businessHours: new BusinessHours([
-                    TimeWindow::fromStrings('09:00', '12:00'),
-                    TimeWindow::fromStrings('13:00', '17:00'),
+            calendar: new YrnkCalendar(
+                businessHours: new YrnkBusinessHours([
+                    YrnkTimeWindow::fromStrings('09:00', '12:00'),
+                    YrnkTimeWindow::fromStrings('13:00', '17:00'),
                 ]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
@@ -156,10 +156,10 @@ class CalendarScenarioTest extends TestCase
     private function evaluator(): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::ofDates(self::JAPANESE_HOLIDAYS_2026, self::tz()),
-                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
-                businessDays: BusinessDays::ofDates([], self::tz()),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::ofDates(self::JAPANESE_HOLIDAYS_2026, self::tz()),
+                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

@@ -10,7 +10,7 @@ use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 
 /**
@@ -56,7 +56,7 @@ final class DayAtomParser
             throw new InvalidYrnkException('Day expression atom cannot be an empty string');
         }
 
-        $dayName = DayName::tryFrom($word);
+        $dayName = YrnkDayName::tryFrom($word);
 
         if ($dayName !== null) {
             return new Weekday($dayName);
@@ -114,7 +114,7 @@ final class DayAtomParser
             throw new InvalidYrnkException("Ordinal word must be one of 1st through 5th or last: {$raw[0]}");
         }
 
-        $dayName = DayName::tryFrom($raw[1]);
+        $dayName = YrnkDayName::tryFrom($raw[1]);
 
         if ($dayName === null) {
             throw new InvalidYrnkException("Day name must be mon through sun: {$raw[1]}");

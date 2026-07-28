@@ -2,15 +2,15 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
-use Yarunoka\Calendar\Workweek;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
@@ -118,7 +118,7 @@ class MatchesTest extends TestCase
         // 2026-03-08. The wall time 02:30 does not exist; the point
         // stands at the pre-transition-offset interpretation = the
         // instant 03:30 EDT.
-        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [8], 'times' => ['02:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-03-08T03:30:00-04:00')));
@@ -131,7 +131,7 @@ class MatchesTest extends TestCase
         // 02:00 EDT → 01:00 EST on 2026-11-01, so the wall time 01:30
         // occurs twice. The point counts only as its first occurrence
         // (EDT, -04:00).
-        $evaluator = new YrnkEvaluator(new Calendar(), new DateTimeZone('America/New_York'));
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('America/New_York'));
         $schedule = $this->schedule(['days' => [1], 'times' => ['01:30']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-11-01T01:30:00-04:00')));
@@ -391,7 +391,7 @@ class MatchesTest extends TestCase
     {
         $calls = 0;
         $evaluator = new YrnkEvaluator(
-            calendar: new Calendar(holidays: Holidays::byResolver('counting')),
+            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
             resolvers: ['counting' => function () use (&$calls): array {
                 $calls++;
@@ -427,15 +427,15 @@ class MatchesTest extends TestCase
         array $custom = [],
     ): YrnkEvaluator {
         return new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::ofDates($holidays, self::tz()),
-                businessHolidays: BusinessHolidays::ofDates($businessHolidays, self::tz()),
-                businessDays: BusinessDays::ofDates($businessDays, self::tz()),
-                workweek: $workweek === null ? null : new Workweek(
-                    array_map(static fn(string $day) => DayName::from($day), $workweek),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::ofDates($holidays, self::tz()),
+                businessHolidays: YrnkBusinessHolidays::ofDates($businessHolidays, self::tz()),
+                businessDays: YrnkBusinessDays::ofDates($businessDays, self::tz()),
+                workweek: $workweek === null ? null : new YrnkWorkweek(
+                    array_map(static fn(string $day) => YrnkDayName::from($day), $workweek),
                 ),
                 custom: array_map(
-                    static fn(array $dates) => CustomDefinition::ofDates($dates, self::tz()),
+                    static fn(array $dates) => YrnkCustomDefinition::ofDates($dates, self::tz()),
                     $custom,
                 ),
             ),

@@ -2,12 +2,12 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
-use Yarunoka\Calendar\Workweek;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Expression\CustomRef;
 use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
@@ -17,7 +17,7 @@ use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
@@ -57,8 +57,8 @@ class AtomDayEnumeratorTest extends TestCase
     {
         $enumerator = $this->enumerator();
 
-        $this->assertSame([6, 13, 20, 27], $enumerator->daysIn(new Weekday(DayName::Mon), 2026, 7));
-        $this->assertSame([1, 8, 15, 22, 29], $enumerator->daysIn(new Weekday(DayName::Wed), 2026, 7));
+        $this->assertSame([6, 13, 20, 27], $enumerator->daysIn(new Weekday(YrnkDayName::Mon), 2026, 7));
+        $this->assertSame([1, 8, 15, 22, 29], $enumerator->daysIn(new Weekday(YrnkDayName::Wed), 2026, 7));
     }
 
     #[Test]
@@ -67,7 +67,7 @@ class AtomDayEnumeratorTest extends TestCase
         // 2026-06-01 is a Monday.
         $enumerator = $this->enumerator();
 
-        $this->assertSame([1, 8, 15, 22, 29], $enumerator->daysIn(new Weekday(DayName::Mon), 2026, 6));
+        $this->assertSame([1, 8, 15, 22, 29], $enumerator->daysIn(new Weekday(YrnkDayName::Mon), 2026, 6));
     }
 
     // ---- nth weekday ----
@@ -77,8 +77,8 @@ class AtomDayEnumeratorTest extends TestCase
     {
         $enumerator = $this->enumerator();
 
-        $this->assertSame([20], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Third, DayName::Mon), 2026, 7));
-        $this->assertSame([31], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Last, DayName::Fri), 2026, 7));
+        $this->assertSame([20], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon), 2026, 7));
+        $this->assertSame([31], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri), 2026, 7));
     }
 
     #[Test]
@@ -87,8 +87,8 @@ class AtomDayEnumeratorTest extends TestCase
         // 2026-07 has four Mondays.
         $enumerator = $this->enumerator();
 
-        $this->assertSame([], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Fifth, DayName::Mon), 2026, 7));
-        $this->assertSame([31], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Fifth, DayName::Fri), 2026, 7));
+        $this->assertSame([], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Fifth, YrnkDayName::Mon), 2026, 7));
+        $this->assertSame([31], $enumerator->daysIn(new OrdinalWeekday(Ordinal::Fifth, YrnkDayName::Fri), 2026, 7));
     }
 
     // ---- end of month ----
@@ -184,15 +184,15 @@ class AtomDayEnumeratorTest extends TestCase
         ?array $workweek = null,
         array $custom = [],
     ): AtomDayEnumerator {
-        return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays, self::utc()),
-            businessHolidays: BusinessHolidays::ofDates([], self::utc()),
-            businessDays: BusinessDays::ofDates($businessDays, self::utc()),
-            workweek: $workweek === null ? null : new Workweek(
-                array_map(static fn(string $day): DayName => DayName::from($day), $workweek),
+        return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
+            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidays::ofDates([], self::utc()),
+            businessDays: YrnkBusinessDays::ofDates($businessDays, self::utc()),
+            workweek: $workweek === null ? null : new YrnkWorkweek(
+                array_map(static fn(string $day): YrnkDayName => YrnkDayName::from($day), $workweek),
             ),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
+                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
         ), resolvers: [], timezone: self::utc())), self::utc());

@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Expression;
 
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 
 /**
@@ -13,6 +13,6 @@ final readonly class OrdinalWeekday implements DayAtom
 {
     public function __construct(
         public Ordinal $ordinal,
-        public DayName $dayName,
+        public YrnkDayName $dayName,
     ) {}
 }

@@ -2,17 +2,17 @@
 
 namespace Yarunoka\Internal\Parser;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\BusinessHours;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
-use Yarunoka\Calendar\Workweek;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessHours;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Time\TimeWindow;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Time\YrnkTimeWindow;
+use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
 
 /**
@@ -28,7 +28,7 @@ final class CalendarParser
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public static function parse(mixed $raw, DateTimeZone $timezone): Calendar
+    public static function parse(mixed $raw, DateTimeZone $timezone): YrnkCalendar
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
@@ -41,15 +41,15 @@ final class CalendarParser
         }
 
         try {
-            return new Calendar(
+            return new YrnkCalendar(
                 holidays: array_key_exists('holidays', $raw)
-                    ? self::parseDateSet($raw['holidays'], 'holidays', Holidays::class, $timezone)
+                    ? self::parseDateSet($raw['holidays'], 'holidays', YrnkHolidays::class, $timezone)
                     : null,
                 businessHolidays: array_key_exists('business_holidays', $raw)
-                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', BusinessHolidays::class, $timezone)
+                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', YrnkBusinessHolidays::class, $timezone)
                     : null,
                 businessDays: array_key_exists('business_days', $raw)
-                    ? self::parseDateSet($raw['business_days'], 'business_days', BusinessDays::class, $timezone)
+                    ? self::parseDateSet($raw['business_days'], 'business_days', YrnkBusinessDays::class, $timezone)
                     : null,
                 workweek: array_key_exists('workweek', $raw) ? self::parseWorkweek($raw['workweek']) : null,
                 businessHours: array_key_exists('business_hours', $raw)
@@ -63,7 +63,7 @@ final class CalendarParser
     }
 
     /**
-     * @template T of Holidays|BusinessHolidays|BusinessDays|CustomDefinition
+     * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition
      *
      * @param  class-string<T>  $class
      * @return T
@@ -97,15 +97,15 @@ final class CalendarParser
         throw new InvalidYrnkException("{$key} must be a date list or a resolver name");
     }
 
-    private static function parseWorkweek(mixed $raw): Workweek
+    private static function parseWorkweek(mixed $raw): YrnkWorkweek
     {
         if (! is_array($raw) || ! array_is_list($raw)) {
             throw new InvalidYrnkException('workweek must be a list of day names');
         }
 
-        return new Workweek(array_map(
-            static function (mixed $name): DayName {
-                $dayName = is_string($name) ? DayName::tryFrom($name) : null;
+        return new YrnkWorkweek(array_map(
+            static function (mixed $name): YrnkDayName {
+                $dayName = is_string($name) ? YrnkDayName::tryFrom($name) : null;
 
                 if ($dayName === null) {
                     $given = is_string($name) ? $name : get_debug_type($name);
@@ -119,27 +119,27 @@ final class CalendarParser
         ));
     }
 
-    private static function parseBusinessHours(mixed $raw): BusinessHours
+    private static function parseBusinessHours(mixed $raw): YrnkBusinessHours
     {
         if (! is_array($raw) || ! array_is_list($raw)) {
             throw new InvalidYrnkException('business_hours must be a list of [HH:MM, HH:MM] pairs');
         }
 
-        return new BusinessHours(array_map(
-            static function (mixed $pair): TimeWindow {
+        return new YrnkBusinessHours(array_map(
+            static function (mixed $pair): YrnkTimeWindow {
                 if (! is_array($pair) || ! array_is_list($pair) || count($pair) !== 2
                     || ! is_string($pair[0]) || ! is_string($pair[1])) {
                     throw new InvalidYrnkException('Elements of business_hours must be [HH:MM, HH:MM] pairs');
                 }
 
-                return TimeWindow::fromStrings($pair[0], $pair[1]);
+                return YrnkTimeWindow::fromStrings($pair[0], $pair[1]);
             },
             $raw,
         ));
     }
 
     /**
-     * @return array<string, CustomDefinition>
+     * @return array<string, YrnkCustomDefinition>
      */
     private static function parseCustom(mixed $raw, DateTimeZone $timezone): array
     {
@@ -154,7 +154,7 @@ final class CalendarParser
             // name validation rejects them.
             $name = (string) $name;
             ReservedWords::ensureUsable($name);
-            $custom[$name] = self::parseDateSet($value, "custom.{$name}", CustomDefinition::class, $timezone);
+            $custom[$name] = self::parseDateSet($value, "custom.{$name}", YrnkCustomDefinition::class, $timezone);
         }
 
         return $custom;

@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Tests\Feature\Scenario;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Tests\Support\RoutinePoller;
 use Yarunoka\YrnkEvaluator;
@@ -96,10 +96,10 @@ class PollerScenarioTest extends TestCase
     {
         $calls = 0;
         $evaluator = new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::byResolver('db-holidays'),
-                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
-                businessDays: BusinessDays::ofDates([], self::tz()),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('db-holidays'),
+                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
             resolvers: ['db-holidays' => function () use (&$calls): array {
@@ -131,10 +131,10 @@ class PollerScenarioTest extends TestCase
     private function poller(array $schedule, string $startedAt, ?DateInterval $grace = null): RoutinePoller
     {
         $evaluator = new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: Holidays::ofDates([], self::tz()),
-                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
-                businessDays: BusinessDays::ofDates([], self::tz()),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::ofDates([], self::tz()),
+                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

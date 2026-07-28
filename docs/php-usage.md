@@ -41,7 +41,7 @@ $parser = new YrnkParser(resolvers: [
 
 $document = $parser->parse($json);      // the typed tree; syntax + references validated
 $document->timezone;                    // DateTimeZone
-$document->calendar->holidays;          // ?Holidays
+$document->calendar->holidays;          // ?YrnkHolidays
 $payday = $document->schedules[0];      // YrnkSchedule
 
 (new YrnkBuilder)->toJson($document);   // back to the same array representation as the original JSON (the identity)
@@ -56,7 +56,7 @@ hands it to the service for evaluation.
 use Yarunoka\YrnkEvaluator;
 
 $evaluator = new YrnkEvaluator(
-    calendar: $document->calendar,   // or a Calendar composed from the app's configuration
+    calendar: $document->calendar,   // or a YrnkCalendar composed from the app's configuration
     timezone: $document->timezone,
     resolvers: [/* the same as the parser's */],
 );
@@ -104,16 +104,16 @@ uphold the value invariants, and the YrnkEvaluator validates the
 resolvability of references before evaluation.
 
 ```php
-use Yarunoka\Calendar\{Calendar, CustomDefinition, Holidays};
+use Yarunoka\Calendar\{YrnkCalendar, YrnkCustomDefinition, YrnkHolidays};
 use Yarunoka\Yrnk;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\YrnkSchedule;
 
-$calendar = new Calendar(
-    holidays: Holidays::byResolver('yasumi-jp'),                     // a resolver name reference
-    // Holidays::ofDates(['2026-01-01', ...])                        // a fixed list
-    // Holidays::deferred(fn (): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
-    custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'])],
+$calendar = new YrnkCalendar(
+    holidays: YrnkHolidays::byResolver('yasumi-jp'),                     // a resolver name reference
+    // YrnkHolidays::ofDates(['2026-01-01', ...])                        // a fixed list
+    // YrnkHolidays::deferred(fn (): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
+    custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'])],
 );
 
 $handmade = new Yrnk(

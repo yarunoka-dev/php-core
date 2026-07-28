@@ -6,7 +6,7 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Parser\DayExpressionParser;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ class DayExpressionParserTest extends TestCase
         $expression = DayExpressionParser::parse([25, 'mon']);
 
         $this->assertEquals(new MonthDay(25), $expression->atoms[0]);
-        $this->assertEquals(new Weekday(DayName::Mon), $expression->atoms[1]);
+        $this->assertEquals(new Weekday(YrnkDayName::Mon), $expression->atoms[1]);
     }
 
     #[Test]

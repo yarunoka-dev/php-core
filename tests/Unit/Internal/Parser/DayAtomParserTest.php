@@ -10,7 +10,7 @@ use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Parser\DayAtomParser;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +35,7 @@ class DayAtomParserTest extends TestCase
     #[Test]
     public function a_day_name_becomes_a_weekday(): void
     {
-        $this->assertEquals(new Weekday(DayName::Mon), DayAtomParser::parse('mon'));
+        $this->assertEquals(new Weekday(YrnkDayName::Mon), DayAtomParser::parse('mon'));
     }
 
     #[Test]
@@ -55,7 +55,7 @@ class DayAtomParserTest extends TestCase
     public function a_tuple_becomes_an_ordinal_weekday(): void
     {
         $this->assertEquals(
-            new OrdinalWeekday(Ordinal::Third, DayName::Mon),
+            new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon),
             DayAtomParser::parse(['3rd', 'mon']),
         );
     }

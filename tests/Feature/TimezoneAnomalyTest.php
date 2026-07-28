@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
@@ -144,7 +144,7 @@ class TimezoneAnomalyTest extends TestCase
 
     private function evaluator(DateTimeZone $timezone): YrnkEvaluator
     {
-        return new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        return new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
     }
 
     /**

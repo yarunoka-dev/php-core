@@ -9,7 +9,7 @@ use Yarunoka\Exceptions\InvalidValueException;
  * accepts "24:00" (= 86400 seconds) as the end of the day. Windows crossing
  * midnight (start >= end) cannot be expressed.
  */
-final readonly class TimeWindow
+final readonly class YrnkTimeWindow
 {
     public const int END_OF_DAY_SECONDS = 86_400;
 

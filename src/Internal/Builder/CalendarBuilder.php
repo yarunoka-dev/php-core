@@ -2,20 +2,20 @@
 
 namespace Yarunoka\Internal\Builder;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\YrnkDate;
-use Yarunoka\Time\TimeWindow;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Time\YrnkTimeWindow;
+use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
 
 /**
- * The mirror image of CalendarParser. Calendar node →
+ * The mirror image of CalendarParser. YrnkCalendar node →
  * RawCalendar. A resolver name reference comes out as the name itself
  * (output that preserves the intent, on the premise that the reader holds
  * the same resolver). A Closure (deferred) is not writable in the DSL, so
@@ -28,7 +28,7 @@ final class CalendarBuilder
     /**
      * @return array<string, mixed>
      */
-    public static function build(Calendar $calendar, DateTimeZone $timezone): array
+    public static function build(YrnkCalendar $calendar, DateTimeZone $timezone): array
     {
         $raw = [];
 
@@ -44,14 +44,14 @@ final class CalendarBuilder
 
         if ($calendar->workweek !== null) {
             $raw['workweek'] = array_map(
-                static fn(DayName $day): string => $day->value,
+                static fn(YrnkDayName $day): string => $day->value,
                 $calendar->workweek->days,
             );
         }
 
         if ($calendar->businessHours !== null) {
             $raw['business_hours'] = array_map(
-                static fn(TimeWindow $window): array => $window->toStrings(),
+                static fn(YrnkTimeWindow $window): array => $window->toStrings(),
                 $calendar->businessHours->windows,
             );
         }
@@ -69,7 +69,7 @@ final class CalendarBuilder
      * @return list<string>|string
      */
     private static function buildDateSet(
-        Holidays|BusinessHolidays|BusinessDays|CustomDefinition $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
         string $context,
         DateTimeZone $timezone,
     ): array|string {

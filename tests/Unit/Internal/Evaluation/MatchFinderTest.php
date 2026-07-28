@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
@@ -474,12 +474,12 @@ class MatchFinderTest extends TestCase
      */
     private function finder(array $holidays = [], array $custom = []): MatchFinder
     {
-        $resolved = new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays, self::utc()),
-            businessHolidays: BusinessHolidays::ofDates([], self::utc()),
-            businessDays: BusinessDays::ofDates([], self::utc()),
+        $resolved = new ResolvedCalendar(new YrnkCalendar(
+            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidays::ofDates([], self::utc()),
+            businessDays: YrnkBusinessDays::ofDates([], self::utc()),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
+                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
         ), resolvers: [], timezone: self::utc());

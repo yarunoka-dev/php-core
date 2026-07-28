@@ -3,7 +3,7 @@
 namespace Yarunoka\Calendar;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 
 /**
  * The window list behind the business_hour vocabulary (a built-in
@@ -12,13 +12,13 @@ use Yarunoka\Time\TimeWindow;
  * (the intervals are half-open, so touching windows do not overlap and
  * are legal).
  */
-final readonly class BusinessHours
+final readonly class YrnkBusinessHours
 {
-    /** @var non-empty-list<TimeWindow> */
+    /** @var non-empty-list<YrnkTimeWindow> */
     public array $windows;
 
     /**
-     * @param  list<TimeWindow>  $windows  Unvalidated input. Empty lists or overlapping windows violate the invariants
+     * @param  list<YrnkTimeWindow>  $windows  Unvalidated input. Empty lists or overlapping windows violate the invariants
      */
     public function __construct(array $windows)
     {
@@ -27,7 +27,7 @@ final readonly class BusinessHours
         }
 
         $sorted = $windows;
-        usort($sorted, static fn(TimeWindow $a, TimeWindow $b): int => $a->startSeconds <=> $b->startSeconds);
+        usort($sorted, static fn(YrnkTimeWindow $a, YrnkTimeWindow $b): int => $a->startSeconds <=> $b->startSeconds);
 
         foreach ($sorted as $i => $window) {
             if ($i > 0 && $window->startSeconds < $sorted[$i - 1]->endSeconds) {
