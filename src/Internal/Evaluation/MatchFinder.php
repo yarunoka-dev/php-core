@@ -77,7 +77,7 @@ final readonly class MatchFinder
 
         $day = $this->wallDateOf($at);
 
-        if (! $this->dayMatches($schedule, $day)) {
+        if (! $this->dayMatches($schedule, $day) && ! $this->vanishedDayLandsOn($schedule, $day)) {
             return false;
         }
 
@@ -577,6 +577,24 @@ final readonly class MatchFinder
         }
 
         return false;
+    }
+
+    /**
+     * Where a zone skips a calendar day outright, the occurrence chosen
+     * for that day stands on the day it resolves to. The day check reads
+     * a day off the instant and asks whether that day matches, so it
+     * never sees the day that vanished — the enumeration, which chooses
+     * days on the calendar before resolving them, is asked instead. The
+     * question is only put when a day really did vanish into this one,
+     * which the whole tz database does five times.
+     */
+    private function vanishedDayLandsOn(YrnkSchedule $schedule, YrnkDate $day): bool
+    {
+        if (! self::isSameDay($this->addDays($day, -1), $day)) {
+            return false;
+        }
+
+        return $this->landedDaysWithin($schedule, $day, $day) !== [];
     }
 
     private function isBaseDay(YrnkSchedule $schedule, YrnkDate $date): bool
