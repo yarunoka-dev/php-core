@@ -11,7 +11,7 @@ use Yarunoka\Schedule\CustomRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Resolvers\YrnkResolverInterface;
-use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\YrnkSchedule;
 
 /**

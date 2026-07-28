@@ -9,9 +9,9 @@ use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
 use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Parser\DayAtomParser;
-use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
-use Yarunoka\Vocabulary\Ordinal;
+use Yarunoka\Internal\Vocabulary\Ordinal;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

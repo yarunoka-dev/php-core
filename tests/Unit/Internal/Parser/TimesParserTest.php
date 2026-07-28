@@ -8,7 +8,7 @@ use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Internal\Parser\TimesParser;
 use Yarunoka\Time\YrnkTimeWindow;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

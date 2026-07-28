@@ -3,7 +3,7 @@
 namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 
 /**
  * The shift modifier — rounding. Takes each base day selected by the

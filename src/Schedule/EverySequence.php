@@ -3,7 +3,7 @@
 namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 
 /**
  * The from-anchored interval sequence ({"from": ..., "every": [36,

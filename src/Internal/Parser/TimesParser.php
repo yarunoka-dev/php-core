@@ -10,7 +10,7 @@ use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 
 /**
  * The parser for times (RawTimes). Distinguishes mechanically by the

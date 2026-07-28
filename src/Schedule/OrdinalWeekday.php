@@ -3,7 +3,7 @@
 namespace Yarunoka\Schedule;
 
 use Yarunoka\Vocabulary\YrnkDayName;
-use Yarunoka\Vocabulary\Ordinal;
+use Yarunoka\Internal\Vocabulary\Ordinal;
 
 /**
  * The ordinal-tuple atom (["3rd", "mon"] / ["last", "fri"] — the third

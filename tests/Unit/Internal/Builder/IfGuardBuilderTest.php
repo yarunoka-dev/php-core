@@ -5,9 +5,9 @@ namespace Yarunoka\Tests\Unit\Internal\Builder;
 use Yarunoka\Schedule\IfGuard;
 use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Builder\IfGuardBuilder;
-use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
