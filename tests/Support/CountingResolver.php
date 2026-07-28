@@ -21,10 +21,10 @@ final class CountingResolver implements YrnkResolverInterface
      */
     public function __construct(private readonly array $dates) {}
 
-    public function resolve(YrnkDate $from, YrnkDate $to): array
+    public function resolve(YrnkDate $from, YrnkDate $through): array
     {
         $this->calls++;
-        $this->ranges[] = [$from->format('Y-m-d'), $to->format('Y-m-d')];
+        $this->ranges[] = [$from->format('Y-m-d'), $through->format('Y-m-d')];
 
         return $this->dates;
     }

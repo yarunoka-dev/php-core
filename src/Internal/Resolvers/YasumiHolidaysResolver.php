@@ -31,11 +31,11 @@ final readonly class YasumiHolidaysResolver implements YrnkHolidaysResolverInter
         }
     }
 
-    public function resolve(YrnkDate $from, YrnkDate $to): array
+    public function resolve(YrnkDate $from, YrnkDate $through): array
     {
         $dates = [];
 
-        for ($year = (int) $from->format('Y'); $year <= (int) $to->format('Y'); $year++) {
+        for ($year = (int) $from->format('Y'); $year <= (int) $through->format('Y'); $year++) {
             foreach (Yasumi::create($this->provider, $year)->getHolidayDates() as $date) {
                 $dates[] = $date;
             }

@@ -27,8 +27,8 @@ class ResolverRangeTest extends TestCase
         $ranges = [];
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('recording')),
-            resolvers: ['recording' => function (YrnkDate $from, YrnkDate $to) use (&$ranges): array {
-                $ranges[] = [$from->format('Y-m-d'), $to->format('Y-m-d')];
+            resolvers: ['recording' => function (YrnkDate $from, YrnkDate $through) use (&$ranges): array {
+                $ranges[] = [$from->format('Y-m-d'), $through->format('Y-m-d')];
 
                 return ['2026-01-01'];
             }],
@@ -96,7 +96,7 @@ class ResolverRangeTest extends TestCase
     {
         return new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
                 $calls++;
 
                 return [$from->format('Y') . '-01-01'];
@@ -115,9 +115,9 @@ final class RecordingResolver implements \Yarunoka\Resolvers\YrnkResolverInterfa
     /** @var list<array{string, string}> */
     public array $ranges = [];
 
-    public function resolve(YrnkDate $from, YrnkDate $to): array
+    public function resolve(YrnkDate $from, YrnkDate $through): array
     {
-        $this->ranges[] = [$from->format('Y-m-d'), $to->format('Y-m-d')];
+        $this->ranges[] = [$from->format('Y-m-d'), $through->format('Y-m-d')];
 
         return [$from->format('Y') . '-01-01'];
     }

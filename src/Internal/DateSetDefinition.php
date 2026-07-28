@@ -104,7 +104,7 @@ trait DateSetDefinition
     public static function deferred(Closure|YrnkResolverInterface $resolve): self
     {
         if ($resolve instanceof YrnkResolverInterface) {
-            $resolve = static fn(YrnkDate $from, YrnkDate $to): array => $resolve->resolve($from, $to);
+            $resolve = static fn(YrnkDate $from, YrnkDate $through): array => $resolve->resolve($from, $through);
         }
 
         return new self(null, null, $resolve);

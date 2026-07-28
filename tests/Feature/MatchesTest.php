@@ -394,7 +394,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
                 $calls++;
 
                 return ['2026-01-01'];
@@ -420,7 +420,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
                 $calls++;
 
                 return ['2026-01-01'];
