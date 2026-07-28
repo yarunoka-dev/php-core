@@ -4,7 +4,7 @@ namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\Shift;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 
 /**
  * The parser for shift (RawShift). [direction, landing condition] |

@@ -4,7 +4,7 @@ namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\EverySequence;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 
 /**
  * The parser for the interval every directly on a schedule ({"every":

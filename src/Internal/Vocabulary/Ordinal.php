@@ -1,10 +1,12 @@
 <?php
 
-namespace Yarunoka\Vocabulary;
+namespace Yarunoka\Internal\Vocabulary;
 
 /**
  * An ordinal word. Usable only as the first element of an ordinal tuple
  * ["3rd", "mon"].
+ *
+ * @internal
  */
 enum Ordinal: string
 {

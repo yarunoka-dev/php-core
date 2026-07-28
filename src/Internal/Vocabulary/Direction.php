@@ -1,9 +1,11 @@
 <?php
 
-namespace Yarunoka\Vocabulary;
+namespace Yarunoka\Internal\Vocabulary;
 
 /**
  * The direction of `shift` / `if`.
+ *
+ * @internal
  */
 enum Direction: string
 {

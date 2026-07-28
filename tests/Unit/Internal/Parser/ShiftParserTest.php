@@ -5,8 +5,8 @@ namespace Yarunoka\Tests\Unit\Internal\Parser;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\Shift;
 use Yarunoka\Internal\Parser\ShiftParser;
-use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\Direction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

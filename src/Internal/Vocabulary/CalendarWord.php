@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Vocabulary;
+namespace Yarunoka\Internal\Vocabulary;
 
 use Yarunoka\Schedule\DayAtomInterface;
 
@@ -9,6 +9,8 @@ use Yarunoka\Schedule\DayAtomInterface;
  * the fixed calendar and consult no definition; holiday asks the holidays
  * list alone; business_day / business_holiday are questions to the stacked
  * conclusion of the layers. Usable directly as a day expression atom.
+ *
+ * @internal
  */
 enum CalendarWord: string implements DayAtomInterface
 {

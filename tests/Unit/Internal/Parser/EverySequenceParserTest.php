@@ -4,7 +4,7 @@ namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Internal\Parser\EverySequenceParser;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

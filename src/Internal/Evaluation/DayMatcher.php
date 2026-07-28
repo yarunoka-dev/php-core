@@ -9,7 +9,7 @@ use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
 use Yarunoka\Schedule\Weekday;
-use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
 

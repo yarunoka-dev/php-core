@@ -7,7 +7,7 @@ use Yarunoka\Schedule\DayCycle;
 use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Schedule\IfGuard;
 use Yarunoka\Schedule\Shift;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkDateTime;
 use Yarunoka\YrnkSchedule;

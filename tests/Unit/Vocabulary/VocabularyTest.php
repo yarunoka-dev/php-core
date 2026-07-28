@@ -4,9 +4,9 @@ namespace Yarunoka\Tests\Unit\Vocabulary;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Vocabulary\YrnkDayName;
-use Yarunoka\Vocabulary\Direction;
-use Yarunoka\Vocabulary\Ordinal;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Ordinal;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

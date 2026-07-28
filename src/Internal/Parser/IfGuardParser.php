@@ -4,7 +4,7 @@ namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\IfGuard;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 
 /**
  * The parser for if (RawIf). The four forms of [direction?, "not"?,

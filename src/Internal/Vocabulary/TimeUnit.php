@@ -1,11 +1,13 @@
 <?php
 
-namespace Yarunoka\Vocabulary;
+namespace Yarunoka\Internal\Vocabulary;
 
 /**
  * The unit word of `every`. Singular form only — in a machine-read document,
  * "either is fine" is nothing but noise for diffs, validation, and
  * cross-implementation compatibility.
+ *
+ * @internal
  */
 enum TimeUnit: string
 {

@@ -3,7 +3,7 @@
 namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 
 /**
  * The if modifier — filtering by the base day itself or a neighbour.

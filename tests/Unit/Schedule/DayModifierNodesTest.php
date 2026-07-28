@@ -8,9 +8,9 @@ use Yarunoka\Schedule\IfGuard;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\Shift;
 use Yarunoka\Schedule\Weekday;
-use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
-use Yarunoka\Vocabulary\Direction;
+use Yarunoka\Internal\Vocabulary\Direction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

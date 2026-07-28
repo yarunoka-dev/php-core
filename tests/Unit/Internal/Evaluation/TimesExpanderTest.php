@@ -12,7 +12,7 @@ use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -4,7 +4,7 @@ namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Time\YrnkTimeWindow;
-use Yarunoka\Vocabulary\TimeUnit;
+use Yarunoka\Internal\Vocabulary\TimeUnit;
 
 /**
  * The clock grid ({"every": [90, "minute"], "between": ...}). The count
