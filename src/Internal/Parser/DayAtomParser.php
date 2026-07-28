@@ -3,12 +3,12 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
@@ -27,7 +27,7 @@ final class DayAtomParser
     /** Structural words of shift / if. Their appearance in an atom position gets a dedicated error */
     private const array MODIFIER_WORDS = ['not', 'prev', 'next', 'or_same'];
 
-    public static function parse(mixed $raw): DayAtom
+    public static function parse(mixed $raw): DayAtomInterface
     {
         if (is_int($raw)) {
             if ($raw < 1 || $raw > 31) {
@@ -50,7 +50,7 @@ final class DayAtomParser
         throw new InvalidYrnkException("Cannot interpret as a day expression atom ({$given})");
     }
 
-    private static function parseWord(string $word): DayAtom
+    private static function parseWord(string $word): DayAtomInterface
     {
         if ($word === '') {
             throw new InvalidYrnkException('Day expression atom cannot be an empty string');

@@ -8,7 +8,7 @@ glance, the two contexts, and the typical firing-decision patterns.
 **Yrnk** is the name of the DSL (short for Yarunoka), and the class
 `Yrnk` is the typed tree representing one Yrnk document. Among the public
 classes, the everyday faces are prefixed with Yrnk; the leaf type
-representations (Expression / Time / Vocabulary and so on) are not.
+representations (Schedule / Time / Vocabulary and so on) are not.
 
 ## Public classes
 
@@ -18,7 +18,7 @@ representations (Expression / Time / Vocabulary and so on) are not.
 | behaviour | `Parser\ScheduleParser` | one element of schedules[] → YrnkSchedule |
 | behaviour | `Builder\YrnkBuilder` / `Builder\ScheduleBuilder` | tree → DSL. Round-tripping is the identity |
 | behaviour | `YrnkEvaluator` | the evaluator. A service holding configuration |
-| type | `Yrnk` / `YrnkSchedule` / `YrnkDate` / `YrnkDateTime` / `Calendar\*` / `Expression\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
+| type | `Yrnk` / `YrnkSchedule` / `YrnkDate` / `YrnkDateTime` / `Calendar\*` / `Schedule\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
 | type | `Exceptions\*` | parse, validation, and evaluation failures |
 
 The Laravel bridge lives in the separate `yarunoka/laravel` package.
@@ -106,7 +106,7 @@ resolvability of references before evaluation.
 ```php
 use Yarunoka\Calendar\{YrnkCalendar, YrnkCustomDefinition, YrnkHolidays};
 use Yarunoka\Yrnk;
-use Yarunoka\Expression\AllDay;
+use Yarunoka\Schedule\AllDay;
 use Yarunoka\YrnkSchedule;
 
 $calendar = new YrnkCalendar(

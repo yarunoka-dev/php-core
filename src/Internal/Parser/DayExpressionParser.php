@@ -3,8 +3,8 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\DayExpression;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\DayExpression;
 
 /**
  * The parser for the day expression of days (RawDayExpression). Always an
@@ -22,7 +22,7 @@ final class DayExpressionParser
         }
 
         return new DayExpression(array_map(
-            static fn(mixed $atom): DayAtom => is_array($atom) && ($atom[0] ?? null) === 'every'
+            static fn(mixed $atom): DayAtomInterface => is_array($atom) && ($atom[0] ?? null) === 'every'
                 ? DayCycleParser::parse($atom)
                 : DayAtomParser::parse($atom),
             $raw,

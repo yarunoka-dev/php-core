@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 
@@ -10,11 +10,11 @@ use Yarunoka\Exceptions\InvalidValueException;
  */
 final readonly class DayExpression
 {
-    /** @var non-empty-list<DayAtom> */
+    /** @var non-empty-list<DayAtomInterface> */
     public array $atoms;
 
     /**
-     * @param  list<DayAtom>  $atoms  Unvalidated input. Empty or structurally duplicated enumerations violate the invariants
+     * @param  list<DayAtomInterface>  $atoms  Unvalidated input. Empty or structurally duplicated enumerations violate the invariants
      */
     public function __construct(array $atoms)
     {

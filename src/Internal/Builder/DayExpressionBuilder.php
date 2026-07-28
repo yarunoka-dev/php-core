@@ -2,8 +2,8 @@
 
 namespace Yarunoka\Internal\Builder;
 
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\DayExpression;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\DayExpression;
 
 /**
  * The mirror image of DayExpressionParser. Day expression node →
@@ -19,7 +19,7 @@ final class DayExpressionBuilder
     public static function build(DayExpression $expression): array
     {
         return array_map(
-            static fn(DayAtom $atom): int|string|array => DayAtomBuilder::build($atom),
+            static fn(DayAtomInterface $atom): int|string|array => DayAtomBuilder::build($atom),
             $expression->atoms,
         );
     }

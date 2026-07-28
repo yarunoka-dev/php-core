@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\Shift;
+use Yarunoka\Schedule\Shift;
 use Yarunoka\Internal\Parser\ShiftParser;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\Direction;

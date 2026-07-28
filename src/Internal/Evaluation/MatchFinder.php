@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Internal\Evaluation;
 
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\DayCycle;
-use Yarunoka\Expression\EverySequence;
-use Yarunoka\Expression\IfGuard;
-use Yarunoka\Expression\Shift;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\DayCycle;
+use Yarunoka\Schedule\EverySequence;
+use Yarunoka\Schedule\IfGuard;
+use Yarunoka\Schedule\Shift;
 use Yarunoka\Vocabulary\Direction;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkDateTime;

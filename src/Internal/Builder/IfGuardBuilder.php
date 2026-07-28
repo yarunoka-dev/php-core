@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Internal\Builder;
 
-use Yarunoka\Expression\IfGuard;
+use Yarunoka\Schedule\IfGuard;
 
 /**
  * The mirror image of IfGuardParser. If node → RawIf.

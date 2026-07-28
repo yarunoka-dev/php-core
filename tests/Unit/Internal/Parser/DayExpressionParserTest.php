@@ -3,8 +3,8 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Internal\Parser\DayExpressionParser;
 use Yarunoka\Vocabulary\YrnkDayName;
 use PHPUnit\Framework\Attributes\Test;

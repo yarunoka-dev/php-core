@@ -4,10 +4,10 @@ namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\BusinessHourRef;
-use Yarunoka\Expression\EveryGrid;
-use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\BusinessHourRef;
+use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
@@ -21,7 +21,7 @@ use Yarunoka\Vocabulary\TimeUnit;
  */
 final class TimesParser
 {
-    public static function parse(mixed $raw): TimesSpec
+    public static function parse(mixed $raw): TimesSpecInterface
     {
         if (! is_array($raw)) {
             throw new InvalidYrnkException('times must be a list of times or the {"every": ...} grid');

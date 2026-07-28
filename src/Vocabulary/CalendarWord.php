@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Vocabulary;
 
-use Yarunoka\Expression\DayAtom;
+use Yarunoka\Schedule\DayAtomInterface;
 
 /**
  * Calendar vocabulary (the five layer-model words). weekday / weekend ask
@@ -10,7 +10,7 @@ use Yarunoka\Expression\DayAtom;
  * list alone; business_day / business_holiday are questions to the stacked
  * conclusion of the layers. Usable directly as a day expression atom.
  */
-enum CalendarWord: string implements DayAtom
+enum CalendarWord: string implements DayAtomInterface
 {
     case Weekday = 'weekday';
     case Weekend = 'weekend';

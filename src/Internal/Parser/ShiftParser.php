@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\Shift;
+use Yarunoka\Schedule\Shift;
 use Yarunoka\Vocabulary\Direction;
 
 /**

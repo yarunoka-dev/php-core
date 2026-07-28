@@ -3,13 +3,13 @@
 namespace Yarunoka\Internal\Builder;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Expression\CustomRef;
-use Yarunoka\Expression\DayAtom;
-use Yarunoka\Expression\DayCycle;
-use Yarunoka\Expression\LastDayOfMonth;
-use Yarunoka\Expression\MonthDay;
-use Yarunoka\Expression\OrdinalWeekday;
-use Yarunoka\Expression\Weekday;
+use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DayAtomInterface;
+use Yarunoka\Schedule\DayCycle;
+use Yarunoka\Schedule\LastDayOfMonth;
+use Yarunoka\Schedule\MonthDay;
+use Yarunoka\Schedule\OrdinalWeekday;
+use Yarunoka\Schedule\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
 
 /**
@@ -22,7 +22,7 @@ final class DayAtomBuilder
     /**
      * @return int|string|list<int|string>
      */
-    public static function build(DayAtom $atom): int|string|array
+    public static function build(DayAtomInterface $atom): int|string|array
     {
         return match (true) {
             $atom instanceof MonthDay => $atom->dayOfMonth,

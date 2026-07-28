@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
-use Yarunoka\Expression\AllDay;
+use Yarunoka\Schedule\AllDay;
 use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;

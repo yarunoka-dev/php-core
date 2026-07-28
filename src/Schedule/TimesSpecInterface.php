@@ -1,9 +1,9 @@
 <?php
 
-namespace Yarunoka\Expression;
+namespace Yarunoka\Schedule;
 
 /**
  * Marker for the time part of a schedule (FixedTimes | EveryGrid |
  * AllDay). A schedule has exactly one of times / allday.
  */
-interface TimesSpec {}
+interface TimesSpecInterface {}

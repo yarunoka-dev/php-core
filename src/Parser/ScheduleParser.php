@@ -4,8 +4,8 @@ namespace Yarunoka\Parser;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Internal\Parser\DayExpressionParser;
 use Yarunoka\Internal\Parser\EverySequenceParser;
 use Yarunoka\Internal\Parser\IfGuardParser;
@@ -65,7 +65,7 @@ final class ScheduleParser
     /**
      * @param  array<mixed>  $raw
      */
-    private function parseTimeSpec(array $raw): TimesSpec
+    private function parseTimeSpec(array $raw): TimesSpecInterface
     {
         $present = array_values(array_filter(
             ['times', 'allday', 'every'],

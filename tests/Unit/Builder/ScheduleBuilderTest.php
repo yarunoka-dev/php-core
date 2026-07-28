@@ -3,10 +3,10 @@
 namespace Yarunoka\Tests\Unit\Builder;
 
 use Yarunoka\Builder\ScheduleBuilder;
-use Yarunoka\Expression\AllDay;
-use Yarunoka\Expression\DayExpression;
-use Yarunoka\Expression\FixedTimes;
-use Yarunoka\Expression\MonthDay;
+use Yarunoka\Schedule\AllDay;
+use Yarunoka\Schedule\DayExpression;
+use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\YrnkSchedule;
 use PHPUnit\Framework\Attributes\Test;
