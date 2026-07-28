@@ -102,15 +102,26 @@ class FromUntilTest extends TestCase
     }
 
     #[Test]
-    public function the_allday_point_is_the_start_of_the_day_so_a_later_from_clips_that_day(): void
+    public function a_from_partway_through_a_day_keeps_that_days_allday_occurrence(): void
     {
         $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-14 12:00', 'allday' => true], self::tz());
         $evaluator = $this->evaluator();
 
-        // The 7/14 allday point (00:00) is before from and does not
-        // exist.
-        $this->assertFalse($evaluator->matches($schedule, $this->at('2026-07-14 15:00:00')));
+        // The range holds part of 7/14, and a day carries no time of its
+        // own to fall outside with.
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 15:00:00')));
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-14 09:00:00')));
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-15 15:00:00')));
+    }
+
+    #[Test]
+    public function a_from_at_the_start_of_the_next_day_drops_the_day_before(): void
+    {
+        $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-15 00:00', 'allday' => true], self::tz());
+        $evaluator = $this->evaluator();
+
+        $this->assertFalse($evaluator->matches($schedule, $this->at('2026-07-14 23:59:59')));
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2026-07-15 00:00:00')));
     }
 
     #[Test]

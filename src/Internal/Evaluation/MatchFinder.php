@@ -82,7 +82,7 @@ final readonly class MatchFinder
         }
 
         if ($schedule->times instanceof AllDay) {
-            return $this->withinRange($schedule, $this->atTime($day, 0));
+            return $this->dayWithinRange($schedule, $day);
         }
 
         // Compare against the day's points resolved to instants, not
@@ -137,14 +137,26 @@ final readonly class MatchFinder
             return $this->sequenceHasMatchIn($schedule->from, $schedule->times, $from, $to);
         }
 
+        $fromDay = $this->wallDateOf($from);
+        $toDay = $this->wallDateOf($to);
+
+        if ($schedule->times instanceof AllDay) {
+            foreach ($this->landedDaysWithin($schedule, $fromDay, $toDay) as $day) {
+                // The interval excludes its start, so the day has to
+                // reach past it.
+                if ($this->dayOverlaps($day, $from->getTimestamp() + 1, $to->getTimestamp())) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         $seconds = $this->expander->secondsOf($schedule->times);
 
         if ($seconds === []) {
             return false;
         }
-
-        $fromDay = $this->wallDateOf($from);
-        $toDay = $this->wallDateOf($to);
 
         // Only landing days (base days, without a shift) inside
         // [fromDay, toDay] can reach the interval, so look at the base
@@ -215,9 +227,7 @@ final readonly class MatchFinder
             $dates = [];
 
             foreach ($days as $day) {
-                $instant = $this->atTime($day, 0);
-
-                if ($instant >= $from && $instant <= $to) {
+                if ($this->dayOverlaps($day, $from->getTimestamp(), $to->getTimestamp())) {
                     $dates[] = $day;
                 }
             }
@@ -686,6 +696,33 @@ final readonly class MatchFinder
         }
 
         return null;
+    }
+
+    /**
+     * Does the day reach into [lower, upper] on the instant scale? A day
+     * carries no time of its own, so a range holds it as soon as it holds
+     * any instant of it.
+     */
+    private function dayOverlaps(YrnkDate $day, int $lower, int $upper): bool
+    {
+        $start = $this->atTime($day, 0)->getTimestamp();
+        $end = $this->atTime($this->addDays($day, 1), 0)->getTimestamp() - 1;
+
+        return max($start, $lower) <= min($end, $upper);
+    }
+
+    /**
+     * Is the day inside the validity range [from, until)? Read the same
+     * way: the day stays as long as the range holds part of it.
+     */
+    private function dayWithinRange(YrnkSchedule $schedule, YrnkDate $day): bool
+    {
+        $lower = $schedule->from?->getTimestamp() ?? PHP_INT_MIN;
+        // until is exclusive, so the last instant it holds is the second
+        // before it.
+        $upper = $schedule->until !== null ? $schedule->until->getTimestamp() - 1 : PHP_INT_MAX;
+
+        return $this->dayOverlaps($day, $lower, $upper);
     }
 
     /**
