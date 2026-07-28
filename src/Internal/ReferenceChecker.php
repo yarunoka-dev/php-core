@@ -12,6 +12,7 @@ use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Internal\Vocabulary\CalendarWord;
+use Yarunoka\YrnkDate;
 use Yarunoka\YrnkSchedule;
 
 /**
@@ -26,7 +27,7 @@ final class ReferenceChecker
 {
     /**
      * @param  iterable<YrnkSchedule>  $schedules
-     * @param  array<string, (\Closure(): list<string>)|YrnkResolverInterface>  $resolvers
+     * @param  array<string, (\Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers
      */
     public static function ensureResolvable(iterable $schedules, YrnkCalendar $calendar, array $resolvers): void
     {

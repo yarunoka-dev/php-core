@@ -20,22 +20,24 @@ use Closure;
 use DateTimeZone;
 
 /**
- * Resolution and memoization of the definitions. A resolver / Closure is
- * called at most once in the lifetime of this instance (a lazy val).
- * Freshness rides on the lifetime of the YrnkEvaluator — the DI scope.
+ * Resolution of the definitions for one question. A resolver / Closure is
+ * asked for the year a consulted day falls in, and the answer is held
+ * until the question is done — the working data of a single computation,
+ * not a cache: a new question resolves anew, so a caller that wants
+ * results kept holds them in its own resolver.
  *
  * @internal
  */
 final class ResolvedCalendar
 {
-    /** @var array<string, array<string, true>> Resolved date sets ('Y-m-d' => true) */
+    /** @var array<string, array<int|string, array<string, true>>> Resolved date sets (definition => year|'all' => 'Y-m-d' => true) */
     private array $sets = [];
 
     /** @var array<string, true>|null The workweek day set (YrnkDayName->value => true) */
     private ?array $workweekSet = null;
 
     /**
-     * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers
+     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers
      */
     public function __construct(
         private readonly YrnkCalendar $calendar,
@@ -45,17 +47,17 @@ final class ResolvedCalendar
 
     public function holidayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('holidays', $this->calendar->holidays)[$date->format('Y-m-d')]);
+        return isset($this->dateSet('holidays', $this->calendar->holidays, $date)[$date->format('Y-m-d')]);
     }
 
     public function businessHolidayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('business_holidays', $this->calendar->businessHolidays)[$date->format('Y-m-d')]);
+        return isset($this->dateSet('business_holidays', $this->calendar->businessHolidays, $date)[$date->format('Y-m-d')]);
     }
 
     public function businessDayContains(YrnkDate $date): bool
     {
-        return isset($this->dateSet('business_days', $this->calendar->businessDays)[$date->format('Y-m-d')]);
+        return isset($this->dateSet('business_days', $this->calendar->businessDays, $date)[$date->format('Y-m-d')]);
     }
 
     public function customContains(string $name, YrnkDate $date): bool
@@ -63,7 +65,7 @@ final class ResolvedCalendar
         $definition = $this->calendar->custom[$name]
             ?? throw new UndefinedNameException("Undefined name: {$name}");
 
-        return isset($this->dateSet("custom.{$name}", $definition)[$date->format('Y-m-d')]);
+        return isset($this->dateSet("custom.{$name}", $definition, $date)[$date->format('Y-m-d')]);
     }
 
     public function isInWorkweek(YrnkDayName $dayOfWeek): bool
@@ -93,23 +95,26 @@ final class ResolvedCalendar
     }
 
     /**
+     * The set to consult for this day. A written date list stands whole,
+     * so it is built once; a resolved list is asked for the year the day
+     * falls in, since that is the granularity the question reaches.
+     *
      * @return array<string, true>
      */
     private function dateSet(
         string $key,
         YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|null $definition,
+        YrnkDate $date,
     ): array {
-        if (isset($this->sets[$key])) {
-            return $this->sets[$key];
-        }
-
         if ($definition === null) {
             // A safeguard: the reference validation of YrnkParser /
             // YrnkEvaluator should have rejected this already.
             throw new MissingCalendarDataException("The {$key} definition is required");
         }
 
-        return $this->sets[$key] = $this->resolve($key, $definition);
+        $scope = $definition->dates !== null ? 'all' : (int) $date->format('Y');
+
+        return $this->sets[$key][$scope] ??= $this->resolve($key, $definition, $scope);
     }
 
     /**
@@ -118,6 +123,7 @@ final class ResolvedCalendar
     private function resolve(
         string $key,
         YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
+        int|string $scope,
     ): array {
         if ($definition->dates !== null) {
             $set = [];
@@ -138,7 +144,9 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition has no source of dates");
         }
 
-        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve() : $resolve();
+        $from = new YrnkDate("{$scope}-01-01", $this->timezone);
+        $to = new YrnkDate("{$scope}-12-31", $this->timezone);
+        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $to) : $resolve($from, $to);
 
         if (! is_array($resolved)) {
             throw new InvalidCalendarDataException("{$key}: the resolver must return a list of date strings");

@@ -142,7 +142,10 @@ class CalendarNodesTest extends TestCase
 
         $this->assertNotNull($holidays->closure);
         $this->assertSame(0, $resolver->calls);
-        $this->assertSame(['2026-01-01'], ($holidays->closure)());
+        $this->assertSame(['2026-01-01'], ($holidays->closure)(
+            new YrnkDate('2026-01-01', self::utc()),
+            new YrnkDate('2026-12-31', self::utc()),
+        ));
         $this->assertSame(1, $resolver->calls);
     }
 
