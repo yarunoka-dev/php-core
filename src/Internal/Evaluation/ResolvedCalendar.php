@@ -12,6 +12,7 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
+use Yarunoka\Internal\Resolvers\ResolverRegistry;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
@@ -36,14 +37,18 @@ final class ResolvedCalendar
     /** @var array<string, true>|null The workweek day set (YrnkDayName->value => true) */
     private ?array $workweekSet = null;
 
+    private readonly ResolverRegistry $registry;
+
     /**
      * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers
      */
     public function __construct(
         private readonly YrnkCalendar $calendar,
-        private readonly array $resolvers,
+        array $resolvers,
         private readonly DateTimeZone $timezone,
-    ) {}
+    ) {
+        $this->registry = new ResolverRegistry($resolvers);
+    }
 
     public function holidayContains(YrnkDate $date): bool
     {
@@ -136,7 +141,7 @@ final class ResolvedCalendar
         }
 
         $resolve = $definition->resolver !== null
-            ? ($this->resolvers[$definition->resolver]
+            ? ($this->registry->get($definition->resolver)
                 ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}"))
             : $definition->closure;
 

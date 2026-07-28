@@ -36,7 +36,7 @@ use Yarunoka\YrnkBuilder;
 use Yarunoka\YrnkParser;
 
 $parser = new YrnkParser(resolvers: [
-    'yasumi-jp' => fn (YrnkDate $from, YrnkDate $to): array => /* the holiday list for that range */,
+    'jp-holidays' => fn (YrnkDate $from, YrnkDate $to): array => /* the holiday list for that range */,
 ]);
 
 $document = $parser->parse($json);      // the typed tree; syntax + references validated
@@ -110,7 +110,7 @@ use Yarunoka\Schedule\AllDay;
 use Yarunoka\YrnkSchedule;
 
 $calendar = new YrnkCalendar(
-    holidays: YrnkHolidays::byResolver('yasumi-jp'),                     // a resolver name reference
+    holidays: YrnkHolidays::byResolver('yasumi-Japan'),                  // resolved by yasumi when it is installed
     // YrnkHolidays::ofDates(['2026-01-01', ...])                        // a fixed list
     // YrnkHolidays::deferred(fn (YrnkDate $from, YrnkDate $to): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
     custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'])],
