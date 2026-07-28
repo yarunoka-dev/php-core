@@ -9,8 +9,13 @@ use Yarunoka\Exceptions\InvalidValueException;
  */
 final readonly class MonthDay implements DayAtomInterface
 {
-    public function __construct(public int $dayOfMonth)
-    {
+    /**
+     * @internal
+     */
+    public function __construct(
+        /** @internal */
+        public int $dayOfMonth,
+    ) {
         if ($dayOfMonth < 1 || $dayOfMonth > 31) {
             throw new InvalidValueException("Day of month must be between 1 and 31: {$dayOfMonth}");
         }

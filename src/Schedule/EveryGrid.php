@@ -14,9 +14,15 @@ use Yarunoka\Vocabulary\TimeUnit;
  */
 final readonly class EveryGrid implements TimesSpecInterface
 {
+    /**
+     * @internal
+     */
     public function __construct(
+        /** @internal */
         public int $amount,
+        /** @internal */
         public TimeUnit $unit,
+        /** @internal */
         public YrnkTimeWindow|BusinessHourRef|null $between,
     ) {
         if ($amount < 1) {

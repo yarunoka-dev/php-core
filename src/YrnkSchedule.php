@@ -21,24 +21,44 @@ use Yarunoka\YrnkDateTime;
  */
 final readonly class YrnkSchedule
 {
-    /** @var non-empty-list<int>|null */
+    /**
+     * @var non-empty-list<int>|null
+     *
+     * @internal
+     */
     public ?array $years;
 
-    /** @var non-empty-list<int>|null */
+    /**
+
+     * @var non-empty-list<int>|null
+
+     *
+
+     * @internal
+
+     */
     public ?array $months;
 
     /**
      * @param  list<int>|null  $years  1–9999. Empty, out-of-range, or duplicated enumerations violate the invariants
      * @param  list<int>|null  $months  1–12. Likewise
+     *
+     * @internal
      */
     public function __construct(
+        /** @internal */
         public TimesSpecInterface $times,
         ?array $years = null,
         ?array $months = null,
+        /** @internal */
         public ?DayExpression $days = null,
+        /** @internal */
         public ?Shift $shift = null,
+        /** @internal */
         public ?IfGuard $if = null,
+        /** @internal */
         public ?YrnkDateTime $from = null,
+        /** @internal */
         public ?YrnkDateTime $until = null,
     ) {
         $this->years = self::validateAxis($years, 'years', 1, 9999);

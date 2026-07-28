@@ -10,11 +10,17 @@ use Yarunoka\Exceptions\InvalidValueException;
  */
 final readonly class DayExpression
 {
-    /** @var non-empty-list<DayAtomInterface> */
+    /**
+     * @var non-empty-list<DayAtomInterface>
+     *
+     * @internal
+     */
     public array $atoms;
 
     /**
      * @param  list<DayAtomInterface>  $atoms  Unvalidated input. Empty or structurally duplicated enumerations violate the invariants
+     *
+     * @internal
      */
     public function __construct(array $atoms)
     {
