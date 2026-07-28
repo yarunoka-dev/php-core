@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Exceptions\ExceptionInterface;
-use Yarunoka\Parser\YrnkParser;
+use Yarunoka\YrnkParser;
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

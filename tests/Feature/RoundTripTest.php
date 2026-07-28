@@ -2,13 +2,13 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Builder\ScheduleBuilder;
-use Yarunoka\Builder\YrnkBuilder;
+use Yarunoka\Schedule\YrnkScheduleBuilder;
+use Yarunoka\YrnkBuilder;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Schedule\AllDay;
-use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Parser\YrnkParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
+use Yarunoka\YrnkParser;
 use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;
@@ -45,7 +45,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('schedules')]
     public function a_single_schedule_round_trip_is_the_identity(array $raw): void
     {
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
+        $this->assertSame($raw, (new YrnkScheduleBuilder())->build((new YrnkScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -143,7 +143,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [$atom], 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
+        $this->assertSame($raw, (new YrnkScheduleBuilder())->build((new YrnkScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -173,7 +173,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [25], 'shift' => $shift, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
+        $this->assertSame($raw, (new YrnkScheduleBuilder())->build((new YrnkScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -199,7 +199,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [13], 'if' => $if, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
+        $this->assertSame($raw, (new YrnkScheduleBuilder())->build((new YrnkScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -222,7 +222,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('timesForms')]
     public function a_times_round_trip_is_the_identity(array $schedule): void
     {
-        $this->assertSame($schedule, (new ScheduleBuilder())->build((new ScheduleParser())->parse($schedule, self::tz())));
+        $this->assertSame($schedule, (new YrnkScheduleBuilder())->build((new YrnkScheduleParser())->parse($schedule, self::tz())));
     }
 
     /**

@@ -6,7 +6,7 @@ use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
@@ -369,7 +369,7 @@ class HasMatchInTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw, self::tz());
+        return (new YrnkScheduleParser())->parse($raw, self::tz());
     }
 
     private function at(string $iso): DateTimeImmutable

@@ -7,7 +7,7 @@ use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
@@ -126,7 +126,7 @@ class CalendarScenarioTest extends TestCase
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
-        $schedule = (new ScheduleParser())->parse([
+        $schedule = (new YrnkScheduleParser())->parse([
             'days' => ['weekday'],
             'times' => ['every' => [2, 'hour'], 'between' => 'business_hour'],
         ], self::tz());
@@ -150,7 +150,7 @@ class CalendarScenarioTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw, self::tz());
+        return (new YrnkScheduleParser())->parse($raw, self::tz());
     }
 
     private function evaluator(): YrnkEvaluator

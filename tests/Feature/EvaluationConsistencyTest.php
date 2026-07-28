@@ -7,7 +7,7 @@ use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkCustomDefinition;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -84,7 +84,7 @@ class EvaluationConsistencyTest extends TestCase
     public function brute_forced_matches_and_interval_checks_agree_on_the_matching_days(array $raw, string $pointTime): void
     {
         $evaluator = $this->evaluator();
-        $schedule = (new ScheduleParser())->parse($raw, self::tz());
+        $schedule = (new YrnkScheduleParser())->parse($raw, self::tz());
         $points = $this->pointsAt($pointTime);
 
         $byMatches = $this->dates(array_filter(
@@ -113,7 +113,7 @@ class EvaluationConsistencyTest extends TestCase
         // two.
         $timezone = new DateTimeZone('America/New_York');
         $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
-        $schedule = (new ScheduleParser())->parse(['times' => ['02:30']], $timezone);
+        $schedule = (new YrnkScheduleParser())->parse(['times' => ['02:30']], $timezone);
         $points = [
             ...$this->pointsBetween('02:30:00', '2026-03-01', '2026-03-14', $timezone),
             ...$this->pointsBetween('02:30:00', '2026-10-25', '2026-11-07', $timezone),
@@ -140,7 +140,7 @@ class EvaluationConsistencyTest extends TestCase
     public function a_schedule_that_never_matches_is_empty_by_both_questions(): void
     {
         $evaluator = $this->evaluator();
-        $schedule = (new ScheduleParser())->parse(['years' => [2020], 'months' => [7], 'days' => [15], 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['years' => [2020], 'months' => [7], 'days' => [15], 'times' => ['10:00']], self::tz());
         $points = $this->pointsAt('10:00:00');
 
         $byMatches = $this->dates(array_filter(

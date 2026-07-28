@@ -1,8 +1,8 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Builder;
+namespace Yarunoka\Tests\Unit;
 
-use Yarunoka\Builder\YrnkBuilder;
+use Yarunoka\YrnkBuilder;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Schedule\AllDay;

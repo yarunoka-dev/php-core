@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Parser;
+namespace Yarunoka\Tests\Unit\Schedule;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\AllDay;
@@ -14,7 +14,7 @@ use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
 use Yarunoka\Schedule\Shift;
 use Yarunoka\Schedule\Weekday;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\YrnkDayName;
@@ -25,13 +25,13 @@ use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class ScheduleParserTest extends TestCase
+class YrnkScheduleParserTest extends TestCase
 {
-    private ScheduleParser $parser;
+    private YrnkScheduleParser $parser;
 
     protected function setUp(): void
     {
-        $this->parser = new ScheduleParser();
+        $this->parser = new YrnkScheduleParser();
     }
 
     // ---- the day expression of days ----

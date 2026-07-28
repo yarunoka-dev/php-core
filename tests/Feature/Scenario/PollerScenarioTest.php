@@ -6,7 +6,7 @@ use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Tests\Support\RoutinePoller;
 use Yarunoka\YrnkEvaluator;
 use DateInterval;
@@ -110,7 +110,7 @@ class PollerScenarioTest extends TestCase
         );
         $poller = new RoutinePoller(
             $evaluator,
-            (new ScheduleParser())->parse(['days' => ['business_day'], 'times' => ['08:00']], self::tz()),
+            (new YrnkScheduleParser())->parse(['days' => ['business_day'], 'times' => ['08:00']], self::tz()),
             $this->at('2026-07-16T00:00:00+09:00'),
         );
 
@@ -139,7 +139,7 @@ class PollerScenarioTest extends TestCase
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
 
-        return new RoutinePoller($evaluator, (new ScheduleParser())->parse($schedule, self::tz()), $this->at($startedAt), $grace);
+        return new RoutinePoller($evaluator, (new YrnkScheduleParser())->parse($schedule, self::tz()), $this->at($startedAt), $grace);
     }
 
     private function at(string $iso): DateTimeImmutable

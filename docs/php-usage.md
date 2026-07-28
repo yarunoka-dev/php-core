@@ -14,9 +14,9 @@ representations (Schedule / Time / Vocabulary and so on) are not.
 
 | Kind | Class | Role |
 |---|---|---|
-| behaviour | `Parser\YrnkParser` | DSL (JSON / array) → Yrnk. Validates down to the resolvability of references |
-| behaviour | `Parser\ScheduleParser` | one element of schedules[] → YrnkSchedule |
-| behaviour | `Builder\YrnkBuilder` / `Builder\ScheduleBuilder` | tree → DSL. Round-tripping is the identity |
+| behaviour | `YrnkParser` | DSL (JSON / array) → Yrnk. Validates down to the resolvability of references |
+| behaviour | `Schedule\YrnkScheduleParser` | one element of schedules[] → YrnkSchedule |
+| behaviour | `YrnkBuilder` / `Schedule\YrnkScheduleBuilder` | tree → DSL. Round-tripping is the identity |
 | behaviour | `YrnkEvaluator` | the evaluator. A service holding configuration |
 | type | `Yrnk` / `YrnkSchedule` / `YrnkDate` / `YrnkDateTime` / `Calendar\*` / `Schedule\*` / `Time\*` / `Vocabulary\*` | the typed tree isomorphic to the DSL (no evaluation methods) |
 | type | `Exceptions\*` | parse, validation, and evaluation failures |
@@ -32,8 +32,8 @@ There is no backward-compatibility promise, so do not import it.
 of this context and never appears in an application runtime.
 
 ```php
-use Yarunoka\Builder\YrnkBuilder;
-use Yarunoka\Parser\YrnkParser;
+use Yarunoka\YrnkBuilder;
+use Yarunoka\YrnkParser;
 
 $parser = new YrnkParser(resolvers: [
     'yasumi-jp' => fn (): array => /* compute the holiday list with yasumi or the like */,

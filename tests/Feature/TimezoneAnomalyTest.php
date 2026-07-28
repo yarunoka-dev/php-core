@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
@@ -128,7 +128,7 @@ class TimezoneAnomalyTest extends TestCase
 
     private function allday(int $year, int $month, int $day, DateTimeZone $timezone): YrnkSchedule
     {
-        return (new ScheduleParser())->parse(
+        return (new YrnkScheduleParser())->parse(
             ['years' => [$year], 'months' => [$month], 'days' => [$day], 'allday' => true],
             $timezone,
         );
@@ -136,7 +136,7 @@ class TimezoneAnomalyTest extends TestCase
 
     private function timedAtMidnight(int $year, int $month, int $day, DateTimeZone $timezone): YrnkSchedule
     {
-        return (new ScheduleParser())->parse(
+        return (new YrnkScheduleParser())->parse(
             ['years' => [$year], 'months' => [$month], 'days' => [$day], 'times' => ['00:00']],
             $timezone,
         );

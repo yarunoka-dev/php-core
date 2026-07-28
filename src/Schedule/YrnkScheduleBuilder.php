@@ -1,9 +1,7 @@
 <?php
 
-namespace Yarunoka\Builder;
+namespace Yarunoka\Schedule;
 
-use Yarunoka\Schedule\AllDay;
-use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Internal\Builder\DayExpressionBuilder;
 use Yarunoka\Internal\Builder\IfGuardBuilder;
 use Yarunoka\Internal\Builder\ShiftBuilder;
@@ -11,10 +9,10 @@ use Yarunoka\Internal\Builder\TimesBuilder;
 use Yarunoka\YrnkSchedule;
 
 /**
- * The mirror image of ScheduleParser. YrnkSchedule → RawSchedule (one
+ * The mirror image of YrnkScheduleParser. YrnkSchedule → RawSchedule (one
  * element of the DSL's schedules[]).
  */
-final class ScheduleBuilder
+final class YrnkScheduleBuilder
 {
     /**
      * @return array<string, mixed>

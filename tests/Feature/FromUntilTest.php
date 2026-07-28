@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -21,7 +21,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function points_before_from_do_not_exist(): void
     {
-        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 00:00', 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-14 00:00', 'times' => ['10:00']], self::tz());
 
         $this->assertFalse($this->evaluator()->matches($schedule, $this->at('2026-07-13 10:00:00')));
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-14 10:00:00')));
@@ -30,7 +30,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function a_point_exactly_at_from_is_included(): void
     {
-        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 10:00', 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-14 10:00', 'times' => ['10:00']], self::tz());
 
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-14 10:00:00')));
     }
@@ -38,7 +38,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function a_from_one_minute_past_the_point_silences_the_first_day(): void
     {
-        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 10:01', 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-14 10:01', 'times' => ['10:00']], self::tz());
 
         $this->assertFalse($this->evaluator()->matches($schedule, $this->at('2026-07-14 10:00:00')));
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-15 10:00:00')));
@@ -47,7 +47,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function a_point_exactly_at_until_is_excluded(): void
     {
-        $schedule = (new ScheduleParser())->parse(['until' => '2026-07-16 10:00', 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['until' => '2026-07-16 10:00', 'times' => ['10:00']], self::tz());
 
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-15 10:00:00')));
         $this->assertFalse($this->evaluator()->matches($schedule, $this->at('2026-07-16 10:00:00')));
@@ -56,7 +56,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function an_until_one_minute_past_the_point_includes_up_to_that_point(): void
     {
-        $schedule = (new ScheduleParser())->parse(['until' => '2026-07-16 10:01', 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['until' => '2026-07-16 10:01', 'times' => ['10:00']], self::tz());
 
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-16 10:00:00')));
         $this->assertFalse($this->evaluator()->matches($schedule, $this->at('2026-07-17 10:00:00')));
@@ -65,7 +65,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function has_match_in_does_not_count_points_outside_the_range_either(): void
     {
-        $schedule = (new ScheduleParser())->parse([
+        $schedule = (new YrnkScheduleParser())->parse([
             'from' => '2026-07-14 00:00',
             'until' => '2026-07-16 00:00',
             'times' => ['10:00'],
@@ -88,7 +88,7 @@ class FromUntilTest extends TestCase
         // The 90-minute grid still anchors at the start of the window
         // (00:00). from only removes points outside the range, so with a
         // 10:00 start the first point is the on-grid 10:30.
-        $schedule = (new ScheduleParser())->parse([
+        $schedule = (new YrnkScheduleParser())->parse([
             'from' => '2026-07-14 10:00',
             'times' => ['every' => [90, 'minute']],
         ], self::tz());
@@ -104,7 +104,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function the_allday_point_is_the_start_of_the_day_so_a_later_from_clips_that_day(): void
     {
-        $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 12:00', 'allday' => true], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['from' => '2026-07-14 12:00', 'allday' => true], self::tz());
         $evaluator = $this->evaluator();
 
         // The 7/14 allday point (00:00) is before from and does not
@@ -116,7 +116,7 @@ class FromUntilTest extends TestCase
     #[Test]
     public function both_from_and_until_are_optional_for_a_schedule_that_does_not_count(): void
     {
-        $schedule = (new ScheduleParser())->parse(['days' => ['mon'], 'times' => ['10:00']], self::tz());
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['10:00']], self::tz());
 
         // 2026-07-13 is a Monday.
         $this->assertTrue($this->evaluator()->matches($schedule, $this->at('2026-07-13 10:00:00')));
@@ -132,7 +132,7 @@ class FromUntilTest extends TestCase
         // range must end at 03:00 EDT exactly — not a gap-width later.
         $timezone = new DateTimeZone('America/New_York');
         $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
-        $schedule = (new ScheduleParser())->parse([
+        $schedule = (new YrnkScheduleParser())->parse([
             'days' => [8], 'times' => ['01:30', '03:30'], 'until' => '2026-03-08 03:00',
         ], $timezone);
         $windowStart = new DateTimeImmutable('2026-03-08T00:00:00-05:00');
@@ -162,7 +162,7 @@ class FromUntilTest extends TestCase
     {
         $timezone = new DateTimeZone('America/New_York');
         $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
-        $schedule = (new ScheduleParser())->parse([
+        $schedule = (new YrnkScheduleParser())->parse([
             'days' => [8], 'times' => ['03:00', '03:30'], 'from' => '2026-03-08 03:00',
         ], $timezone);
         $windowStart = new DateTimeImmutable('2026-03-08T00:00:00-05:00');

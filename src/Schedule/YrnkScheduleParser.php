@@ -1,11 +1,9 @@
 <?php
 
-namespace Yarunoka\Parser;
+namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Schedule\AllDay;
-use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Internal\Parser\DayExpressionParser;
 use Yarunoka\Internal\Parser\EverySequenceParser;
 use Yarunoka\Internal\Parser\IfGuardParser;
@@ -22,7 +20,7 @@ use DateTimeZone;
  * a property of the data: a YrnkSchedule carries no definitions
  * (resolving references is the job of YrnkParser / YrnkEvaluator).
  */
-final class ScheduleParser
+final class YrnkScheduleParser
 {
     private const array KNOWN_KEYS = ['from', 'until', 'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every'];
 
