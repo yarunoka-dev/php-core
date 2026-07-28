@@ -28,7 +28,7 @@
         "opis/json-schema": "^2.4"
     },
     "suggest": {
-        "azuyalabs/yasumi": "Compute public holidays offline with the bundled YasumiHolidaysResolver"
+        "azuyalabs/yasumi": "Resolve public holidays automatically, without supplying your own resolver"
     },
     "autoload": {
         "psr-4": {
