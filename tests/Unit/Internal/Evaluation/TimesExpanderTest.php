@@ -4,16 +4,20 @@ namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\BusinessHourRef;
 use Yarunoka\Schedule\EveryGrid;
+use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Schedule\FixedTimes;
+use Yarunoka\Schedule\TimesSpecInterface;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Internal\Vocabulary\TimeUnit;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -67,9 +71,25 @@ class TimesExpanderTest extends TestCase
     }
 
     #[Test]
-    public function all_day_becomes_the_single_point_at_the_start_of_the_day(): void
+    #[DataProvider('theTimePartsThatCarryNoPointWithinADay')]
+    public function a_time_part_that_lays_out_no_point_within_a_day_is_refused(TimesSpecInterface $times): void
     {
-        $this->assertSame([0], $this->expander()->secondsOf(new AllDay()));
+        // The finder answers allday by the day and the interval every by
+        // its own arithmetic, so neither ever reaches the expander.
+        $this->expectException(InvalidValueException::class);
+
+        $this->expander()->secondsOf($times);
+    }
+
+    /**
+     * @return array<string, array{TimesSpecInterface}>
+     */
+    public static function theTimePartsThatCarryNoPointWithinADay(): array
+    {
+        return [
+            'allday' => [new AllDay()],
+            'the interval every' => [new EverySequence(36, TimeUnit::Hour)],
+        ];
     }
 
     // ---- helpers ----
