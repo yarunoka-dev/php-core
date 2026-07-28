@@ -9,6 +9,8 @@ use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
+use Yarunoka\Internal\Vocabulary\DayNames;
+use Yarunoka\Internal\Vocabulary\Ordinals;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\DayName;
 use Yarunoka\YrnkDate;
@@ -51,7 +53,7 @@ final readonly class DayMatcher
             return false;
         }
 
-        $weekIndex = $atom->ordinal->weekIndex();
+        $weekIndex = Ordinals::weekIndex($atom->ordinal);
 
         if ($weekIndex === null) {
             // last: the same weekday is 7 days later. If that does not fit
@@ -65,8 +67,8 @@ final readonly class DayMatcher
     private function matchesCalendarWord(CalendarWord $word, YrnkDate $date): bool
     {
         return match ($word) {
-            CalendarWord::Weekday => ! self::dayOfWeek($date)->isWeekend(),
-            CalendarWord::Weekend => self::dayOfWeek($date)->isWeekend(),
+            CalendarWord::Weekday => ! DayNames::isWeekend(self::dayOfWeek($date)),
+            CalendarWord::Weekend => DayNames::isWeekend(self::dayOfWeek($date)),
             CalendarWord::Holiday => $this->calendar->holidayContains($date),
             CalendarWord::BusinessDay => $this->isBusinessDay($date),
             CalendarWord::BusinessHoliday => ! $this->isBusinessDay($date),
@@ -102,6 +104,6 @@ final readonly class DayMatcher
 
     private static function dayOfWeek(YrnkDate $date): DayName
     {
-        return DayName::fromIsoNumber((int) $date->format('N'));
+        return DayNames::fromIsoNumber((int) $date->format('N'));
     }
 }

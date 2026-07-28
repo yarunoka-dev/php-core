@@ -8,6 +8,7 @@ use Yarunoka\Expression\BusinessHourRef;
 use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Expression\TimesSpec;
+use Yarunoka\Internal\Vocabulary\TimeUnits;
 use Yarunoka\Time\TimeOfDay;
 use Yarunoka\Time\TimeWindow;
 
@@ -46,7 +47,7 @@ final readonly class TimesExpander
         }
 
         if ($times instanceof EveryGrid) {
-            $step = $times->amount * $times->unit->seconds();
+            $step = TimeUnits::stepSeconds($times->amount, $times->unit);
             $windows = match (true) {
                 $times->between instanceof TimeWindow => [$times->between],
                 $times->between instanceof BusinessHourRef => $this->calendar->businessHourWindows(),

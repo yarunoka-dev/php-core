@@ -3,6 +3,7 @@
 namespace Yarunoka\Expression;
 
 use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Internal\Vocabulary\TimeUnits;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 
@@ -23,11 +24,11 @@ final readonly class EveryGrid implements TimesSpec
             throw new InvalidValueException("Count of every must be an integer of at least 1: {$amount}");
         }
 
-        if ($amount > $unit->maximumAmount()) {
+        if ($amount > TimeUnits::maximumAmount($unit)) {
             throw new InvalidValueException(sprintf(
                 'Count of every must be at most %2$d for the unit %1$s: %3$d',
                 $unit->value,
-                $unit->maximumAmount(),
+                TimeUnits::maximumAmount($unit),
                 $amount,
             ));
         }
