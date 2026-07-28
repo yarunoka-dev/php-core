@@ -9,6 +9,7 @@ use Yarunoka\Calendar\CustomDefinition;
 use Yarunoka\Calendar\Holidays;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\Time\TimeWindow;
@@ -113,7 +114,7 @@ class ReferenceCheckerTest extends TestCase
     #[Test]
     public function an_unregistered_resolver_name_raises(): void
     {
-        $this->expectException(UndefinedNameException::class);
+        $this->expectException(UnregisteredResolverException::class);
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['weekday'], 'times' => ['09:00']])],
@@ -125,7 +126,7 @@ class ReferenceCheckerTest extends TestCase
     #[Test]
     public function resolver_names_in_custom_are_checked_too(): void
     {
-        $this->expectException(UndefinedNameException::class);
+        $this->expectException(UnregisteredResolverException::class);
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['09:00']])],

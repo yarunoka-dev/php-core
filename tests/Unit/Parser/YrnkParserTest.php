@@ -6,6 +6,7 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\ReservedNameException;
 use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\Parser\YrnkParser;
 use PHPUnit\Framework\Attributes\Test;
@@ -191,7 +192,7 @@ class YrnkParserTest extends TestCase
     #[Test]
     public function a_reference_to_an_unregistered_resolver_name_raises(): void
     {
-        $this->expectException(UndefinedNameException::class);
+        $this->expectException(UnregisteredResolverException::class);
 
         (new YrnkParser())->parse($this->doc(['calendar' => ['holidays' => 'yasumi-jp']]));
     }

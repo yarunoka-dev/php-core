@@ -12,6 +12,7 @@ use Yarunoka\Calendar\Workweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Tests\Support\CountingResolver;
 use Yarunoka\YrnkDate;
@@ -126,7 +127,7 @@ class ResolvedCalendarTest extends TestCase
             timezone: self::utc(),
         );
 
-        $this->expectException(UndefinedNameException::class);
+        $this->expectException(UnregisteredResolverException::class);
 
         $resolved->holidayContains(new YrnkDate('2026-01-01', self::utc()));
     }

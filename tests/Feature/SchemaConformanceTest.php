@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Exceptions\YarunokaException;
+use Yarunoka\Exceptions\ExceptionInterface;
 use Yarunoka\Parser\YrnkParser;
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -49,7 +49,7 @@ class SchemaConformanceTest extends TestCase
     #[DataProvider('syntaxInvalidDocuments')]
     public function a_syntax_violation_is_rejected_by_the_implementation_too(string $json): void
     {
-        $this->expectException(YarunokaException::class);
+        $this->expectException(ExceptionInterface::class);
 
         $this->parser()->parse($json);
     }
@@ -65,7 +65,7 @@ class SchemaConformanceTest extends TestCase
     #[DataProvider('semanticInvalidDocuments')]
     public function a_constraint_beyond_the_schema_is_rejected_by_the_implementation_at_parse_time(string $json): void
     {
-        $this->expectException(YarunokaException::class);
+        $this->expectException(ExceptionInterface::class);
 
         $this->parser()->parse($json);
     }

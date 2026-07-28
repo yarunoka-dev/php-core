@@ -160,14 +160,21 @@ if ($evaluator->hasMatchIn($schedule, $lastRunAt, $now)) {
 
 ## Exceptions
 
-All of them are subclasses of `Yarunoka\Exceptions\YarunokaException`.
+All of them implement `Yarunoka\Exceptions\ExceptionInterface`, and each
+extends the SPL exception that describes what went wrong — so catch the
+interface to mean "Yarunoka failed", or the SPL type to treat it alongside
+the same kind of failure from elsewhere.
 
-| Exception | Meaning |
-|---|---|
-| `InvalidYrnkException` | the structure or a value of the DSL violates the language (unknown key, malformed shape) |
-| `UnsupportedVersionException` | a `version` this implementation does not know |
-| `UndefinedNameException` | a reference to an undefined custom name or an unregistered resolver name |
-| `ReservedNameException` | a reserved word or a literal-shaped custom name |
-| `MissingCalendarDataException` | a definition required by the vocabulary is missing |
-| `InvalidCalendarDataException` | a contract violation in a resolver or closure return value |
-| `InvalidValueException` | a value format or range invariant violation |
+| Exception | Extends | Meaning |
+|---|---|---|
+| `InvalidYrnkException` | `RuntimeException` | the structure or a value of the DSL violates the language (unknown key, malformed shape) |
+| `UnsupportedVersionException` | `InvalidYrnkException` | a `version` this implementation does not know |
+| `UndefinedNameException` | `InvalidYrnkException` | a reference to an undefined custom name |
+| `ReservedNameException` | `InvalidYrnkException` | a reserved word or a literal-shaped custom name |
+| `MissingCalendarDataException` | `InvalidYrnkException` | a definition required by the vocabulary is missing |
+| `UnregisteredResolverException` | `RuntimeException` | a definition names a resolver the host never bound |
+| `InvalidCalendarDataException` | `UnexpectedValueException` | a contract violation in a resolver or closure return value |
+| `InvalidValueException` | `InvalidArgumentException` | a value format or range invariant violation on a hand-built node |
+
+Everything the document itself got wrong is under `InvalidYrnkException`,
+so a single catch covers that family.
