@@ -6,6 +6,7 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\YrnkDate;
 use Closure;
+use DateTimeInterface;
 use DateTimeZone;
 
 /**
@@ -37,19 +38,25 @@ trait DateSetDefinition
     }
 
     /**
-     * A fixed date list. Strings are validated as zero-padded YYYY-MM-DD.
-     * The timezone is the document's: a definition carries wall-clock
-     * dates and declares no zone of its own, so it is handed the
-     * document's when the document is read.
+     * A fixed date list. A string is validated as zero-padded YYYY-MM-DD;
+     * a date-time object is read as the day it spells, whatever zone it
+     * happens to carry — an application keeps its holidays as dates, not
+     * as instants, and converting one would silently move a day across a
+     * boundary.
      *
-     * @param  list<YrnkDate|string>  $dates
+     * Either form lands on the document's clock: a definition holds
+     * wall-clock dates and declares no zone of its own, so it is handed
+     * the document's when the document is read.
+     *
+     * @param  list<DateTimeInterface|string>  $dates
      */
     public static function ofDates(array $dates, DateTimeZone $timezone): self
     {
         $parsed = array_map(
-            static fn(YrnkDate|string $date): YrnkDate => $date instanceof YrnkDate
-                ? $date
-                : new YrnkDate($date, $timezone),
+            static fn(DateTimeInterface|string $date): YrnkDate => new YrnkDate(
+                $date instanceof DateTimeInterface ? $date->format('Y-m-d') : $date,
+                $timezone,
+            ),
             $dates,
         );
         $seen = [];

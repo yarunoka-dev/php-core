@@ -12,6 +12,7 @@ use Yarunoka\Tests\Support\CountingResolver;
 use Yarunoka\YrnkDate;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
+use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +41,55 @@ class CalendarNodesTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         Holidays::ofDates(['2026-1-1'], self::utc());
+    }
+
+    #[Test]
+    public function of_dates_takes_the_date_time_objects_an_application_already_holds(): void
+    {
+        $holidays = Holidays::ofDates(
+            [new DateTimeImmutable('2026-01-01 09:30:15', self::utc()), '2026-01-12'],
+            self::utc(),
+        );
+
+        $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
+            static fn(YrnkDate $date): string => $date->format('Y-m-d'),
+            $holidays->dates ?? [],
+        ));
+    }
+
+    #[Test]
+    public function of_dates_reads_a_date_time_object_as_the_day_it_is_written_as(): void
+    {
+        // The instant is 2026-01-02 08:00 in Tokyo, but a calendar carries
+        // wall-clock dates and defines no zone of its own, so the day the
+        // value spells is the day it means.
+        $holidays = Holidays::ofDates(
+            [new DateTimeImmutable('2026-01-01 23:00', self::utc())],
+            new DateTimeZone('Asia/Tokyo'),
+        );
+
+        $this->assertSame('2026-01-01', ($holidays->dates[0] ?? null)?->format('Y-m-d'));
+    }
+
+    #[Test]
+    public function of_dates_puts_every_date_on_the_documents_clock(): void
+    {
+        $holidays = Holidays::ofDates(
+            [new DateTimeImmutable('2026-01-01', self::utc()), '2026-01-02'],
+            new DateTimeZone('Asia/Tokyo'),
+        );
+
+        foreach ($holidays->dates ?? [] as $date) {
+            $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
+        }
+    }
+
+    #[Test]
+    public function of_dates_sees_the_same_day_written_two_ways_as_a_duplicate(): void
+    {
+        $this->expectException(InvalidValueException::class);
+
+        Holidays::ofDates(['2026-01-01', new DateTimeImmutable('2026-01-01', self::utc())], self::utc());
     }
 
     #[Test]
