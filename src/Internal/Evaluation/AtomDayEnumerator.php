@@ -7,8 +7,6 @@ use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
-use Yarunoka\Internal\Vocabulary\DayNames;
-use Yarunoka\Internal\Vocabulary\Ordinals;
 use Yarunoka\Vocabulary\DayName;
 use Yarunoka\YrnkDate;
 use DateTimeZone;
@@ -52,7 +50,7 @@ final readonly class AtomDayEnumerator
     private function weekdayDays(DayName $dayName, int $year, int $month): array
     {
         $first = $this->dayAt($year, $month, 1);
-        $offset = (DayNames::isoNumber($dayName) - (int) $first->format('N') + 7) % 7;
+        $offset = ($dayName->isoNumber() - (int) $first->format('N') + 7) % 7;
         $days = [];
 
         for ($day = 1 + $offset; $day <= (int) $first->format('t'); $day += 7) {
@@ -68,7 +66,7 @@ final readonly class AtomDayEnumerator
     private function ordinalWeekdayDays(OrdinalWeekday $atom, int $year, int $month): array
     {
         $days = $this->weekdayDays($atom->dayName, $year, $month);
-        $weekIndex = Ordinals::weekIndex($atom->ordinal);
+        $weekIndex = $atom->ordinal->weekIndex();
 
         if ($weekIndex === null) {
             return array_slice($days, -1);

@@ -7,8 +7,6 @@ use Yarunoka\Expression\DayCycle;
 use Yarunoka\Expression\EverySequence;
 use Yarunoka\Expression\IfGuard;
 use Yarunoka\Expression\Shift;
-use Yarunoka\Internal\Vocabulary\Directions;
-use Yarunoka\Internal\Vocabulary\TimeUnits;
 use Yarunoka\Vocabulary\Direction;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkDateTime;
@@ -558,7 +556,7 @@ final readonly class MatchFinder
         // Candidate base days run from date, opposite to the shift
         // direction, up to the next landing-condition day after date
         // (base days beyond it fall there or further).
-        $step = -Directions::step($schedule->shift->direction);
+        $step = -$schedule->shift->direction->step();
         $cursor = $date;
 
         for ($i = 0; $i <= self::SHIFT_SEARCH_LIMIT_DAYS; $i++) {
@@ -654,7 +652,7 @@ final readonly class MatchFinder
             return true;
         }
 
-        $target = $if->direction === null ? $date : $this->addDays($date, Directions::step($if->direction));
+        $target = $if->direction === null ? $date : $this->addDays($date, $if->direction->step());
         $result = $this->dayMatcher->matches($if->condition, $target);
 
         return $if->negated ? ! $result : $result;
@@ -677,14 +675,14 @@ final readonly class MatchFinder
      */
     private function landingOf(Shift $shift, YrnkDate $base): ?YrnkDate
     {
-        $cursor = $shift->orSame ? $base : $this->addDays($base, Directions::step($shift->direction));
+        $cursor = $shift->orSame ? $base : $this->addDays($base, $shift->direction->step());
 
         for ($displacement = $shift->orSame ? 0 : 1; $displacement <= self::SHIFT_SEARCH_LIMIT_DAYS; $displacement++) {
             if ($this->dayMatcher->matches($shift->condition, $cursor)) {
                 return $cursor;
             }
 
-            $cursor = $this->addDays($cursor, Directions::step($shift->direction));
+            $cursor = $this->addDays($cursor, $shift->direction->step());
         }
 
         return null;
@@ -732,7 +730,7 @@ final readonly class MatchFinder
         // integer range [from's whole second + 1, to's whole second].
         return $this->sequencePointRunsIn(
             $anchor,
-            TimeUnits::stepSeconds($sequence->amount, $sequence->unit),
+            $sequence->stepSeconds(),
             $from->getTimestamp() + 1,
             $to->getTimestamp(),
         ) !== [];
@@ -869,7 +867,7 @@ final readonly class MatchFinder
         // the integer range [from's second rounded up, to's second
         // rounded down].
         $lower = $from->getTimestamp() + ((int) $from->format('u') > 0 ? 1 : 0);
-        $step = TimeUnits::stepSeconds($sequence->amount, $sequence->unit);
+        $step = $sequence->stepSeconds();
         $instants = [];
 
         foreach ($this->sequencePointRunsIn($anchor, $step, $lower, $to->getTimestamp()) as [$first, $last, $offset]) {
