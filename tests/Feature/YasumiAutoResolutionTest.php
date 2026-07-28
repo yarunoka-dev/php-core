@@ -55,7 +55,7 @@ class YasumiAutoResolutionTest extends TestCase
     #[Test]
     public function a_host_binding_of_the_same_name_is_used_instead(): void
     {
-        $bound = ['yasumi-Japan' => fn(YrnkDate $from, YrnkDate $to): array => ['2026-01-05']];
+        $bound = ['yasumi-Japan' => fn(YrnkDate $from, YrnkDate $through): array => ['2026-01-05']];
 
         $this->assertFalse($this->evaluate('yasumi-Japan', '2026-01-01T10:00:00+09:00', $bound));
         $this->assertTrue($this->evaluate('yasumi-Japan', '2026-01-05T10:00:00+09:00', $bound));

@@ -36,7 +36,7 @@ use Yarunoka\YrnkBuilder;
 use Yarunoka\YrnkParser;
 
 $parser = new YrnkParser(resolvers: [
-    'jp-holidays' => fn (YrnkDate $from, YrnkDate $to): array => /* the holiday list for that range */,
+    'jp-holidays' => fn (YrnkDate $from, YrnkDate $through): array => /* the holiday list for that range */,
 ]);
 
 $document = $parser->parse($json);      // the typed tree; syntax + references validated
@@ -61,9 +61,9 @@ $evaluator = new YrnkEvaluator(
     resolvers: [/* the same as the parser's */],
 );
 
-$evaluator->matches($payday, $now);                 // does this date-time match?
-$evaluator->hasMatchIn($payday, $lastRunAt, $now);  // was there one since the last run?
-$evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie from from through to?
+$evaluator->matches($payday, $now);                      // is this instant an occurrence?
+$evaluator->hasMatchIn($payday, $lastRunAt, $now);       // is there a point after the last run, through now?
+$evaluator->occurrencesIn($payday, $from, $through);     // which occurrences lie from $from through $through?
 ```
 
 - The evaluation methods take a single YrnkSchedule. Questions about the
@@ -75,19 +75,19 @@ $evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie fro
   and are not carried between them**, so every answer rests on what the
   resolvers say at the time it is asked. A caller that would rather not
   look the same data up again holds it inside its own resolver
-- Beyond the day decision, `matches` lets the schedule decide whether the
-  time takes part — with times, the value must equal one of the points
-  expanded on the configured timezone's wall clock (to the second;
-  sub-second precision is truncated); with allday, only the day is
-  checked. Granularity adjustments (rounding to minutes and the like) are
-  done by the caller on the value it passes
-- `hasMatchIn` is the half-open interval **(from, to]** — a point at from
-  does not count, a point at to counts. It looks only at the candidate
-  (year, month) pairs of the interval, so asking about a schedule that
+- `matches` asks whether the given instant is an occurrence. For a timed
+  occurrence the answer is instant equality (sub-second precision is
+  truncated — no scheduled point is finer than a second); the comparison
+  is between instants, never wall-clock values. An all-day occurrence
+  matches on the day alone. Granularity adjustments (rounding to minutes
+  and the like) are done by the caller on the value it passes
+- `hasMatchIn` asks **after a, through b** — a point at the start does
+  not count, a point at the end does. It looks only at the candidate
+  (year, month) pairs of the period, so asking about a schedule that
   "never comes" becomes no as soon as the candidates run out
-- `occurrencesIn` is the closed interval **[from, to]** — the caller
-  names two instants, and both are part of what it names (a caller that
-  means to exclude a boundary moves it). Timed occurrences are answered
+- `occurrencesIn` asks **from a through b** — the caller names two
+  instants, and both are part of what it names (a caller that means to
+  exclude a boundary moves it). Timed occurrences are answered
   as `YrnkDateTime` instants on the configured timezone's clock, all-day
   occurrences as `YrnkDate` dates (both are `DateTimeImmutable`
   subclasses, and the kind is read from the type) — the two kinds never
@@ -114,7 +114,7 @@ use Yarunoka\YrnkSchedule;
 $calendar = new YrnkCalendar(
     holidays: YrnkHolidays::byResolver('yasumi-Japan'),                  // resolved by yasumi when it is installed
     // YrnkHolidays::ofDates(['2026-01-01', ...])                        // a fixed list
-    // YrnkHolidays::deferred(fn (YrnkDate $from, YrnkDate $to): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
+    // YrnkHolidays::deferred(fn (YrnkDate $from, YrnkDate $through): array => Holiday::pluck('date')->all())  // deferred (not writable in the DSL)
     custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'])],
 );
 
@@ -127,7 +127,8 @@ $handmade = new Yrnk(
 ```
 
 - A resolver or deferred closure is given **the range it should cover**
-  (`resolve(YrnkDate $from, YrnkDate $to)`) and returns the dates in it.
+  (`resolve(YrnkDate $from, YrnkDate $through)`, both ends included) and
+  returns the dates in it.
   It is asked again for a range it has not covered, so it only ever needs
   to compute what it was asked for
 - Building a Yrnk containing deferred entries folds them into snapshots
@@ -135,8 +136,8 @@ $handmade = new Yrnk(
 
 ## Typical firing-decision patterns (the caller)
 
-The catch-up semantics are decided by how the caller cuts the question
-interval.
+The catch-up semantics are decided by how the caller cuts the period it
+asks about.
 
 ```php
 // the basic form: "was there a scheduled point since the last run?"
@@ -147,11 +148,11 @@ if ($evaluator->hasMatchIn($schedule, $lastRunAt, $now)) {
 ```
 
 - **Catch-up**: detecting a scheduled time after it has passed still
-  fires once, late, because the point is in (last_run_at, now]. Several
-  missed points still answer as one bool, so they collapse into a single
-  firing
-- **A grace cap**: just trim the lower bound of the question interval
-  (`$from = max($lastRunAt, $now->modify('-1 hour'))`)
+  fires once, late, because the point lies after the last run, through
+  now. Several missed points still answer as one bool, so they collapse
+  into a single firing
+- **A grace cap**: just move up the start of the period
+  (`$after = max($lastRunAt, $now->modify('-1 hour'))`)
 - **No catch-up outside between**: detecting "hourly from 8:00 to 20:00"
   at 20:30 finds nothing, because a 20:00 scheduled point never existed
   (the half-open interval)

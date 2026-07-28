@@ -346,8 +346,8 @@ class MatchFinderTest extends TestCase
     {
         // 2027-06-17 is 367 days from 2026-06-15 — out of contract for
         // the strict form too (the spec's maximum displacement of 366
-        // calendar days is uniform across both forms), and the single
-        // check and the interval check must agree on that.
+        // calendar days is uniform across both forms), and the judgment
+        // at a point and the judgment over a period must agree on that.
         $tooFar = $this->finder(custom: ['desk-open-day' => ['2027-06-17']]);
         $schedule = $this->schedule([
             'years' => [2026], 'months' => [6], 'days' => [15],

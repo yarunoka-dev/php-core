@@ -19,7 +19,7 @@ use Yarunoka\YrnkDate;
 interface YrnkResolverInterface
 {
     /**
-     * @return list<string> YYYY-MM-DD dates within [from, to]
+     * @return list<string> YYYY-MM-DD dates from $from through $through
      */
-    public function resolve(YrnkDate $from, YrnkDate $to): array;
+    public function resolve(YrnkDate $from, YrnkDate $through): array;
 }

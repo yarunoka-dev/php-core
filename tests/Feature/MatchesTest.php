@@ -20,10 +20,10 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies, through matches (the single check), the semantics of day
- * expressions, the layer model, shift, if, and how times take part. The
- * date facts follow the actual 2026 calendar (7/11 Sat, 7/12 Sun, 7/13
- * Mon, …).
+ * Verifies, through matches (the judgment at a point), the semantics of
+ * day expressions, the layer model, shift, if, and how times take part.
+ * The date facts follow the actual 2026 calendar (7/11 Sat, 7/12 Sun,
+ * 7/13 Mon, …).
  */
 class MatchesTest extends TestCase
 {
@@ -394,7 +394,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
                 $calls++;
 
                 return ['2026-01-01'];
@@ -420,7 +420,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $to) use (&$calls): array {
+            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
                 $calls++;
 
                 return ['2026-01-01'];

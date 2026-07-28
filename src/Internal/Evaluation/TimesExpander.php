@@ -15,10 +15,10 @@ use Yarunoka\Time\YrnkTimeWindow;
  * Expansion of times into the scheduled points within one day (seconds
  * from midnight). The nodes keep the written notation, so sorting and
  * laying out the grid happen here. The grid anchors at the start of the
- * window; windows are the half-open interval [start, end). allday stands
- * at its comparison instant (the start of the day, 00:00) — a placement
- * for range questions only, which does not turn it into a timed 00:00
- * occurrence.
+ * window; windows are the half-open interval [start, end). allday
+ * carries no time of its own: a range answers for it by whether its day
+ * overlaps that range, so the finder decides it without expanding any
+ * point here.
  *
  * @internal
  */

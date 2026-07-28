@@ -16,12 +16,12 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Cross-checks the single check (matches) against the interval check
- * (hasMatchIn). For representative schedules, the list of matching days
- * from brute-forcing matches over every day's point of the period must
- * equal the list from hasMatchIn cut around each point. The single-day
- * decision and the per-month enumeration are separate implementations,
- * and this catches them drifting apart.
+ * Cross-checks the judgment at a point (matches) against the judgment
+ * over a period (hasMatchIn). For representative schedules, the list of
+ * matching days from brute-forcing matches over every day's point of the
+ * period must equal the list from hasMatchIn cut around each point. The
+ * single-day decision and the per-month enumeration are separate
+ * implementations, and this catches them drifting apart.
  *
  * The period is 2026-06-15 through 09-15 (three month boundaries,
  * including the Marine Day 7/20 and Mountain Day 8/11 holidays).

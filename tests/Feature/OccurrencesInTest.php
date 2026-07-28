@@ -16,11 +16,11 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The enumeration query (occurrencesIn): the occurrence set cut to the
- * closed window [from, to], timed occurrences answered as instants and
- * all-day occurrences as dates, in ascending order of comparison
- * instant. Results are rendered to strings so that both the values and
- * the returned kinds (instant vs date) are asserted at once.
+ * The enumeration query (occurrencesIn): the occurrence set cut to what
+ * the caller names, from a through b, timed occurrences answered as
+ * instants and all-day occurrences as dates, in ascending order of
+ * comparison instant. Results are rendered to strings so that both the
+ * values and the returned kinds (instant vs date) are asserted at once.
  */
 class OccurrencesInTest extends TestCase
 {
@@ -69,19 +69,19 @@ class OccurrencesInTest extends TestCase
     public function the_window_ends_are_compared_as_raw_instants_without_truncation(): void
     {
         $schedule = $this->schedule(['times' => ['09:00']]);
-        $to = $this->at('2026-07-12T10:00:00+09:00');
+        $through = $this->at('2026-07-12T10:00:00+09:00');
 
         $this->assertSame([], $this->evaluator()->occurrencesIn(
             $schedule,
             $this->at('2026-07-12T09:00:00.500000+09:00'),
-            $to,
+            $through,
         ));
         $this->assertSame(
             ['2026-07-12T09:00:00+09:00'],
             $this->rendered($this->evaluator()->occurrencesIn(
                 $schedule,
                 $this->at('2026-07-12T08:59:59.500000+09:00'),
-                $to,
+                $through,
             )),
         );
     }
@@ -101,7 +101,7 @@ class OccurrencesInTest extends TestCase
 
         $this->assertContainsOnlyInstancesOf(YrnkDate::class, $occurrences);
         // The window end is included: the comparison instant of 7/27 is
-        // exactly at to.
+        // exactly at the end named.
         $this->assertSame(['2026-07-13', '2026-07-20', '2026-07-27'], $this->rendered($occurrences));
     }
 

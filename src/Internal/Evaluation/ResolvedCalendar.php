@@ -150,8 +150,8 @@ final class ResolvedCalendar
         }
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);
-        $to = new YrnkDate("{$scope}-12-31", $this->timezone);
-        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $to) : $resolve($from, $to);
+        $through = new YrnkDate("{$scope}-12-31", $this->timezone);
+        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $through) : $resolve($from, $through);
 
         if (! is_array($resolved)) {
             throw new InvalidCalendarDataException("{$key}: the resolver must return a list of date strings");

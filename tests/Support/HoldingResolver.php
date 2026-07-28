@@ -22,7 +22,7 @@ final class HoldingResolver implements YrnkResolverInterface
      */
     public function __construct(private readonly array $dates) {}
 
-    public function resolve(YrnkDate $from, YrnkDate $to): array
+    public function resolve(YrnkDate $from, YrnkDate $through): array
     {
         if ($this->held === null) {
             $this->computations++;

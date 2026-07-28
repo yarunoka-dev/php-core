@@ -18,16 +18,16 @@ use DateTimeZone;
  * Enumeration of candidate months and composition of if / shift / times
  * (the substance of matches / hasMatchIn / occurrencesIn).
  *
- * Interval questions are evaluated by the year → month → day hierarchy,
- * not by walking days: years / months narrow the (year, month) pairs
- * overlapping the interval, the days atoms enumerate the matching days
- * per month, if filters them, shift maps them to landing days, and the
- * times points are laid on top and checked against the interval. The
- * answer becomes no when the candidates run out, so there is no search
- * horizon.
+ * The questions that name a range are evaluated by the year → month →
+ * day hierarchy, not by walking days: years / months narrow the (year,
+ * month) pairs overlapping the range, the days atoms enumerate the
+ * matching days per month, if filters them, shift maps them to landing
+ * days, and the times points are laid on top and checked against the
+ * range. The answer becomes no when the candidates run out, so there is
+ * no search horizon.
  *
- * from / until (the validity range) folds into the question interval as
- * the boundary that clips the set of points to [from, until). The
+ * from / until (the validity range) folds into the range the question
+ * names as the boundary that clips the set of points to [from, until). The
  * interval every (EverySequence) is a sequence of points that uses no
  * matching-days × times product, so it is evaluated on a dedicated
  * arithmetic path that skips the day hierarchy. The day cycle (DayCycle)
@@ -47,7 +47,7 @@ final readonly class MatchFinder
     private const int SHIFT_SEARCH_LIMIT_DAYS = 366;
 
     /**
-     * Margin around a question range covering how far a wall reading
+     * Margin around the range a question names covering how far a wall reading
      * can sit from its instant: two days, comfortably above the widest
      * offset a zone can apply (UTC−12 to UTC+14).
      */
@@ -61,11 +61,11 @@ final readonly class MatchFinder
     ) {}
 
     /**
-     * Does this date-time match? Times are truncated to whole seconds for
-     * comparison (the DSL's scheduled points are never finer than a
-     * second). allday matches on the day alone and ignores the time, but
-     * the from / until clipping applies to its comparison instant (00:00
-     * of its day, resolved like any other wall-clock point).
+     * Is the given instant an occurrence? The comparison is between
+     * instants, truncated to whole seconds (the DSL's scheduled points
+     * are never finer than a second). allday matches on the day alone and
+     * ignores the time; the from / until clipping holds its day as long
+     * as the validity range holds any part of it.
      */
     public function matches(YrnkSchedule $schedule, DateTimeImmutable $at): bool
     {
@@ -105,46 +105,45 @@ final readonly class MatchFinder
     }
 
     /**
-     * Is there a matching date-time in the half-open interval (from, to]?
+     * Is there a scheduled point after $after, through $through?
      */
-    public function hasMatchIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $to): bool
+    public function hasMatchIn(YrnkSchedule $schedule, DateTimeImmutable $after, DateTimeImmutable $through): bool
     {
-        // Fold the validity range [valid-from, until) into the question
-        // interval (from, to]. Points are whole seconds, so
-        // t >= valid-from ⇔ t > valid-from − 1s, and t < until ⇔
-        // t <= until − 1s.
+        // Fold the validity range [from, until) into the period the
+        // question names. Points are whole seconds, so t >= from ⇔
+        // t > from − 1s, and t < until ⇔ t <= until − 1s.
         if ($schedule->from !== null) {
             $lower = self::secondBefore($schedule->from);
 
-            if ($lower > $from) {
-                $from = $lower;
+            if ($lower > $after) {
+                $after = $lower;
             }
         }
 
         if ($schedule->until !== null) {
             $upper = self::secondBefore($schedule->until);
 
-            if ($upper < $to) {
-                $to = $upper;
+            if ($upper < $through) {
+                $through = $upper;
             }
         }
 
-        if ($from >= $to) {
+        if ($after >= $through) {
             return false;
         }
 
         if ($schedule->times instanceof EverySequence) {
-            return $this->sequenceHasMatchIn($schedule->from, $schedule->times, $from, $to);
+            return $this->sequenceHasMatchIn($schedule->from, $schedule->times, $after, $through);
         }
 
-        $fromDay = $this->wallDateOf($from);
-        $toDay = $this->wallDateOf($to);
+        $afterDay = $this->wallDateOf($after);
+        $throughDay = $this->wallDateOf($through);
 
         if ($schedule->times instanceof AllDay) {
-            foreach ($this->landedDaysWithin($schedule, $fromDay, $toDay) as $day) {
-                // The interval excludes its start, so the day has to
-                // reach past it.
-                if ($this->dayOverlaps($day, $from->getTimestamp() + 1, $to->getTimestamp())) {
+            foreach ($this->landedDaysWithin($schedule, $afterDay, $throughDay) as $day) {
+                // The period excludes its start, so the day has to reach
+                // past it.
+                if ($this->dayOverlaps($day, $after->getTimestamp() + 1, $through->getTimestamp())) {
                     return true;
                 }
             }
@@ -159,12 +158,12 @@ final readonly class MatchFinder
         }
 
         // Only landing days (base days, without a shift) inside
-        // [fromDay, toDay] can reach the interval, so look at the base
-        // days of the overlapping months first.
-        for ($index = self::monthIndex($fromDay); $index <= self::monthIndex($toDay); $index++) {
+        // [afterDay, throughDay] can reach the period, so look at the
+        // base days of the overlapping months first.
+        for ($index = self::monthIndex($afterDay); $index <= self::monthIndex($throughDay); $index++) {
             [$year, $month] = self::yearMonthAt($index);
 
-            if ($this->hasInstantIn($this->landedDaysIn($schedule, $year, $month), $seconds, $from, $to, $fromDay, $toDay)) {
+            if ($this->hasInstantIn($this->landedDaysIn($schedule, $year, $month), $seconds, $after, $through, $afterDay, $throughDay)) {
                 return true;
             }
         }
@@ -173,28 +172,28 @@ final readonly class MatchFinder
             return false;
         }
 
-        // Base days in months outside the interval can be shifted into
-        // it; walk the months on the side opposite to the shift direction
-        // to pick those up.
+        // Base days in months outside the period can be shifted into it;
+        // walk the months on the side opposite to the shift direction to
+        // pick those up.
         return $schedule->shift->direction === Direction::Next
-            ? $this->hasSpilledMatchBefore($schedule, $seconds, $from, $to, $fromDay, $toDay)
-            : $this->hasSpilledMatchAfter($schedule, $seconds, $from, $to, $fromDay, $toDay);
+            ? $this->hasSpilledMatchBefore($schedule, $seconds, $after, $through, $afterDay, $throughDay)
+            : $this->hasSpilledMatchAfter($schedule, $seconds, $after, $through, $afterDay, $throughDay);
     }
 
     /**
-     * The occurrences in the closed interval [from, to] (both boundary
-     * instants included), in ascending order of comparison instant.
+     * Which occurrences lie from $from through $through (both boundary
+     * instants included), in ascending order of comparison instant?
      * Timed occurrences are answered as instants, all-day occurrences as
      * dates (YrnkDate).
      *
      * @return list<YrnkDate|YrnkDateTime>
      */
-    public function occurrencesIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $to): array
+    public function occurrencesIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $through): array
     {
-        // Fold the validity range [valid-from, until) into the closed
-        // window [from, to]. Points are whole seconds, so t < until ⇔
-        // t <= until − 1s; valid-from needs no adjustment (both bounds
-        // are inclusive).
+        // Fold the validity range [from, until) into the range the
+        // question names. Points are whole seconds, so t < until ⇔
+        // t <= until − 1s; the validity start needs no adjustment (both
+        // bounds are inclusive).
         if ($schedule->from !== null) {
             $lower = $schedule->from;
 
@@ -206,28 +205,28 @@ final readonly class MatchFinder
         if ($schedule->until !== null) {
             $upper = self::secondBefore($schedule->until);
 
-            if ($upper < $to) {
-                $to = $upper;
+            if ($upper < $through) {
+                $through = $upper;
             }
         }
 
-        if ($from > $to) {
+        if ($from > $through) {
             return [];
         }
 
         if ($schedule->times instanceof EverySequence) {
-            return $this->sequenceOccurrencesIn($schedule->from, $schedule->times, $from, $to);
+            return $this->sequenceOccurrencesIn($schedule->from, $schedule->times, $from, $through);
         }
 
         $fromDay = $this->wallDateOf($from);
-        $toDay = $this->wallDateOf($to);
-        $days = $this->landedDaysWithin($schedule, $fromDay, $toDay);
+        $throughDay = $this->wallDateOf($through);
+        $days = $this->landedDaysWithin($schedule, $fromDay, $throughDay);
 
         if ($schedule->times instanceof AllDay) {
             $dates = [];
 
             foreach ($days as $day) {
-                if ($this->dayOverlaps($day, $from->getTimestamp(), $to->getTimestamp())) {
+                if ($this->dayOverlaps($day, $from->getTimestamp(), $through->getTimestamp())) {
                     $dates[] = $day;
                 }
             }
@@ -246,7 +245,7 @@ final readonly class MatchFinder
             foreach ($seconds as $second) {
                 $instant = $this->atTime($day, $second);
 
-                if ($instant >= $from && $instant <= $to) {
+                if ($instant >= $from && $instant <= $through) {
                     $instants[$instant->getTimestamp()] = $instant;
                 }
             }
@@ -258,22 +257,22 @@ final readonly class MatchFinder
     }
 
     /**
-     * The landing days inside [fromDay, toDay], ascending and without
-     * duplicates. Months overlapping the window carry the base days
-     * whose landings can lie inside it; with a shift, base days of
+     * The landing days from $fromDay through $throughDay, ascending and
+     * without duplicates. Months overlapping the window carry the base
+     * days whose landings can lie inside it; with a shift, base days of
      * months on the opposite side of the shift direction can spill in,
      * so those months are walked with the same cutoffs as the spilled
-     * interval checks below.
+     * range checks below.
      *
      * @return list<YrnkDate>
      */
-    private function landedDaysWithin(YrnkSchedule $schedule, YrnkDate $fromDay, YrnkDate $toDay): array
+    private function landedDaysWithin(YrnkSchedule $schedule, YrnkDate $fromDay, YrnkDate $throughDay): array
     {
         $found = [];
 
-        for ($index = self::monthIndex($fromDay); $index <= self::monthIndex($toDay); $index++) {
+        for ($index = self::monthIndex($fromDay); $index <= self::monthIndex($throughDay); $index++) {
             [$year, $month] = self::yearMonthAt($index);
-            $this->collectWithin($this->landedDaysIn($schedule, $year, $month), $fromDay, $toDay, $found);
+            $this->collectWithin($this->landedDaysIn($schedule, $year, $month), $fromDay, $throughDay, $found);
         }
 
         if ($schedule->shift?->direction === Direction::Next) {
@@ -286,7 +285,7 @@ final readonly class MatchFinder
                 }
 
                 $landed = $this->landedDaysIn($schedule, $year, $month);
-                $this->collectWithin($landed, $fromDay, $toDay, $found);
+                $this->collectWithin($landed, $fromDay, $throughDay, $found);
 
                 if ($landed !== [] && $fromDay > $landed[array_key_last($landed)]) {
                     break;
@@ -295,17 +294,17 @@ final readonly class MatchFinder
         }
 
         if ($schedule->shift?->direction === Direction::Prev) {
-            for ($index = self::monthIndex($toDay) + 1; ; $index++) {
+            for ($index = self::monthIndex($throughDay) + 1; ; $index++) {
                 [$year, $month] = self::yearMonthAt($index);
 
-                if ($this->addDays($this->dayAt($year, $month, 1), -self::SHIFT_SEARCH_LIMIT_DAYS) > $toDay) {
+                if ($this->addDays($this->dayAt($year, $month, 1), -self::SHIFT_SEARCH_LIMIT_DAYS) > $throughDay) {
                     break;
                 }
 
                 $landed = $this->landedDaysIn($schedule, $year, $month);
-                $this->collectWithin($landed, $fromDay, $toDay, $found);
+                $this->collectWithin($landed, $fromDay, $throughDay, $found);
 
-                if ($landed !== [] && $landed[0] > $toDay) {
+                if ($landed !== [] && $landed[0] > $throughDay) {
                     break;
                 }
             }
@@ -320,54 +319,54 @@ final readonly class MatchFinder
      * @param  list<YrnkDate>  $days
      * @param  array<string, YrnkDate>  $found  Keyed by the ISO date, so cross-month duplicates collapse
      */
-    private function collectWithin(array $days, YrnkDate $fromDay, YrnkDate $toDay, array &$found): void
+    private function collectWithin(array $days, YrnkDate $fromDay, YrnkDate $throughDay, array &$found): void
     {
         foreach ($days as $day) {
-            if ($fromDay <= $day && $day <= $toDay) {
+            if ($fromDay <= $day && $day <= $throughDay) {
                 $found[$day->format('Y-m-d')] = $day;
             }
         }
     }
 
     /**
-     * Base days of earlier months spilling into the interval by a
-     * forward (next) shift. A landing is at most 366 days from its base
-     * day (the contract), so months further back are cut off. Landing
-     * days are monotonic in their base days, so the search is exhausted
-     * once the month's last landing falls before from.
+     * Base days of earlier months spilling into the period by a forward
+     * (next) shift. A landing is at most 366 days from its base day (the
+     * contract), so months further back are cut off. Landing days are
+     * monotonic in their base days, so the search is exhausted once the
+     * month's last landing falls before the start of the period.
      *
      * @param  list<int>  $seconds
      */
     private function hasSpilledMatchBefore(
         YrnkSchedule $schedule,
         array $seconds,
-        DateTimeImmutable $from,
-        DateTimeImmutable $to,
-        YrnkDate $fromDay,
-        YrnkDate $toDay,
+        DateTimeImmutable $after,
+        DateTimeImmutable $through,
+        YrnkDate $afterDay,
+        YrnkDate $throughDay,
     ): bool {
-        for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
+        for ($index = self::monthIndex($afterDay) - 1; ; $index--) {
             [$year, $month] = self::yearMonthAt($index);
             $monthLast = $this->lastDayOf($year, $month);
 
-            if ($fromDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
+            if ($afterDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
                 return false;
             }
 
             $landed = $this->landedDaysIn($schedule, $year, $month);
 
-            if ($this->hasInstantIn($landed, $seconds, $from, $to, $fromDay, $toDay)) {
+            if ($this->hasInstantIn($landed, $seconds, $after, $through, $afterDay, $throughDay)) {
                 return true;
             }
 
-            if ($landed !== [] && $fromDay > $landed[array_key_last($landed)]) {
+            if ($landed !== [] && $afterDay > $landed[array_key_last($landed)]) {
                 return false;
             }
         }
     }
 
     /**
-     * Base days of later months spilling into the interval by a backward
+     * Base days of later months spilling into the period by a backward
      * (prev) shift. The cutoff is the mirror image of
      * hasSpilledMatchBefore.
      *
@@ -376,26 +375,26 @@ final readonly class MatchFinder
     private function hasSpilledMatchAfter(
         YrnkSchedule $schedule,
         array $seconds,
-        DateTimeImmutable $from,
-        DateTimeImmutable $to,
-        YrnkDate $fromDay,
-        YrnkDate $toDay,
+        DateTimeImmutable $after,
+        DateTimeImmutable $through,
+        YrnkDate $afterDay,
+        YrnkDate $throughDay,
     ): bool {
-        for ($index = self::monthIndex($toDay) + 1; ; $index++) {
+        for ($index = self::monthIndex($throughDay) + 1; ; $index++) {
             [$year, $month] = self::yearMonthAt($index);
             $monthFirst = $this->dayAt($year, $month, 1);
 
-            if ($this->addDays($monthFirst, -self::SHIFT_SEARCH_LIMIT_DAYS) > $toDay) {
+            if ($this->addDays($monthFirst, -self::SHIFT_SEARCH_LIMIT_DAYS) > $throughDay) {
                 return false;
             }
 
             $landed = $this->landedDaysIn($schedule, $year, $month);
 
-            if ($this->hasInstantIn($landed, $seconds, $from, $to, $fromDay, $toDay)) {
+            if ($this->hasInstantIn($landed, $seconds, $after, $through, $afterDay, $throughDay)) {
                 return true;
             }
 
-            if ($landed !== [] && $landed[0] > $toDay) {
+            if ($landed !== [] && $landed[0] > $throughDay) {
                 return false;
             }
         }
@@ -508,11 +507,11 @@ final readonly class MatchFinder
     }
 
     /**
-     * Among the landing days overlapping the interval, is there a time
-     * point after from and at or before to? Days strictly inside fromDay
-     * and toDay always have their time points inside the interval (points
-     * exist only within the day, [00:00, 24:00)), so only the boundary
-     * days need their times checked.
+     * Among the landing days overlapping the period, is there a time
+     * point after $after, through $through? Days strictly inside
+     * $afterDay and $throughDay always have their time points inside the
+     * period (points exist only within the day, [00:00, 24:00)), so only
+     * the boundary days need their times checked.
      *
      * @param  list<YrnkDate>  $days
      * @param  list<int>  $seconds
@@ -520,24 +519,24 @@ final readonly class MatchFinder
     private function hasInstantIn(
         array $days,
         array $seconds,
-        DateTimeImmutable $from,
-        DateTimeImmutable $to,
-        YrnkDate $fromDay,
-        YrnkDate $toDay,
+        DateTimeImmutable $after,
+        DateTimeImmutable $through,
+        YrnkDate $afterDay,
+        YrnkDate $throughDay,
     ): bool {
         foreach ($days as $day) {
-            if ($fromDay > $day || $day > $toDay) {
+            if ($afterDay > $day || $day > $throughDay) {
                 continue;
             }
 
-            if (! self::isSameDay($day, $fromDay) && ! self::isSameDay($day, $toDay)) {
+            if (! self::isSameDay($day, $afterDay) && ! self::isSameDay($day, $throughDay)) {
                 return true;
             }
 
             foreach ($seconds as $second) {
                 $instant = $this->atTime($day, $second);
 
-                if ($instant > $from && $instant <= $to) {
+                if ($instant > $after && $instant <= $through) {
                     return true;
                 }
             }
@@ -742,13 +741,13 @@ final readonly class MatchFinder
     }
 
     /**
-     * Is there a point of the interval sequence (from + k × interval) in
-     * (from, to]? Answered exactly, per offset segment: the row is laid
-     * out on the wall clock, whose offset to real time is
-     * piecewise-constant, so within one segment wall order and instant
-     * order agree and the question reduces to intersecting integer
-     * ranges. No instant-order assumption is made over the whole row —
-     * a wall time pushed out of a DST gap stands after later wall
+     * Is there a point of the interval sequence (from + k × interval)
+     * after $after, through $through? Answered exactly, per offset
+     * segment: the row is laid out on the wall clock, whose offset to
+     * real time is piecewise-constant, so within one segment wall order
+     * and instant order agree and the question reduces to intersecting
+     * integer ranges. No instant-order assumption is made over the whole
+     * row — a wall time pushed out of a DST gap stands after later wall
      * times' instants.
      *
      * @param  ?YrnkDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
@@ -756,20 +755,21 @@ final readonly class MatchFinder
     private function sequenceHasMatchIn(
         ?YrnkDateTime $anchor,
         EverySequence $sequence,
-        DateTimeImmutable $from,
-        DateTimeImmutable $to,
+        DateTimeImmutable $after,
+        DateTimeImmutable $through,
     ): bool {
         if ($anchor === null) {
             return false;
         }
 
-        // Points are whole seconds: (from, to] on instants is the
-        // integer range [from's whole second + 1, to's whole second].
+        // Points are whole seconds: after…through on instants is the
+        // integer range [after's whole second + 1, through's whole
+        // second].
         return $this->sequencePointRunsIn(
             $anchor,
             $sequence->stepSeconds(),
-            $from->getTimestamp() + 1,
-            $to->getTimestamp(),
+            $after->getTimestamp() + 1,
+            $through->getTimestamp(),
         ) !== [];
     }
 
@@ -881,11 +881,11 @@ final readonly class MatchFinder
     }
 
     /**
-     * The points of the interval sequence (from + k × interval) inside
-     * the closed window [from, to], ascending by instant: the
-     * per-segment runs collected keyed by timestamp — deduplicating
-     * points folded together by a DST gap and ordering interleaved runs
-     * by instant at once.
+     * The points of the interval sequence (from + k × interval) lying
+     * from $from through $through, ascending by instant: the per-segment
+     * runs collected keyed by timestamp — deduplicating points folded
+     * together by a DST gap and ordering interleaved runs by instant at
+     * once.
      *
      * @param  ?YrnkDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
      * @return list<YrnkDateTime>
@@ -894,20 +894,20 @@ final readonly class MatchFinder
         ?YrnkDateTime $anchor,
         EverySequence $sequence,
         DateTimeImmutable $from,
-        DateTimeImmutable $to,
+        DateTimeImmutable $through,
     ): array {
         if ($anchor === null) {
             return [];
         }
 
-        // Points are whole seconds: the closed [from, to] on instants is
-        // the integer range [from's second rounded up, to's second
-        // rounded down].
+        // Points are whole seconds: the closed [$from, $through] on
+        // instants is the integer range [from's second rounded up,
+        // through's second rounded down].
         $lower = $from->getTimestamp() + ((int) $from->format('u') > 0 ? 1 : 0);
         $step = $sequence->stepSeconds();
         $instants = [];
 
-        foreach ($this->sequencePointRunsIn($anchor, $step, $lower, $to->getTimestamp()) as [$first, $last, $offset]) {
+        foreach ($this->sequencePointRunsIn($anchor, $step, $lower, $through->getTimestamp()) as [$first, $last, $offset]) {
             for ($wall = $first; $wall <= $last; $wall += $step) {
                 $timestamp = $wall - $offset;
                 // Wrapped rather than re-read from the wall clock: an
