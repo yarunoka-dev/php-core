@@ -1,16 +1,10 @@
 <?php
 
-namespace Yarunoka\Internal\Parser;
+namespace Yarunoka\Calendar;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
-use Yarunoka\Calendar\YrnkBusinessHours;
-use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
-use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
+use Yarunoka\Internal\Parser\ReservedWords;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
@@ -19,16 +13,14 @@ use DateTimeZone;
  * The parser for the definitions part (RawCalendar). The top level is
  * the closed set of reserved keys (the built-in definitions); under
  * custom is the open namespace.
- *
- * @internal
  */
-final class CalendarParser
+final class YrnkCalendarParser
 {
     private const array KNOWN_KEYS = [
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public static function parse(mixed $raw, DateTimeZone $timezone): YrnkCalendar
+    public function parse(mixed $raw, DateTimeZone $timezone): YrnkCalendar
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
