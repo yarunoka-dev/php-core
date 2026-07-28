@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Expression\CustomRef;
 use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
@@ -16,7 +16,7 @@ use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\YrnkDate;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
@@ -32,10 +32,10 @@ class DayMatcherTest extends TestCase
         // 2026-07-20 is the third Monday. 7/31 is the last Friday and the
         // end of the month.
         $this->assertTrue($matcher->matches(new MonthDay(20), $this->day('2026-07-20')));
-        $this->assertTrue($matcher->matches(new Weekday(DayName::Mon), $this->day('2026-07-20')));
-        $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Third, DayName::Mon), $this->day('2026-07-20')));
-        $this->assertFalse($matcher->matches(new OrdinalWeekday(Ordinal::Fifth, DayName::Mon), $this->day('2026-07-27')));
-        $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Last, DayName::Fri), $this->day('2026-07-31')));
+        $this->assertTrue($matcher->matches(new Weekday(YrnkDayName::Mon), $this->day('2026-07-20')));
+        $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon), $this->day('2026-07-20')));
+        $this->assertFalse($matcher->matches(new OrdinalWeekday(Ordinal::Fifth, YrnkDayName::Mon), $this->day('2026-07-27')));
+        $this->assertTrue($matcher->matches(new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri), $this->day('2026-07-31')));
         $this->assertTrue($matcher->matches(new LastDayOfMonth(), $this->day('2026-07-31')));
         $this->assertFalse($matcher->matches(new LastDayOfMonth(), $this->day('2026-07-30')));
     }
@@ -103,12 +103,12 @@ class DayMatcherTest extends TestCase
         array $businessDays = [],
         array $custom = [],
     ): DayMatcher {
-        return new DayMatcher(new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays, self::utc()),
-            businessHolidays: BusinessHolidays::ofDates($businessHolidays, self::utc()),
-            businessDays: BusinessDays::ofDates($businessDays, self::utc()),
+        return new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
+            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidays::ofDates($businessHolidays, self::utc()),
+            businessDays: YrnkBusinessDays::ofDates($businessDays, self::utc()),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
+                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
         ), resolvers: [], timezone: self::utc()));

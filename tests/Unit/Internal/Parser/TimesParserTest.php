@@ -7,7 +7,7 @@ use Yarunoka\Expression\BusinessHourRef;
 use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Internal\Parser\TimesParser;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -41,7 +41,7 @@ class TimesParserTest extends TestCase
         $times = TimesParser::parse(['every' => [1, 'hour'], 'between' => ['08:00', '20:00']]);
 
         $this->assertInstanceOf(EveryGrid::class, $times);
-        $this->assertInstanceOf(TimeWindow::class, $times->between);
+        $this->assertInstanceOf(YrnkTimeWindow::class, $times->between);
     }
 
     #[Test]

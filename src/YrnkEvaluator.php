@@ -2,7 +2,7 @@
 
 namespace Yarunoka;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
@@ -40,7 +40,7 @@ final class YrnkEvaluator
      * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
      */
     public function __construct(
-        private readonly Calendar $calendar,
+        private readonly YrnkCalendar $calendar,
         private readonly DateTimeZone $timezone,
         private readonly array $resolvers = [],
     ) {

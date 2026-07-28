@@ -2,16 +2,16 @@
 
 namespace Yarunoka\Tests\Unit\Calendar;
 
-use Yarunoka\Calendar\BusinessHours;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
-use Yarunoka\Calendar\Workweek;
+use Yarunoka\Calendar\YrnkBusinessHours;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Tests\Support\CountingResolver;
 use Yarunoka\YrnkDate;
-use Yarunoka\Time\TimeWindow;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Time\YrnkTimeWindow;
+use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,13 +19,13 @@ use PHPUnit\Framework\TestCase;
 
 class CalendarNodesTest extends TestCase
 {
-    // ---- date set definitions (Holidays stands in for the four
+    // ---- date set definitions (YrnkHolidays stands in for the four
     // structurally identical types) ----
 
     #[Test]
     public function of_dates_holds_date_strings_as_a_list_of_local_dates(): void
     {
-        $holidays = Holidays::ofDates(['2026-01-01', '2026-01-12'], self::utc());
+        $holidays = YrnkHolidays::ofDates(['2026-01-01', '2026-01-12'], self::utc());
 
         $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
@@ -40,13 +40,13 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        Holidays::ofDates(['2026-1-1'], self::utc());
+        YrnkHolidays::ofDates(['2026-1-1'], self::utc());
     }
 
     #[Test]
     public function of_dates_takes_the_date_time_objects_an_application_already_holds(): void
     {
-        $holidays = Holidays::ofDates(
+        $holidays = YrnkHolidays::ofDates(
             [new DateTimeImmutable('2026-01-01 09:30:15', self::utc()), '2026-01-12'],
             self::utc(),
         );
@@ -63,7 +63,7 @@ class CalendarNodesTest extends TestCase
         // The instant is 2026-01-02 08:00 in Tokyo, but a calendar carries
         // wall-clock dates and defines no zone of its own, so the day the
         // value spells is the day it means.
-        $holidays = Holidays::ofDates(
+        $holidays = YrnkHolidays::ofDates(
             [new DateTimeImmutable('2026-01-01 23:00', self::utc())],
             new DateTimeZone('Asia/Tokyo'),
         );
@@ -74,7 +74,7 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function of_dates_puts_every_date_on_the_documents_clock(): void
     {
-        $holidays = Holidays::ofDates(
+        $holidays = YrnkHolidays::ofDates(
             [new DateTimeImmutable('2026-01-01', self::utc()), '2026-01-02'],
             new DateTimeZone('Asia/Tokyo'),
         );
@@ -89,13 +89,13 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        Holidays::ofDates(['2026-01-01', new DateTimeImmutable('2026-01-01', self::utc())], self::utc());
+        YrnkHolidays::ofDates(['2026-01-01', new DateTimeImmutable('2026-01-01', self::utc())], self::utc());
     }
 
     #[Test]
     public function by_resolver_holds_the_resolver_name(): void
     {
-        $holidays = Holidays::byResolver('yasumi-jp');
+        $holidays = YrnkHolidays::byResolver('yasumi-jp');
 
         $this->assertSame('yasumi-jp', $holidays->resolver);
         $this->assertNull($holidays->dates);
@@ -106,7 +106,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        Holidays::byResolver('');
+        YrnkHolidays::byResolver('');
     }
 
     #[Test]
@@ -116,14 +116,14 @@ class CalendarNodesTest extends TestCase
         // a date-shaped name is not allowed.
         $this->expectException(InvalidValueException::class);
 
-        Holidays::byResolver('2026-01-01');
+        YrnkHolidays::byResolver('2026-01-01');
     }
 
     #[Test]
     public function deferred_holds_the_closure_unevaluated(): void
     {
         $calls = 0;
-        $holidays = Holidays::deferred(function () use (&$calls): array {
+        $holidays = YrnkHolidays::deferred(function () use (&$calls): array {
             $calls++;
 
             return [];
@@ -138,7 +138,7 @@ class CalendarNodesTest extends TestCase
     {
         $resolver = new CountingResolver(['2026-01-01']);
 
-        $holidays = Holidays::deferred($resolver);
+        $holidays = YrnkHolidays::deferred($resolver);
 
         $this->assertNotNull($holidays->closure);
         $this->assertSame(0, $resolver->calls);
@@ -151,9 +151,9 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function workweek_keeps_day_names_in_written_order(): void
     {
-        $workweek = new Workweek([DayName::Tue, DayName::Sat, DayName::Mon]);
+        $workweek = new YrnkWorkweek([YrnkDayName::Tue, YrnkDayName::Sat, YrnkDayName::Mon]);
 
-        $this->assertSame([DayName::Tue, DayName::Sat, DayName::Mon], $workweek->days);
+        $this->assertSame([YrnkDayName::Tue, YrnkDayName::Sat, YrnkDayName::Mon], $workweek->days);
     }
 
     #[Test]
@@ -161,7 +161,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new Workweek([]);
+        new YrnkWorkweek([]);
     }
 
     #[Test]
@@ -169,7 +169,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new Workweek([DayName::Mon, DayName::Mon]);
+        new YrnkWorkweek([YrnkDayName::Mon, YrnkDayName::Mon]);
     }
 
     // ---- business_hours ----
@@ -177,9 +177,9 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function business_hours_keeps_windows_in_written_order(): void
     {
-        $hours = new BusinessHours([
-            TimeWindow::fromStrings('13:00', '18:00'),
-            TimeWindow::fromStrings('09:00', '12:00'),
+        $hours = new YrnkBusinessHours([
+            YrnkTimeWindow::fromStrings('13:00', '18:00'),
+            YrnkTimeWindow::fromStrings('09:00', '12:00'),
         ]);
 
         $this->assertSame(13 * 3600, $hours->windows[0]->startSeconds);
@@ -191,7 +191,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new BusinessHours([]);
+        new YrnkBusinessHours([]);
     }
 
     #[Test]
@@ -199,9 +199,9 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new BusinessHours([
-            TimeWindow::fromStrings('09:00', '13:00'),
-            TimeWindow::fromStrings('12:00', '18:00'),
+        new YrnkBusinessHours([
+            YrnkTimeWindow::fromStrings('09:00', '13:00'),
+            YrnkTimeWindow::fromStrings('12:00', '18:00'),
         ]);
     }
 
@@ -210,9 +210,9 @@ class CalendarNodesTest extends TestCase
     {
         // The intervals are half-open [start, end), so a 12:00 end and a
         // 12:00 start do not overlap.
-        $hours = new BusinessHours([
-            TimeWindow::fromStrings('09:00', '12:00'),
-            TimeWindow::fromStrings('12:00', '18:00'),
+        $hours = new YrnkBusinessHours([
+            YrnkTimeWindow::fromStrings('09:00', '12:00'),
+            YrnkTimeWindow::fromStrings('12:00', '18:00'),
         ]);
 
         $this->assertCount(2, $hours->windows);
@@ -223,13 +223,13 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function definitions_holds_each_definition_and_null_means_undefined(): void
     {
-        $calendar = new Calendar(
-            holidays: Holidays::byResolver('yasumi-jp'),
+        $calendar = new YrnkCalendar(
+            holidays: YrnkHolidays::byResolver('yasumi-jp'),
             businessHolidays: null,
             businessDays: null,
             workweek: null,
             businessHours: null,
-            custom: ['founding-day' => CustomDefinition::ofDates(['2026-10-01'], self::utc())],
+            custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
         );
 
         $this->assertSame('yasumi-jp', $calendar->holidays?->resolver);

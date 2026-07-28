@@ -7,7 +7,7 @@ use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
 use DateTimeZone;
 
@@ -47,7 +47,7 @@ final readonly class AtomDayEnumerator
     /**
      * @return list<int>
      */
-    private function weekdayDays(DayName $dayName, int $year, int $month): array
+    private function weekdayDays(YrnkDayName $dayName, int $year, int $month): array
     {
         $first = $this->dayAt($year, $month, 1);
         $offset = ($dayName->isoNumber() - (int) $first->format('N') + 7) % 7;

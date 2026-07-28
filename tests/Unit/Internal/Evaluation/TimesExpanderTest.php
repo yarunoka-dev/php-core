@@ -2,8 +2,8 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\BusinessHours;
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkBusinessHours;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Expression\AllDay;
 use Yarunoka\Expression\BusinessHourRef;
 use Yarunoka\Expression\EveryGrid;
@@ -11,7 +11,7 @@ use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Time\TimeOfDay;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
@@ -32,7 +32,7 @@ class TimesExpanderTest extends TestCase
     #[Test]
     public function the_grid_anchors_at_the_window_start_and_excludes_the_half_open_end(): void
     {
-        $times = new EveryGrid(1, TimeUnit::Hour, between: TimeWindow::fromStrings('08:30', '20:00'));
+        $times = new EveryGrid(1, TimeUnit::Hour, between: YrnkTimeWindow::fromStrings('08:30', '20:00'));
 
         $seconds = $this->expander()->secondsOf($times);
 
@@ -79,9 +79,9 @@ class TimesExpanderTest extends TestCase
      */
     private function expander(?array $businessHours = null): TimesExpander
     {
-        return new TimesExpander(new ResolvedCalendar(new Calendar(
-            businessHours: $businessHours === null ? null : new BusinessHours(array_map(
-                static fn(array $pair): TimeWindow => TimeWindow::fromStrings($pair[0], $pair[1]),
+        return new TimesExpander(new ResolvedCalendar(new YrnkCalendar(
+            businessHours: $businessHours === null ? null : new YrnkBusinessHours(array_map(
+                static fn(array $pair): YrnkTimeWindow => YrnkTimeWindow::fromStrings($pair[0], $pair[1]),
                 $businessHours,
             )),
         ), resolvers: [], timezone: self::utc()));

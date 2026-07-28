@@ -12,17 +12,17 @@ namespace Yarunoka\Calendar;
  * explicit empty list (the statement that there are no such days). Only
  * an undefined workweek means the default (Mon–Fri) instead.
  */
-final readonly class Calendar
+final readonly class YrnkCalendar
 {
     /**
-     * @param  array<string, CustomDefinition>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser
+     * @param  array<string, YrnkCustomDefinition>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser
      */
     public function __construct(
-        public ?Holidays $holidays = null,
-        public ?BusinessHolidays $businessHolidays = null,
-        public ?BusinessDays $businessDays = null,
-        public ?Workweek $workweek = null,
-        public ?BusinessHours $businessHours = null,
+        public ?YrnkHolidays $holidays = null,
+        public ?YrnkBusinessHolidays $businessHolidays = null,
+        public ?YrnkBusinessDays $businessDays = null,
+        public ?YrnkWorkweek $workweek = null,
+        public ?YrnkBusinessHours $businessHours = null,
         public array $custom = [],
     ) {}
 }

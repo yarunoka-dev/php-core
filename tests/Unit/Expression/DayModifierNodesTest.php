@@ -9,7 +9,7 @@ use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\Shift;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Direction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class DayModifierNodesTest extends TestCase
     #[Test]
     public function day_expression_keeps_atoms_in_written_order(): void
     {
-        $expression = new DayExpression([new MonthDay(5), new Weekday(DayName::Mon)]);
+        $expression = new DayExpression([new MonthDay(5), new Weekday(YrnkDayName::Mon)]);
 
         $this->assertInstanceOf(MonthDay::class, $expression->atoms[0]);
         $this->assertInstanceOf(Weekday::class, $expression->atoms[1]);

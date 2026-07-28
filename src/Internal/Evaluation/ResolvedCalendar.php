@@ -2,19 +2,19 @@
 
 namespace Yarunoka\Internal\Evaluation;
 
-use Yarunoka\Calendar\BusinessDays;
-use Yarunoka\Calendar\BusinessHolidays;
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\CustomDefinition;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Resolvers\YrnkResolverInterface;
-use Yarunoka\Time\TimeWindow;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Time\YrnkTimeWindow;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
 use Closure;
 use DateTimeZone;
@@ -31,14 +31,14 @@ final class ResolvedCalendar
     /** @var array<string, array<string, true>> Resolved date sets ('Y-m-d' => true) */
     private array $sets = [];
 
-    /** @var array<string, true>|null The workweek day set (DayName->value => true) */
+    /** @var array<string, true>|null The workweek day set (YrnkDayName->value => true) */
     private ?array $workweekSet = null;
 
     /**
      * @param  array<string, (Closure(): list<string>)|YrnkResolverInterface>  $resolvers
      */
     public function __construct(
-        private readonly Calendar $calendar,
+        private readonly YrnkCalendar $calendar,
         private readonly array $resolvers,
         private readonly DateTimeZone $timezone,
     ) {}
@@ -66,11 +66,11 @@ final class ResolvedCalendar
         return isset($this->dateSet("custom.{$name}", $definition)[$date->format('Y-m-d')]);
     }
 
-    public function isInWorkweek(DayName $dayOfWeek): bool
+    public function isInWorkweek(YrnkDayName $dayOfWeek): bool
     {
         if ($this->workweekSet === null) {
             $days = $this->calendar->workweek->days
-                ?? [DayName::Mon, DayName::Tue, DayName::Wed, DayName::Thu, DayName::Fri];
+                ?? [YrnkDayName::Mon, YrnkDayName::Tue, YrnkDayName::Wed, YrnkDayName::Thu, YrnkDayName::Fri];
             $this->workweekSet = [];
 
             foreach ($days as $day) {
@@ -82,7 +82,7 @@ final class ResolvedCalendar
     }
 
     /**
-     * @return list<TimeWindow>
+     * @return list<YrnkTimeWindow>
      */
     public function businessHourWindows(): array
     {
@@ -97,7 +97,7 @@ final class ResolvedCalendar
      */
     private function dateSet(
         string $key,
-        Holidays|BusinessHolidays|BusinessDays|CustomDefinition|null $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|null $definition,
     ): array {
         if (isset($this->sets[$key])) {
             return $this->sets[$key];
@@ -117,7 +117,7 @@ final class ResolvedCalendar
      */
     private function resolve(
         string $key,
-        Holidays|BusinessHolidays|BusinessDays|CustomDefinition $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
     ): array {
         if ($definition->dates !== null) {
             $set = [];

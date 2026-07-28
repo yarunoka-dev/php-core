@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Parser;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Internal\Parser\CalendarParser;

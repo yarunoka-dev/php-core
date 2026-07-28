@@ -15,9 +15,9 @@ use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Shift;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Parser\ScheduleParser;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Direction;
 use Yarunoka\Vocabulary\Ordinal;
 use Yarunoka\Vocabulary\TimeUnit;
@@ -200,7 +200,7 @@ class ScheduleParserTest extends TestCase
         $both = $this->parser->parse(['if' => ['next', 'not', 'holiday'], 'times' => ['10:00']], self::utc());
 
         $this->assertEquals(
-            new IfGuard(null, negated: false, condition: new Weekday(DayName::Fri)),
+            new IfGuard(null, negated: false, condition: new Weekday(YrnkDayName::Fri)),
             $onlyCondition->if,
         );
         $this->assertEquals(
@@ -246,7 +246,7 @@ class ScheduleParserTest extends TestCase
         $this->assertInstanceOf(EveryGrid::class, $schedule->times);
         $this->assertSame(90, $schedule->times->amount);
         $this->assertSame(TimeUnit::Minute, $schedule->times->unit);
-        $this->assertInstanceOf(TimeWindow::class, $schedule->times->between);
+        $this->assertInstanceOf(YrnkTimeWindow::class, $schedule->times->between);
     }
 
     #[Test]

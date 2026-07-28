@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkEvaluator;
@@ -131,7 +131,7 @@ class FromUntilTest extends TestCase
         // until is written at the wall time right after the gap. The
         // range must end at 03:00 EDT exactly — not a gap-width later.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse([
             'days' => [8], 'times' => ['01:30', '03:30'], 'until' => '2026-03-08 03:00',
         ], $timezone);
@@ -161,7 +161,7 @@ class FromUntilTest extends TestCase
     public function a_from_at_the_end_of_the_gap_still_starts_exactly_there(): void
     {
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse([
             'days' => [8], 'times' => ['03:00', '03:30'], 'from' => '2026-03-08 03:00',
         ], $timezone);
@@ -188,7 +188,7 @@ class FromUntilTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: new DateTimeZone('Asia/Tokyo'));
     }
 
     private function at(string $dateTime): DateTimeImmutable

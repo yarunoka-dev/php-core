@@ -9,7 +9,7 @@ use Yarunoka\Internal\DateSetDefinition;
  * the built-in definitions it takes no part in the layers: a custom name
  * is a flat "membership in a set" and nothing more.
  */
-final class CustomDefinition
+final class YrnkCustomDefinition
 {
     use DateSetDefinition;
 }

@@ -2,7 +2,7 @@
 
 namespace Yarunoka;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use DateTimeZone;
@@ -26,7 +26,7 @@ final readonly class Yrnk
     public function __construct(
         public string $version,
         public DateTimeZone $timezone,
-        public Calendar $calendar,
+        public YrnkCalendar $calendar,
         array $schedules,
     ) {
         // The spec requires rejecting a declared version this

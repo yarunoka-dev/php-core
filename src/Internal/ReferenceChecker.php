@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Internal;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
@@ -28,7 +28,7 @@ final class ReferenceChecker
      * @param  iterable<YrnkSchedule>  $schedules
      * @param  array<string, (\Closure(): list<string>)|YrnkResolverInterface>  $resolvers
      */
-    public static function ensureResolvable(iterable $schedules, Calendar $calendar, array $resolvers): void
+    public static function ensureResolvable(iterable $schedules, YrnkCalendar $calendar, array $resolvers): void
     {
         foreach ($schedules as $schedule) {
             foreach (self::atomsOf($schedule) as $atom) {
@@ -57,7 +57,7 @@ final class ReferenceChecker
         }
     }
 
-    private static function ensureCalendarWordDefined(CalendarWord $word, Calendar $calendar): void
+    private static function ensureCalendarWordDefined(CalendarWord $word, YrnkCalendar $calendar): void
     {
         $required = match ($word) {
             CalendarWord::Weekday, CalendarWord::Weekend => [],
@@ -99,7 +99,7 @@ final class ReferenceChecker
     /**
      * @return iterable<string, string> context label → resolver name
      */
-    private static function resolverReferences(Calendar $calendar): iterable
+    private static function resolverReferences(YrnkCalendar $calendar): iterable
     {
         foreach ([
             'holidays' => $calendar->holidays,

@@ -9,7 +9,7 @@ use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Internal\Builder\TimesBuilder;
 use Yarunoka\Time\TimeOfDay;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +28,7 @@ class TimesBuilderTest extends TestCase
     public function a_grid_becomes_every_and_between(): void
     {
         $plain = new EveryGrid(90, TimeUnit::Minute, between: null);
-        $window = new EveryGrid(1, TimeUnit::Hour, between: TimeWindow::fromStrings('22:00', '24:00'));
+        $window = new EveryGrid(1, TimeUnit::Hour, between: YrnkTimeWindow::fromStrings('22:00', '24:00'));
         $ref = new EveryGrid(1, TimeUnit::Hour, between: new BusinessHourRef());
 
         $this->assertSame(['every' => [90, 'minute']], TimesBuilder::build($plain));

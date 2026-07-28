@@ -11,7 +11,7 @@ use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Ordinal;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -44,16 +44,16 @@ class DayAtomNodesTest extends TestCase
     #[Test]
     public function weekday_holds_the_day_name(): void
     {
-        $this->assertSame(DayName::Mon, (new Weekday(DayName::Mon))->dayName);
+        $this->assertSame(YrnkDayName::Mon, (new Weekday(YrnkDayName::Mon))->dayName);
     }
 
     #[Test]
     public function ordinal_weekday_holds_the_ordinal_and_the_day_name(): void
     {
-        $atom = new OrdinalWeekday(Ordinal::Third, DayName::Mon);
+        $atom = new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon);
 
         $this->assertSame(Ordinal::Third, $atom->ordinal);
-        $this->assertSame(DayName::Mon, $atom->dayName);
+        $this->assertSame(YrnkDayName::Mon, $atom->dayName);
     }
 
     #[Test]
@@ -92,8 +92,8 @@ class DayAtomNodesTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         new DayExpression([
-            new OrdinalWeekday(Ordinal::Third, DayName::Mon),
-            new OrdinalWeekday(Ordinal::Third, DayName::Mon),
+            new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon),
+            new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon),
         ]);
     }
 
@@ -101,8 +101,8 @@ class DayAtomNodesTest extends TestCase
     public function every_atom_is_a_day_atom(): void
     {
         $this->assertInstanceOf(DayAtom::class, new MonthDay(25));
-        $this->assertInstanceOf(DayAtom::class, new Weekday(DayName::Mon));
-        $this->assertInstanceOf(DayAtom::class, new OrdinalWeekday(Ordinal::Last, DayName::Fri));
+        $this->assertInstanceOf(DayAtom::class, new Weekday(YrnkDayName::Mon));
+        $this->assertInstanceOf(DayAtom::class, new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri));
         $this->assertInstanceOf(DayAtom::class, new LastDayOfMonth());
         $this->assertInstanceOf(DayAtom::class, new CustomRef('founding-day'));
         $this->assertInstanceOf(DayAtom::class, CalendarWord::Holiday);

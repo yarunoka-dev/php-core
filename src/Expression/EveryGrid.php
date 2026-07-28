@@ -3,7 +3,7 @@
 namespace Yarunoka\Expression;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 
 /**
@@ -17,7 +17,7 @@ final readonly class EveryGrid implements TimesSpec
     public function __construct(
         public int $amount,
         public TimeUnit $unit,
-        public TimeWindow|BusinessHourRef|null $between,
+        public YrnkTimeWindow|BusinessHourRef|null $between,
     ) {
         if ($amount < 1) {
             throw new InvalidValueException("Count of every must be an integer of at least 1: {$amount}");

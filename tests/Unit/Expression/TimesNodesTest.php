@@ -9,7 +9,7 @@ use Yarunoka\Expression\EveryGrid;
 use Yarunoka\Expression\FixedTimes;
 use Yarunoka\Expression\TimesSpec;
 use Yarunoka\Time\TimeOfDay;
-use Yarunoka\Time\TimeWindow;
+use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\TimeUnit;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -97,9 +97,9 @@ class TimesNodesTest extends TestCase
     #[Test]
     public function every_grid_can_hold_a_window_pair_between(): void
     {
-        $grid = new EveryGrid(1, TimeUnit::Hour, between: TimeWindow::fromStrings('08:00', '20:00'));
+        $grid = new EveryGrid(1, TimeUnit::Hour, between: YrnkTimeWindow::fromStrings('08:00', '20:00'));
 
-        $this->assertInstanceOf(TimeWindow::class, $grid->between);
+        $this->assertInstanceOf(YrnkTimeWindow::class, $grid->between);
     }
 
     #[Test]

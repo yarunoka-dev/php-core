@@ -2,8 +2,8 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\Calendar;
-use Yarunoka\Calendar\Holidays;
+use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -196,8 +196,8 @@ class DayCycleTest extends TestCase
     private function evaluator(array $holidays = []): YrnkEvaluator
     {
         return new YrnkEvaluator(
-            calendar: new Calendar(
-                holidays: $holidays === [] ? null : Holidays::ofDates($holidays, self::tz()),
+            calendar: new YrnkCalendar(
+                holidays: $holidays === [] ? null : YrnkHolidays::ofDates($holidays, self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

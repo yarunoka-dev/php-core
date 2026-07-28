@@ -12,7 +12,7 @@ use DateTimeZone;
 /**
  * The shared implementation of a date set definition (a fixed list | a
  * resolver name reference | a deferred closure). The public types with
- * meaning (Holidays / BusinessHolidays / BusinessDays / CustomDefinition)
+ * meaning (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
  * use this. A trait so that the types stay separate while the
  * implementation is shared; the public contract lives on each class.
  *

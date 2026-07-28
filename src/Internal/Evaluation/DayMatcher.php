@@ -10,7 +10,7 @@ use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
 
 /**
@@ -100,8 +100,8 @@ final readonly class DayMatcher
         return (int) $date->format('t');
     }
 
-    private static function dayOfWeek(YrnkDate $date): DayName
+    private static function dayOfWeek(YrnkDate $date): YrnkDayName
     {
-        return DayName::fromIsoNumber((int) $date->format('N'));
+        return YrnkDayName::fromIsoNumber((int) $date->format('N'));
     }
 }

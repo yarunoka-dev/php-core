@@ -7,7 +7,7 @@ use Yarunoka\Expression\IfGuard;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Parser\IfGuardParser;
 use Yarunoka\Vocabulary\CalendarWord;
-use Yarunoka\Vocabulary\DayName;
+use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\Vocabulary\Direction;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -19,7 +19,7 @@ class IfGuardParserTest extends TestCase
     public function one_element_is_the_condition_alone(): void
     {
         $this->assertEquals(
-            new IfGuard(null, negated: false, condition: new Weekday(DayName::Fri)),
+            new IfGuard(null, negated: false, condition: new Weekday(YrnkDayName::Fri)),
             IfGuardParser::parse(['fri']),
         );
     }

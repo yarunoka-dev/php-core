@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\Calendar;
+use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Parser\ScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -121,7 +121,7 @@ class EverySequenceTest extends TestCase
         // 2026-03-08. In an hourly sequence anchored at 3/7 01:30, the
         // wall 02:30 of 3/8 does not exist and is pushed to 03:30.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 01:30', 'every' => [1, 'hour']], $timezone);
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-03-08 01:30:00', $timezone)));
@@ -139,7 +139,7 @@ class EverySequenceTest extends TestCase
         // 03:00 point in real time — so the row is not in instant order
         // and no order-dependent search may be used.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']], $timezone);
 
         // The overtaken wall 03:00 point.
@@ -155,7 +155,7 @@ class EverySequenceTest extends TestCase
     public function the_interval_question_sees_every_point_around_the_gap_exactly_once(): void
     {
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']], $timezone);
 
         // After the 01:30 EST point the next is 03:00 EDT…
@@ -189,7 +189,7 @@ class EverySequenceTest extends TestCase
         // 00:30 stands its wall 01:30 point at the first (EDT) occurrence
         // only, and the wall 02:30 point at 02:30 EST.
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-11-01 00:30', 'every' => [60, 'minute']], $timezone);
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-11-01T01:30:00-04:00')));
@@ -213,7 +213,7 @@ class EverySequenceTest extends TestCase
     {
         // DateTimeZone::getTransitions yields no list for offset-type
         // zones; they are a single regime.
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('+09:00'));
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: new DateTimeZone('+09:00'));
         $schedule = (new ScheduleParser())->parse(['from' => '2026-07-14 00:00', 'every' => [36, 'hour']], self::tz());
 
         $this->assertTrue($evaluator->matches($schedule, new DateTimeImmutable('2026-07-15T12:00:00+09:00')));
@@ -229,7 +229,7 @@ class EverySequenceTest extends TestCase
     public function the_enumeration_and_the_checks_agree_around_the_gap(): void
     {
         $timezone = new DateTimeZone('America/New_York');
-        $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
         $schedule = (new ScheduleParser())->parse(['from' => '2026-03-08 00:00', 'every' => [45, 'minute']], $timezone);
 
         $occurrences = $evaluator->occurrencesIn(
@@ -250,7 +250,7 @@ class EverySequenceTest extends TestCase
 
     private function evaluator(): YrnkEvaluator
     {
-        return new YrnkEvaluator(calendar: new Calendar(), timezone: new DateTimeZone('Asia/Tokyo'));
+        return new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: new DateTimeZone('Asia/Tokyo'));
     }
 
     private function at(string $dateTime): DateTimeImmutable
