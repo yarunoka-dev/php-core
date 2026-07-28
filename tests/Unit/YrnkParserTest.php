@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Parser;
+namespace Yarunoka\Tests\Unit;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
@@ -8,7 +8,7 @@ use Yarunoka\Exceptions\ReservedNameException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
-use Yarunoka\Parser\YrnkParser;
+use Yarunoka\YrnkParser;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

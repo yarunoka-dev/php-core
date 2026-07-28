@@ -12,7 +12,7 @@ use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -498,7 +498,7 @@ class MatchFinderTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw, self::utc());
+        return (new YrnkScheduleParser())->parse($raw, self::utc());
     }
 
     private function at(string $iso): DateTimeImmutable

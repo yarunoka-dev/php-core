@@ -11,7 +11,7 @@ use Yarunoka\Time\TimeOfDay;
 
 /**
  * The mirror image of TimesParser. Times node → RawTimes (AllDay never
- * arrives here — ScheduleBuilder renders it as "allday": true).
+ * arrives here — YrnkScheduleBuilder renders it as "allday": true).
  *
  * @internal
  */

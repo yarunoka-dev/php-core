@@ -1,8 +1,8 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Builder;
+namespace Yarunoka\Tests\Unit\Schedule;
 
-use Yarunoka\Builder\ScheduleBuilder;
+use Yarunoka\Schedule\YrnkScheduleBuilder;
 use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\DayExpression;
 use Yarunoka\Schedule\FixedTimes;
@@ -12,7 +12,7 @@ use Yarunoka\YrnkSchedule;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class ScheduleBuilderTest extends TestCase
+class YrnkScheduleBuilderTest extends TestCase
 {
     #[Test]
     public function only_the_given_fields_come_out_in_the_raw_dsl_shape(): void
@@ -27,7 +27,7 @@ class ScheduleBuilderTest extends TestCase
             'years' => [2043],
             'days' => [15],
             'times' => ['10:00'],
-        ], (new ScheduleBuilder())->build($schedule));
+        ], (new YrnkScheduleBuilder())->build($schedule));
     }
 
     #[Test]
@@ -35,6 +35,6 @@ class ScheduleBuilderTest extends TestCase
     {
         $schedule = new YrnkSchedule(times: new AllDay());
 
-        $this->assertSame(['allday' => true], (new ScheduleBuilder())->build($schedule));
+        $this->assertSame(['allday' => true], (new YrnkScheduleBuilder())->build($schedule));
     }
 }

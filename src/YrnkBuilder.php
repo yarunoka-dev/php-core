@@ -1,10 +1,9 @@
 <?php
 
-namespace Yarunoka\Builder;
+namespace Yarunoka;
 
 use Yarunoka\Internal\Builder\CalendarBuilder;
-use Yarunoka\Yrnk;
-use Yarunoka\YrnkSchedule;
+use Yarunoka\Schedule\YrnkScheduleBuilder;
 
 /**
  * The mirror image of YrnkParser. Yrnk → a Yrnk document (an array /
@@ -16,7 +15,7 @@ use Yarunoka\YrnkSchedule;
 final class YrnkBuilder
 {
     public function __construct(
-        private readonly ScheduleBuilder $scheduleBuilder = new ScheduleBuilder(),
+        private readonly YrnkScheduleBuilder $scheduleBuilder = new YrnkScheduleBuilder(),
     ) {}
 
     /**

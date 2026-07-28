@@ -9,7 +9,7 @@ use Yarunoka\Calendar\YrnkCustomDefinition;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\UndefinedNameException;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
@@ -448,7 +448,7 @@ class MatchesTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw, self::tz());
+        return (new YrnkScheduleParser())->parse($raw, self::tz());
     }
 
     private function at(string $iso): DateTimeImmutable

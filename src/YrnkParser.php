@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Parser;
+namespace Yarunoka;
 
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
@@ -8,15 +8,14 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Internal\Parser\CalendarParser;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverInterface;
-use Yarunoka\Yrnk;
-use Yarunoka\YrnkSchedule;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Closure;
 use DateTimeZone;
 use Exception;
 
 /**
  * Parses a Yrnk document (RawYrnk) into a Yrnk. Delegates each element of
- * schedules to the ScheduleParser, and validates here what can only be
+ * schedules to the YrnkScheduleParser, and validates here what can only be
  * validated with the whole document and its definitions together —
  * resolvability of custom references, the data behind the built-in
  * vocabulary, and resolver names.
@@ -30,7 +29,7 @@ final class YrnkParser
      */
     public function __construct(
         private readonly array $resolvers = [],
-        private readonly ScheduleParser $scheduleParser = new ScheduleParser(),
+        private readonly YrnkScheduleParser $scheduleParser = new YrnkScheduleParser(),
     ) {}
 
     /**

@@ -11,7 +11,7 @@ use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Internal\ReferenceChecker;
-use Yarunoka\Parser\ScheduleParser;
+use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;
@@ -140,7 +140,7 @@ class ReferenceCheckerTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw, self::utc());
+        return (new YrnkScheduleParser())->parse($raw, self::utc());
     }
 
     private static function utc(): DateTimeZone
