@@ -7,9 +7,9 @@ use Yarunoka\Expression\DayCycle;
 use Yarunoka\Expression\EverySequence;
 use Yarunoka\Expression\IfGuard;
 use Yarunoka\Expression\Shift;
-use Yarunoka\Time\LocalDate;
-use Yarunoka\Time\LocalDateTime;
 use Yarunoka\Vocabulary\Direction;
+use Yarunoka\YrnkDate;
+use Yarunoka\YrnkDateTime;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -75,14 +75,14 @@ final readonly class MatchFinder
             return $this->hasMatchIn($schedule, self::secondBefore($at), $at);
         }
 
-        $day = LocalDate::fromDateTime($at->setTimezone($this->timezone));
+        $day = $this->wallDateOf($at);
 
         if (! $this->dayMatches($schedule, $day)) {
             return false;
         }
 
         if ($schedule->times instanceof AllDay) {
-            return $this->withinRange($schedule, $day->atTime(0, $this->timezone));
+            return $this->withinRange($schedule, $this->atTime($day, 0));
         }
 
         // Compare against the day's points resolved to instants, not
@@ -94,7 +94,7 @@ final readonly class MatchFinder
         $timestamp = $at->getTimestamp();
 
         foreach ($this->expander->secondsOf($schedule->times) as $second) {
-            $instant = $day->atTime($second, $this->timezone);
+            $instant = $this->atTime($day, $second);
 
             if ($instant->getTimestamp() === $timestamp) {
                 return $this->withinRange($schedule, $instant);
@@ -114,7 +114,7 @@ final readonly class MatchFinder
         // t >= valid-from ⇔ t > valid-from − 1s, and t < until ⇔
         // t <= until − 1s.
         if ($schedule->from !== null) {
-            $lower = self::secondBefore($schedule->from->toInstant($this->timezone));
+            $lower = self::secondBefore($schedule->from);
 
             if ($lower > $from) {
                 $from = $lower;
@@ -122,7 +122,7 @@ final readonly class MatchFinder
         }
 
         if ($schedule->until !== null) {
-            $upper = self::secondBefore($schedule->until->toInstant($this->timezone));
+            $upper = self::secondBefore($schedule->until);
 
             if ($upper < $to) {
                 $to = $upper;
@@ -143,8 +143,8 @@ final readonly class MatchFinder
             return false;
         }
 
-        $fromDay = LocalDate::fromDateTime($from->setTimezone($this->timezone));
-        $toDay = LocalDate::fromDateTime($to->setTimezone($this->timezone));
+        $fromDay = $this->wallDateOf($from);
+        $toDay = $this->wallDateOf($to);
 
         // Only landing days (base days, without a shift) inside
         // [fromDay, toDay] can reach the interval, so look at the base
@@ -173,9 +173,9 @@ final readonly class MatchFinder
      * The occurrences in the closed interval [from, to] (both boundary
      * instants included), in ascending order of comparison instant.
      * Timed occurrences are answered as instants, all-day occurrences as
-     * dates (LocalDate).
+     * dates (YrnkDate).
      *
-     * @return list<DateTimeImmutable|LocalDate>
+     * @return list<YrnkDate|YrnkDateTime>
      */
     public function occurrencesIn(YrnkSchedule $schedule, DateTimeImmutable $from, DateTimeImmutable $to): array
     {
@@ -184,7 +184,7 @@ final readonly class MatchFinder
         // t <= until − 1s; valid-from needs no adjustment (both bounds
         // are inclusive).
         if ($schedule->from !== null) {
-            $lower = $schedule->from->toInstant($this->timezone);
+            $lower = $schedule->from;
 
             if ($lower > $from) {
                 $from = $lower;
@@ -192,7 +192,7 @@ final readonly class MatchFinder
         }
 
         if ($schedule->until !== null) {
-            $upper = self::secondBefore($schedule->until->toInstant($this->timezone));
+            $upper = self::secondBefore($schedule->until);
 
             if ($upper < $to) {
                 $to = $upper;
@@ -207,15 +207,15 @@ final readonly class MatchFinder
             return $this->sequenceOccurrencesIn($schedule->from, $schedule->times, $from, $to);
         }
 
-        $fromDay = LocalDate::fromDateTime($from->setTimezone($this->timezone));
-        $toDay = LocalDate::fromDateTime($to->setTimezone($this->timezone));
+        $fromDay = $this->wallDateOf($from);
+        $toDay = $this->wallDateOf($to);
         $days = $this->landedDaysWithin($schedule, $fromDay, $toDay);
 
         if ($schedule->times instanceof AllDay) {
             $dates = [];
 
             foreach ($days as $day) {
-                $instant = $day->atTime(0, $this->timezone);
+                $instant = $this->atTime($day, 0);
 
                 if ($instant >= $from && $instant <= $to) {
                     $dates[] = $day;
@@ -234,7 +234,7 @@ final readonly class MatchFinder
 
         foreach ($days as $day) {
             foreach ($seconds as $second) {
-                $instant = $day->atTime($second, $this->timezone);
+                $instant = $this->atTime($day, $second);
 
                 if ($instant >= $from && $instant <= $to) {
                     $instants[$instant->getTimestamp()] = $instant;
@@ -255,9 +255,9 @@ final readonly class MatchFinder
      * so those months are walked with the same cutoffs as the spilled
      * interval checks below.
      *
-     * @return list<LocalDate>
+     * @return list<YrnkDate>
      */
-    private function landedDaysWithin(YrnkSchedule $schedule, LocalDate $fromDay, LocalDate $toDay): array
+    private function landedDaysWithin(YrnkSchedule $schedule, YrnkDate $fromDay, YrnkDate $toDay): array
     {
         $found = [];
 
@@ -269,16 +269,16 @@ final readonly class MatchFinder
         if ($schedule->shift?->direction === Direction::Next) {
             for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
                 [$year, $month] = self::yearMonthAt($index);
-                $monthLast = LocalDate::of($year, $month, LocalDate::of($year, $month, 1)->daysInMonth());
+                $monthLast = $this->lastDayOf($year, $month);
 
-                if ($fromDay->isAfter($monthLast->addDays(self::SHIFT_SEARCH_LIMIT_DAYS))) {
+                if ($fromDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
                     break;
                 }
 
                 $landed = $this->landedDaysIn($schedule, $year, $month);
                 $this->collectWithin($landed, $fromDay, $toDay, $found);
 
-                if ($landed !== [] && $fromDay->isAfter($landed[array_key_last($landed)])) {
+                if ($landed !== [] && $fromDay > $landed[array_key_last($landed)]) {
                     break;
                 }
             }
@@ -288,14 +288,14 @@ final readonly class MatchFinder
             for ($index = self::monthIndex($toDay) + 1; ; $index++) {
                 [$year, $month] = self::yearMonthAt($index);
 
-                if (LocalDate::of($year, $month, 1)->addDays(-self::SHIFT_SEARCH_LIMIT_DAYS)->isAfter($toDay)) {
+                if ($this->addDays($this->dayAt($year, $month, 1), -self::SHIFT_SEARCH_LIMIT_DAYS) > $toDay) {
                     break;
                 }
 
                 $landed = $this->landedDaysIn($schedule, $year, $month);
                 $this->collectWithin($landed, $fromDay, $toDay, $found);
 
-                if ($landed !== [] && $landed[0]->isAfter($toDay)) {
+                if ($landed !== [] && $landed[0] > $toDay) {
                     break;
                 }
             }
@@ -307,14 +307,14 @@ final readonly class MatchFinder
     }
 
     /**
-     * @param  list<LocalDate>  $days
-     * @param  array<string, LocalDate>  $found  Keyed by the ISO date, so cross-month duplicates collapse
+     * @param  list<YrnkDate>  $days
+     * @param  array<string, YrnkDate>  $found  Keyed by the ISO date, so cross-month duplicates collapse
      */
-    private function collectWithin(array $days, LocalDate $fromDay, LocalDate $toDay, array &$found): void
+    private function collectWithin(array $days, YrnkDate $fromDay, YrnkDate $toDay, array &$found): void
     {
         foreach ($days as $day) {
-            if (! $fromDay->isAfter($day) && ! $day->isAfter($toDay)) {
-                $found[$day->toString()] = $day;
+            if ($fromDay <= $day && $day <= $toDay) {
+                $found[$day->format('Y-m-d')] = $day;
             }
         }
     }
@@ -333,14 +333,14 @@ final readonly class MatchFinder
         array $seconds,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
-        LocalDate $fromDay,
-        LocalDate $toDay,
+        YrnkDate $fromDay,
+        YrnkDate $toDay,
     ): bool {
         for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
             [$year, $month] = self::yearMonthAt($index);
-            $monthLast = LocalDate::of($year, $month, LocalDate::of($year, $month, 1)->daysInMonth());
+            $monthLast = $this->lastDayOf($year, $month);
 
-            if ($fromDay->isAfter($monthLast->addDays(self::SHIFT_SEARCH_LIMIT_DAYS))) {
+            if ($fromDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
                 return false;
             }
 
@@ -350,7 +350,7 @@ final readonly class MatchFinder
                 return true;
             }
 
-            if ($landed !== [] && $fromDay->isAfter($landed[array_key_last($landed)])) {
+            if ($landed !== [] && $fromDay > $landed[array_key_last($landed)]) {
                 return false;
             }
         }
@@ -368,14 +368,14 @@ final readonly class MatchFinder
         array $seconds,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
-        LocalDate $fromDay,
-        LocalDate $toDay,
+        YrnkDate $fromDay,
+        YrnkDate $toDay,
     ): bool {
         for ($index = self::monthIndex($toDay) + 1; ; $index++) {
             [$year, $month] = self::yearMonthAt($index);
-            $monthFirst = LocalDate::of($year, $month, 1);
+            $monthFirst = $this->dayAt($year, $month, 1);
 
-            if ($monthFirst->addDays(-self::SHIFT_SEARCH_LIMIT_DAYS)->isAfter($toDay)) {
+            if ($this->addDays($monthFirst, -self::SHIFT_SEARCH_LIMIT_DAYS) > $toDay) {
                 return false;
             }
 
@@ -385,7 +385,7 @@ final readonly class MatchFinder
                 return true;
             }
 
-            if ($landed !== [] && $landed[0]->isAfter($toDay)) {
+            if ($landed !== [] && $landed[0] > $toDay) {
                 return false;
             }
         }
@@ -396,7 +396,7 @@ final readonly class MatchFinder
      * filtered by if) mapped to their shift landing days, in ascending
      * order. Consecutive base days collapse into the same landing day.
      *
-     * @return list<LocalDate>
+     * @return list<YrnkDate>
      */
     private function landedDaysIn(YrnkSchedule $schedule, int $year, int $month): array
     {
@@ -409,13 +409,13 @@ final readonly class MatchFinder
         }
 
         $dayNumbers = $schedule->days === null
-            ? range(1, LocalDate::of($year, $month, 1)->daysInMonth())
+            ? range(1, (int) $this->dayAt($year, $month, 1)->format('t'))
             : $this->enumerateAtomDays($schedule, $year, $month);
 
         $landed = [];
 
         foreach ($dayNumbers as $dayNumber) {
-            $base = LocalDate::of($year, $month, $dayNumber);
+            $base = $this->dayAt($year, $month, $dayNumber);
 
             if (! $this->passesIf($schedule->if, $base)) {
                 continue;
@@ -427,7 +427,7 @@ final readonly class MatchFinder
                 continue;
             }
 
-            if ($landed !== [] && $landed[array_key_last($landed)]->equals($day)) {
+            if ($landed !== [] && self::isSameDay($landed[array_key_last($landed)], $day)) {
                 continue;
             }
 
@@ -474,10 +474,10 @@ final readonly class MatchFinder
      */
     private function cycleDaysIn(YrnkSchedule $schedule, DayCycle $atom, int $year, int $month): array
     {
-        /** @var LocalDateTime $anchor The YrnkSchedule invariant requires from for vocabulary that counts */
+        /** @var YrnkDateTime $anchor The YrnkSchedule invariant requires from for vocabulary that counts */
         $anchor = $schedule->from;
-        $first = LocalDate::of($year, $month, 1);
-        $offset = $anchor->date->daysUntil($first);
+        $first = $this->dayAt($year, $month, 1);
+        $offset = self::daysBetween($anchor, $first);
 
         if ($offset <= 0) {
             // The from day is on or after the first of the month (the
@@ -490,7 +490,7 @@ final readonly class MatchFinder
 
         $days = [];
 
-        for ($day = $startDay; $day <= $first->daysInMonth(); $day += $atom->intervalDays) {
+        for ($day = $startDay; $day <= (int) $first->format('t'); $day += $atom->intervalDays) {
             $days[] = $day;
         }
 
@@ -504,7 +504,7 @@ final readonly class MatchFinder
      * exist only within the day, [00:00, 24:00)), so only the boundary
      * days need their times checked.
      *
-     * @param  list<LocalDate>  $days
+     * @param  list<YrnkDate>  $days
      * @param  list<int>  $seconds
      */
     private function hasInstantIn(
@@ -512,20 +512,20 @@ final readonly class MatchFinder
         array $seconds,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
-        LocalDate $fromDay,
-        LocalDate $toDay,
+        YrnkDate $fromDay,
+        YrnkDate $toDay,
     ): bool {
         foreach ($days as $day) {
-            if ($fromDay->isAfter($day) || $day->isAfter($toDay)) {
+            if ($fromDay > $day || $day > $toDay) {
                 continue;
             }
 
-            if (! $day->equals($fromDay) && ! $day->equals($toDay)) {
+            if (! self::isSameDay($day, $fromDay) && ! self::isSameDay($day, $toDay)) {
                 return true;
             }
 
             foreach ($seconds as $second) {
-                $instant = $day->atTime($second, $this->timezone);
+                $instant = $this->atTime($day, $second);
 
                 if ($instant > $from && $instant <= $to) {
                     return true;
@@ -542,7 +542,7 @@ final readonly class MatchFinder
      * the candidates opposite to the shift direction and verifying with
      * the forward landing computation.
      */
-    private function dayMatches(YrnkSchedule $schedule, LocalDate $date): bool
+    private function dayMatches(YrnkSchedule $schedule, YrnkDate $date): bool
     {
         if ($schedule->shift === null) {
             return $this->isBaseDay($schedule, $date);
@@ -564,7 +564,7 @@ final readonly class MatchFinder
                 return true;
             }
 
-            $cursor = $cursor->addDays($step);
+            $cursor = $this->addDays($cursor, $step);
 
             if ($this->dayMatcher->matches($schedule->shift->condition, $cursor)) {
                 // For a strict shift (without or_same), this
@@ -579,13 +579,13 @@ final readonly class MatchFinder
         return false;
     }
 
-    private function isBaseDay(YrnkSchedule $schedule, LocalDate $date): bool
+    private function isBaseDay(YrnkSchedule $schedule, YrnkDate $date): bool
     {
-        if ($schedule->years !== null && ! in_array($date->year, $schedule->years, true)) {
+        if ($schedule->years !== null && ! in_array((int) $date->format('Y'), $schedule->years, true)) {
             return false;
         }
 
-        if ($schedule->months !== null && ! in_array($date->month, $schedule->months, true)) {
+        if ($schedule->months !== null && ! in_array((int) $date->format('n'), $schedule->months, true)) {
             return false;
         }
 
@@ -596,7 +596,7 @@ final readonly class MatchFinder
         return $this->passesIf($schedule->if, $date);
     }
 
-    private function matchesAnyAtom(YrnkSchedule $schedule, LocalDate $date): bool
+    private function matchesAnyAtom(YrnkSchedule $schedule, YrnkDate $date): bool
     {
         foreach ($schedule->days->atoms ?? [] as $atom) {
             $matched = $atom instanceof DayCycle
@@ -615,11 +615,11 @@ final readonly class MatchFinder
      * The day cycle decision. Only days on or after the from date, a
      * multiple of N days away from it, match.
      */
-    private function matchesCycle(YrnkSchedule $schedule, DayCycle $atom, LocalDate $date): bool
+    private function matchesCycle(YrnkSchedule $schedule, DayCycle $atom, YrnkDate $date): bool
     {
-        /** @var LocalDateTime $anchor The YrnkSchedule invariant requires from for vocabulary that counts */
+        /** @var YrnkDateTime $anchor The YrnkSchedule invariant requires from for vocabulary that counts */
         $anchor = $schedule->from;
-        $offset = $anchor->date->daysUntil($date);
+        $offset = self::daysBetween($anchor, $date);
 
         return $offset >= 0 && $offset % $atom->intervalDays === 0;
     }
@@ -628,23 +628,23 @@ final readonly class MatchFinder
      * if filters without moving the day. shift then moves the filtered
      * result as base days.
      */
-    private function passesIf(?IfGuard $if, LocalDate $date): bool
+    private function passesIf(?IfGuard $if, YrnkDate $date): bool
     {
         if ($if === null) {
             return true;
         }
 
-        $target = $if->direction === null ? $date : $date->addDays($if->direction->step());
+        $target = $if->direction === null ? $date : $this->addDays($date, $if->direction->step());
         $result = $this->dayMatcher->matches($if->condition, $target);
 
         return $if->negated ? ! $result : $result;
     }
 
-    private function landsOn(Shift $shift, LocalDate $base, LocalDate $target): bool
+    private function landsOn(Shift $shift, YrnkDate $base, YrnkDate $target): bool
     {
         $landing = $this->landingOf($shift, $base);
 
-        return $landing !== null && $landing->equals($target);
+        return $landing !== null && self::isSameDay($landing, $target);
     }
 
     /**
@@ -655,16 +655,16 @@ final readonly class MatchFinder
      * the same 366 days for both forms, so the strict walk tests one
      * candidate fewer.
      */
-    private function landingOf(Shift $shift, LocalDate $base): ?LocalDate
+    private function landingOf(Shift $shift, YrnkDate $base): ?YrnkDate
     {
-        $cursor = $shift->orSame ? $base : $base->addDays($shift->direction->step());
+        $cursor = $shift->orSame ? $base : $this->addDays($base, $shift->direction->step());
 
         for ($displacement = $shift->orSame ? 0 : 1; $displacement <= self::SHIFT_SEARCH_LIMIT_DAYS; $displacement++) {
             if ($this->dayMatcher->matches($shift->condition, $cursor)) {
                 return $cursor;
             }
 
-            $cursor = $cursor->addDays($shift->direction->step());
+            $cursor = $this->addDays($cursor, $shift->direction->step());
         }
 
         return null;
@@ -675,11 +675,11 @@ final readonly class MatchFinder
      */
     private function withinRange(YrnkSchedule $schedule, DateTimeImmutable $instant): bool
     {
-        if ($schedule->from !== null && $instant < $schedule->from->toInstant($this->timezone)) {
+        if ($schedule->from !== null && $instant < $schedule->from) {
             return false;
         }
 
-        if ($schedule->until !== null && $instant >= $schedule->until->toInstant($this->timezone)) {
+        if ($schedule->until !== null && $instant >= $schedule->until) {
             return false;
         }
 
@@ -696,10 +696,10 @@ final readonly class MatchFinder
      * a wall time pushed out of a DST gap stands after later wall
      * times' instants.
      *
-     * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
+     * @param  ?YrnkDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
      */
     private function sequenceHasMatchIn(
-        ?LocalDateTime $anchor,
+        ?YrnkDateTime $anchor,
         EverySequence $sequence,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
@@ -728,7 +728,7 @@ final readonly class MatchFinder
      *
      * @return list<array{int, int, int}>
      */
-    private function sequencePointRunsIn(LocalDateTime $anchor, int $step, int $lower, int $upper): array
+    private function sequencePointRunsIn(YrnkDateTime $anchor, int $step, int $lower, int $upper): array
     {
         if ($lower > $upper) {
             return [];
@@ -808,9 +808,10 @@ final readonly class MatchFinder
      * calendar laid out with no offsets) — the scale the sequence row
      * and the offset segments are intersected on.
      */
-    private static function wallEpochOf(LocalDateTime $wall): int
+    private static function wallEpochOf(YrnkDateTime $wall): int
     {
-        return LocalDate::of(1970, 1, 1)->daysUntil($wall->date) * 86400 + $wall->secondsFromMidnight;
+        return self::utcMidnightOf($wall)->getTimestamp()
+            + (int) $wall->format('H') * 3600 + (int) $wall->format('i') * 60 + (int) $wall->format('s');
     }
 
     /**
@@ -831,11 +832,11 @@ final readonly class MatchFinder
      * points folded together by a DST gap and ordering interleaved runs
      * by instant at once.
      *
-     * @param  ?LocalDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
-     * @return list<DateTimeImmutable>
+     * @param  ?YrnkDateTime  $anchor  Never null: the YrnkSchedule invariant requires from for vocabulary that counts
+     * @return list<YrnkDateTime>
      */
     private function sequenceOccurrencesIn(
-        ?LocalDateTime $anchor,
+        ?YrnkDateTime $anchor,
         EverySequence $sequence,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
@@ -854,7 +855,12 @@ final readonly class MatchFinder
         foreach ($this->sequencePointRunsIn($anchor, $step, $lower, $to->getTimestamp()) as [$first, $last, $offset]) {
             for ($wall = $first; $wall <= $last; $wall += $step) {
                 $timestamp = $wall - $offset;
-                $instants[$timestamp] = (new DateTimeImmutable("@{$timestamp}"))->setTimezone($this->timezone);
+                // Wrapped rather than re-read from the wall clock: an
+                // overlap wall time names two instants, and this is the
+                // one the run resolved to.
+                $instants[$timestamp] = YrnkDateTime::createFromInterface(
+                    (new DateTimeImmutable("@{$timestamp}"))->setTimezone($this->timezone),
+                );
             }
         }
 
@@ -867,9 +873,9 @@ final readonly class MatchFinder
      * The running month number since year zero (for scanning candidate
      * months).
      */
-    private static function monthIndex(LocalDate $date): int
+    private static function monthIndex(YrnkDate $date): int
     {
-        return $date->year * 12 + ($date->month - 1);
+        return (int) $date->format('Y') * 12 + ((int) $date->format('n') - 1);
     }
 
     /**
@@ -878,5 +884,85 @@ final readonly class MatchFinder
     private static function yearMonthAt(int $index): array
     {
         return [intdiv($index, 12), $index % 12 + 1];
+    }
+
+    /**
+     * The wall date the instant reads as on the document's clock.
+     */
+    private function wallDateOf(DateTimeImmutable $instant): YrnkDate
+    {
+        return new YrnkDate($instant->setTimezone($this->timezone)->format('Y-m-d'), $this->timezone);
+    }
+
+    private function dayAt(int $year, int $month, int $day): YrnkDate
+    {
+        return new YrnkDate(sprintf('%04d-%02d-%02d', $year, $month, $day), $this->timezone);
+    }
+
+    private function lastDayOf(int $year, int $month): YrnkDate
+    {
+        $first = $this->dayAt($year, $month, 1);
+
+        return $this->dayAt($year, $month, (int) $first->format('t'));
+    }
+
+    /**
+     * The day $days calendar days away. The step runs on UTC so that a
+     * transition never shortens or lengthens a step, and the result is
+     * read back on the document's clock.
+     */
+    private function addDays(YrnkDate $date, int $days): YrnkDate
+    {
+        $shifted = self::utcMidnightOf($date)->modify(sprintf('%+d days', $days));
+
+        return new YrnkDate($shifted->format('Y-m-d'), $this->timezone);
+    }
+
+    /**
+     * The point $secondsFromMidnight past the start of the day, resolved
+     * on the document's clock like any other wall-clock point. Built from
+     * the wall reading rather than by setTime on the day, whose late
+     * static binding would hand back a YrnkDate — an all-day value where
+     * a timed one belongs.
+     */
+    private function atTime(YrnkDate $day, int $secondsFromMidnight): YrnkDateTime
+    {
+        return new YrnkDateTime(
+            sprintf(
+                '%s %02d:%02d:%02d',
+                $day->format('Y-m-d'),
+                intdiv($secondsFromMidnight, 3600),
+                intdiv($secondsFromMidnight % 3600, 60),
+                $secondsFromMidnight % 60,
+            ),
+            $this->timezone,
+        );
+    }
+
+    private static function isSameDay(YrnkDate $a, YrnkDate $b): bool
+    {
+        return $a->format('Y-m-d') === $b->format('Y-m-d');
+    }
+
+    /**
+     * The number of calendar days from $from's day to $to's day. Counted
+     * on UTC so that neither end's offset nor a transition between them
+     * enters the difference.
+     */
+    private static function daysBetween(DateTimeImmutable $from, DateTimeImmutable $to): int
+    {
+        return intdiv(
+            self::utcMidnightOf($to)->getTimestamp() - self::utcMidnightOf($from)->getTimestamp(),
+            86400,
+        );
+    }
+
+    /**
+     * The value's wall date placed on UTC — the tz-free scale the day
+     * arithmetic runs on.
+     */
+    private static function utcMidnightOf(DateTimeImmutable $value): DateTimeImmutable
+    {
+        return new DateTimeImmutable($value->format('Y-m-d'), new DateTimeZone('UTC'));
     }
 }

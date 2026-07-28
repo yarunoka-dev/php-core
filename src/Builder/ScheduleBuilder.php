@@ -24,11 +24,11 @@ final class ScheduleBuilder
         $raw = [];
 
         if ($schedule->from !== null) {
-            $raw['from'] = $schedule->from->toString();
+            $raw['from'] = $schedule->from->format('Y-m-d H:i');
         }
 
         if ($schedule->until !== null) {
-            $raw['until'] = $schedule->until->toString();
+            $raw['until'] = $schedule->until->format('Y-m-d H:i');
         }
 
         if ($schedule->years !== null) {

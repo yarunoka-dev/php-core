@@ -9,9 +9,10 @@ use Yarunoka\Calendar\CustomDefinition;
 use Yarunoka\Calendar\Holidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Time\LocalDate;
+use Yarunoka\YrnkDate;
 use Yarunoka\Time\TimeWindow;
 use Yarunoka\Vocabulary\DayName;
+use DateTimeZone;
 
 /**
  * The mirror image of CalendarParser. Calendar node →
@@ -27,7 +28,7 @@ final class CalendarBuilder
     /**
      * @return array<string, mixed>
      */
-    public static function build(Calendar $calendar): array
+    public static function build(Calendar $calendar, DateTimeZone $timezone): array
     {
         $raw = [];
 
@@ -37,7 +38,7 @@ final class CalendarBuilder
             'business_days' => $calendar->businessDays,
         ] as $key => $definition) {
             if ($definition !== null) {
-                $raw[$key] = self::buildDateSet($definition, $key);
+                $raw[$key] = self::buildDateSet($definition, $key, $timezone);
             }
         }
 
@@ -57,7 +58,7 @@ final class CalendarBuilder
 
         if ($calendar->custom !== []) {
             foreach ($calendar->custom as $name => $definition) {
-                $raw['custom'][$name] = self::buildDateSet($definition, "custom.{$name}");
+                $raw['custom'][$name] = self::buildDateSet($definition, "custom.{$name}", $timezone);
             }
         }
 
@@ -70,6 +71,7 @@ final class CalendarBuilder
     private static function buildDateSet(
         Holidays|BusinessHolidays|BusinessDays|CustomDefinition $definition,
         string $context,
+        DateTimeZone $timezone,
     ): array|string {
         if ($definition->resolver !== null) {
             return $definition->resolver;
@@ -77,7 +79,7 @@ final class CalendarBuilder
 
         if ($definition->dates !== null) {
             return array_map(
-                static fn(LocalDate $date): string => $date->toString(),
+                static fn(YrnkDate $date): string => $date->format('Y-m-d'),
                 $definition->dates,
             );
         }
@@ -91,13 +93,13 @@ final class CalendarBuilder
         }
 
         return array_map(
-            static function (mixed $date) use ($context): string {
+            static function (mixed $date) use ($context, $timezone): string {
                 if (! is_string($date)) {
                     throw new InvalidCalendarDataException("{$context}: dates must be YYYY-MM-DD strings");
                 }
 
                 try {
-                    return LocalDate::fromString($date)->toString();
+                    return (new YrnkDate($date, $timezone))->format('Y-m-d');
                 } catch (InvalidValueException $e) {
                     throw new InvalidCalendarDataException("{$context}: {$e->getMessage()}");
                 }

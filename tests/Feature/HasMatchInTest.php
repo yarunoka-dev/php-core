@@ -356,9 +356,9 @@ class HasMatchInTest extends TestCase
     {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates([]),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
+                holidays: Holidays::ofDates([], self::tz()),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -369,7 +369,7 @@ class HasMatchInTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::tz());
     }
 
     private function at(string $iso): DateTimeImmutable
@@ -389,5 +389,10 @@ class HasMatchInTest extends TestCase
 
         $this->assertTrue($evaluator->hasMatchIn($schedule, $this->at($fromIso), $expected));
         $this->assertFalse($evaluator->hasMatchIn($schedule, $this->at($fromIso), $expected->modify('-1 second')));
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

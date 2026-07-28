@@ -14,10 +14,11 @@ use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
-use Yarunoka\Time\LocalDate;
+use Yarunoka\YrnkDate;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\DayName;
 use Yarunoka\Vocabulary\Ordinal;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -103,18 +104,23 @@ class DayMatcherTest extends TestCase
         array $custom = [],
     ): DayMatcher {
         return new DayMatcher(new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays),
-            businessHolidays: BusinessHolidays::ofDates($businessHolidays),
-            businessDays: BusinessDays::ofDates($businessDays),
+            holidays: Holidays::ofDates($holidays, self::utc()),
+            businessHolidays: BusinessHolidays::ofDates($businessHolidays, self::utc()),
+            businessDays: BusinessDays::ofDates($businessDays, self::utc()),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: []));
+        ), resolvers: [], timezone: self::utc()));
     }
 
-    private function day(string $date): LocalDate
+    private function day(string $date): YrnkDate
     {
-        return LocalDate::fromString($date);
+        return new YrnkDate($date, self::utc());
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

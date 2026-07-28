@@ -84,7 +84,7 @@ class EvaluationConsistencyTest extends TestCase
     public function brute_forced_matches_and_interval_checks_agree_on_the_matching_days(array $raw, string $pointTime): void
     {
         $evaluator = $this->evaluator();
-        $schedule = (new ScheduleParser())->parse($raw);
+        $schedule = (new ScheduleParser())->parse($raw, self::tz());
         $points = $this->pointsAt($pointTime);
 
         $byMatches = $this->dates(array_filter(
@@ -113,7 +113,7 @@ class EvaluationConsistencyTest extends TestCase
         // two.
         $timezone = new DateTimeZone('America/New_York');
         $evaluator = new YrnkEvaluator(calendar: new Calendar(), timezone: $timezone);
-        $schedule = (new ScheduleParser())->parse(['times' => ['02:30']]);
+        $schedule = (new ScheduleParser())->parse(['times' => ['02:30']], $timezone);
         $points = [
             ...$this->pointsBetween('02:30:00', '2026-03-01', '2026-03-14', $timezone),
             ...$this->pointsBetween('02:30:00', '2026-10-25', '2026-11-07', $timezone),
@@ -140,7 +140,7 @@ class EvaluationConsistencyTest extends TestCase
     public function a_schedule_that_never_matches_is_empty_by_both_questions(): void
     {
         $evaluator = $this->evaluator();
-        $schedule = (new ScheduleParser())->parse(['years' => [2020], 'months' => [7], 'days' => [15], 'times' => ['10:00']]);
+        $schedule = (new ScheduleParser())->parse(['years' => [2020], 'months' => [7], 'days' => [15], 'times' => ['10:00']], self::tz());
         $points = $this->pointsAt('10:00:00');
 
         $byMatches = $this->dates(array_filter(
@@ -166,10 +166,10 @@ class EvaluationConsistencyTest extends TestCase
     {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates(['2026-07-20', '2026-08-11']),
-                businessHolidays: BusinessHolidays::ofDates([]),
-                businessDays: BusinessDays::ofDates([]),
-                custom: ['anniversary' => CustomDefinition::ofDates(['2026-07-05', '2026-08-20'])],
+                holidays: Holidays::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
+                businessHolidays: BusinessHolidays::ofDates([], self::tz()),
+                businessDays: BusinessDays::ofDates([], self::tz()),
+                custom: ['anniversary' => CustomDefinition::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -215,5 +215,10 @@ class EvaluationConsistencyTest extends TestCase
             static fn(DateTimeImmutable $point): string => $point->format('Y-m-d'),
             $points,
         ));
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

@@ -4,8 +4,9 @@ namespace Yarunoka\Internal;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Resolvers\YrnkResolverInterface;
-use Yarunoka\Time\LocalDate;
+use Yarunoka\YrnkDate;
 use Closure;
+use DateTimeZone;
 
 /**
  * The shared implementation of a date set definition (a fixed list | a
@@ -18,7 +19,7 @@ use Closure;
  */
 trait DateSetDefinition
 {
-    /** @var list<LocalDate>|null */
+    /** @var list<YrnkDate>|null */
     public readonly ?array $dates;
 
     public readonly ?string $resolver;
@@ -26,7 +27,7 @@ trait DateSetDefinition
     public readonly ?Closure $closure;
 
     /**
-     * @param  list<LocalDate>|null  $dates
+     * @param  list<YrnkDate>|null  $dates
      */
     private function __construct(?array $dates, ?string $resolver, ?Closure $closure)
     {
@@ -37,21 +38,24 @@ trait DateSetDefinition
 
     /**
      * A fixed date list. Strings are validated as zero-padded YYYY-MM-DD.
+     * The timezone is the document's: a definition carries wall-clock
+     * dates and declares no zone of its own, so it is handed the
+     * document's when the document is read.
      *
-     * @param  list<LocalDate|string>  $dates
+     * @param  list<YrnkDate|string>  $dates
      */
-    public static function ofDates(array $dates): self
+    public static function ofDates(array $dates, DateTimeZone $timezone): self
     {
         $parsed = array_map(
-            static fn(LocalDate|string $date): LocalDate => $date instanceof LocalDate
+            static fn(YrnkDate|string $date): YrnkDate => $date instanceof YrnkDate
                 ? $date
-                : LocalDate::fromString($date),
+                : new YrnkDate($date, $timezone),
             $dates,
         );
         $seen = [];
 
         foreach ($parsed as $date) {
-            $key = $date->toString();
+            $key = $date->format('Y-m-d');
 
             if (isset($seen[$key])) {
                 throw new InvalidValueException("Duplicate date in date list: {$key}");

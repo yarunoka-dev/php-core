@@ -54,14 +54,18 @@ final class YrnkParser
             throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
-        $calendar = CalendarParser::parse($input['calendar'] ?? []);
+        // The timezone is read first: a boundary and a calendar date are
+        // points on the document's clock, so neither can be parsed
+        // without it.
+        $timezone = $this->parseTimezone($input);
+        $calendar = CalendarParser::parse($input['calendar'] ?? [], $timezone);
 
         try {
             $document = new Yrnk(
                 version: $this->parseVersion($input),
-                timezone: $this->parseTimezone($input),
+                timezone: $timezone,
                 calendar: $calendar,
-                schedules: $this->parseSchedules($input),
+                schedules: $this->parseSchedules($input, $timezone),
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
@@ -108,7 +112,7 @@ final class YrnkParser
      * @param  array<mixed>  $input
      * @return list<YrnkSchedule>
      */
-    private function parseSchedules(array $input): array
+    private function parseSchedules(array $input, DateTimeZone $timezone): array
     {
         if (! array_key_exists('schedules', $input)) {
             throw new InvalidYrnkException('schedules is required');
@@ -121,12 +125,12 @@ final class YrnkParser
         }
 
         return array_map(
-            function (mixed $schedule): YrnkSchedule {
+            function (mixed $schedule) use ($timezone): YrnkSchedule {
                 if (! is_array($schedule)) {
                     throw new InvalidYrnkException('Elements of schedules must be objects');
                 }
 
-                return $this->scheduleParser->parse($schedule);
+                return $this->scheduleParser->parse($schedule, $timezone);
             },
             $raw,
         );

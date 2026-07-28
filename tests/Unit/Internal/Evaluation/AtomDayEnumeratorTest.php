@@ -19,6 +19,7 @@ use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Vocabulary\CalendarWord;
 use Yarunoka\Vocabulary\DayName;
 use Yarunoka\Vocabulary\Ordinal;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -184,16 +185,21 @@ class AtomDayEnumeratorTest extends TestCase
         array $custom = [],
     ): AtomDayEnumerator {
         return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new Calendar(
-            holidays: Holidays::ofDates($holidays),
-            businessHolidays: BusinessHolidays::ofDates([]),
-            businessDays: BusinessDays::ofDates($businessDays),
+            holidays: Holidays::ofDates($holidays, self::utc()),
+            businessHolidays: BusinessHolidays::ofDates([], self::utc()),
+            businessDays: BusinessDays::ofDates($businessDays, self::utc()),
             workweek: $workweek === null ? null : new Workweek(
                 array_map(static fn(string $day): DayName => DayName::from($day), $workweek),
             ),
             custom: array_map(
-                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates),
+                static fn(array $dates): CustomDefinition => CustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: [])));
+        ), resolvers: [], timezone: self::utc())), self::utc());
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

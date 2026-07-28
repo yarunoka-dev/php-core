@@ -9,8 +9,9 @@ use Yarunoka\Expression\LastDayOfMonth;
 use Yarunoka\Expression\MonthDay;
 use Yarunoka\Expression\OrdinalWeekday;
 use Yarunoka\Expression\Weekday;
-use Yarunoka\Time\LocalDate;
 use Yarunoka\Vocabulary\CalendarWord;
+use Yarunoka\Vocabulary\DayName;
+use Yarunoka\YrnkDate;
 
 /**
  * The matcher for day expression atoms. The calendar vocabulary uses the
@@ -31,22 +32,22 @@ final readonly class DayMatcher
 {
     public function __construct(private ResolvedCalendar $calendar) {}
 
-    public function matches(DayAtom $atom, LocalDate $date): bool
+    public function matches(DayAtom $atom, YrnkDate $date): bool
     {
         return match (true) {
-            $atom instanceof MonthDay => $date->day === $atom->dayOfMonth,
-            $atom instanceof Weekday => $date->dayOfWeek() === $atom->dayName,
+            $atom instanceof MonthDay => self::dayOfMonth($date) === $atom->dayOfMonth,
+            $atom instanceof Weekday => self::dayOfWeek($date) === $atom->dayName,
             $atom instanceof OrdinalWeekday => $this->matchesOrdinalWeekday($atom, $date),
-            $atom instanceof LastDayOfMonth => $date->day === $date->daysInMonth(),
+            $atom instanceof LastDayOfMonth => self::dayOfMonth($date) === self::daysInMonth($date),
             $atom instanceof CustomRef => $this->calendar->customContains($atom->name, $date),
             $atom instanceof CalendarWord => $this->matchesCalendarWord($atom, $date),
             default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };
     }
 
-    private function matchesOrdinalWeekday(OrdinalWeekday $atom, LocalDate $date): bool
+    private function matchesOrdinalWeekday(OrdinalWeekday $atom, YrnkDate $date): bool
     {
-        if ($date->dayOfWeek() !== $atom->dayName) {
+        if (self::dayOfWeek($date) !== $atom->dayName) {
             return false;
         }
 
@@ -55,24 +56,24 @@ final readonly class DayMatcher
         if ($weekIndex === null) {
             // last: the same weekday is 7 days later. If that does not fit
             // in the month, this one is the last.
-            return $date->day + 7 > $date->daysInMonth();
+            return self::dayOfMonth($date) + 7 > self::daysInMonth($date);
         }
 
-        return intdiv($date->day - 1, 7) + 1 === $weekIndex;
+        return intdiv(self::dayOfMonth($date) - 1, 7) + 1 === $weekIndex;
     }
 
-    private function matchesCalendarWord(CalendarWord $word, LocalDate $date): bool
+    private function matchesCalendarWord(CalendarWord $word, YrnkDate $date): bool
     {
         return match ($word) {
-            CalendarWord::Weekday => ! $date->dayOfWeek()->isWeekend(),
-            CalendarWord::Weekend => $date->dayOfWeek()->isWeekend(),
+            CalendarWord::Weekday => ! self::dayOfWeek($date)->isWeekend(),
+            CalendarWord::Weekend => self::dayOfWeek($date)->isWeekend(),
             CalendarWord::Holiday => $this->calendar->holidayContains($date),
             CalendarWord::BusinessDay => $this->isBusinessDay($date),
             CalendarWord::BusinessHoliday => ! $this->isBusinessDay($date),
         };
     }
 
-    private function isBusinessDay(LocalDate $date): bool
+    private function isBusinessDay(YrnkDate $date): bool
     {
         if ($this->calendar->businessDayContains($date)) {
             return true;
@@ -86,6 +87,21 @@ final readonly class DayMatcher
             return false;
         }
 
-        return $this->calendar->isInWorkweek($date->dayOfWeek());
+        return $this->calendar->isInWorkweek(self::dayOfWeek($date));
+    }
+
+    private static function dayOfMonth(YrnkDate $date): int
+    {
+        return (int) $date->format('j');
+    }
+
+    private static function daysInMonth(YrnkDate $date): int
+    {
+        return (int) $date->format('t');
+    }
+
+    private static function dayOfWeek(YrnkDate $date): DayName
+    {
+        return DayName::fromIsoNumber((int) $date->format('N'));
     }
 }

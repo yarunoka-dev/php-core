@@ -428,14 +428,14 @@ class MatchesTest extends TestCase
     ): YrnkEvaluator {
         return new YrnkEvaluator(
             calendar: new Calendar(
-                holidays: Holidays::ofDates($holidays),
-                businessHolidays: BusinessHolidays::ofDates($businessHolidays),
-                businessDays: BusinessDays::ofDates($businessDays),
+                holidays: Holidays::ofDates($holidays, self::tz()),
+                businessHolidays: BusinessHolidays::ofDates($businessHolidays, self::tz()),
+                businessDays: BusinessDays::ofDates($businessDays, self::tz()),
                 workweek: $workweek === null ? null : new Workweek(
                     array_map(static fn(string $day) => DayName::from($day), $workweek),
                 ),
                 custom: array_map(
-                    static fn(array $dates) => CustomDefinition::ofDates($dates),
+                    static fn(array $dates) => CustomDefinition::ofDates($dates, self::tz()),
                     $custom,
                 ),
             ),
@@ -448,11 +448,16 @@ class MatchesTest extends TestCase
      */
     private function schedule(array $raw): YrnkSchedule
     {
-        return (new ScheduleParser())->parse($raw);
+        return (new ScheduleParser())->parse($raw, self::tz());
     }
 
     private function at(string $iso): DateTimeImmutable
     {
         return new DateTimeImmutable($iso);
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

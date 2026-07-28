@@ -45,7 +45,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('schedules')]
     public function a_single_schedule_round_trip_is_the_identity(array $raw): void
     {
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -143,7 +143,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [$atom], 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -173,7 +173,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [25], 'shift' => $shift, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -199,7 +199,7 @@ class RoundTripTest extends TestCase
     {
         $raw = ['days' => [13], 'if' => $if, 'times' => ['09:00']];
 
-        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw)));
+        $this->assertSame($raw, (new ScheduleBuilder())->build((new ScheduleParser())->parse($raw, self::tz())));
     }
 
     /**
@@ -222,7 +222,7 @@ class RoundTripTest extends TestCase
     #[DataProvider('timesForms')]
     public function a_times_round_trip_is_the_identity(array $schedule): void
     {
-        $this->assertSame($schedule, (new ScheduleBuilder())->build((new ScheduleParser())->parse($schedule)));
+        $this->assertSame($schedule, (new ScheduleBuilder())->build((new ScheduleParser())->parse($schedule, self::tz())));
     }
 
     /**
@@ -309,5 +309,10 @@ class RoundTripTest extends TestCase
         $json = (new YrnkBuilder())->toJson($parser->parse($raw));
 
         $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($json)));
+    }
+
+    private static function tz(): DateTimeZone
+    {
+        return new DateTimeZone('Asia/Tokyo');
     }
 }

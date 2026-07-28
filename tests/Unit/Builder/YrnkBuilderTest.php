@@ -20,7 +20,7 @@ class YrnkBuilderTest extends TestCase
         $document = new Yrnk(
             version: '1.0',
             timezone: new DateTimeZone('Asia/Tokyo'),
-            calendar: new Calendar(holidays: Holidays::ofDates([])),
+            calendar: new Calendar(holidays: Holidays::ofDates([], self::utc())),
             schedules: [new YrnkSchedule(times: new AllDay())],
         );
 
@@ -63,5 +63,10 @@ class YrnkBuilderTest extends TestCase
             '{"version":"1.0","timezone":"UTC","schedules":[{"allday":true}]}',
             (new YrnkBuilder())->toJson($document),
         );
+    }
+
+    private static function utc(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }
