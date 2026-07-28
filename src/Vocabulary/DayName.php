@@ -18,6 +18,9 @@ enum DayName: string
     case Sat = 'sat';
     case Sun = 'sun';
 
+    /**
+     * @internal
+     */
     public static function fromIsoNumber(int $isoNumber): self
     {
         return match ($isoNumber) {
@@ -35,6 +38,8 @@ enum DayName: string
     /**
      * The ISO day-of-week number paired with fromIsoNumber (Mon = 1 through
      * Sun = 7).
+     *
+     * @internal
      */
     public function isoNumber(): int
     {
@@ -49,6 +54,9 @@ enum DayName: string
         };
     }
 
+    /**
+     * @internal
+     */
     public function isWeekend(): bool
     {
         return $this === self::Sat || $this === self::Sun;
