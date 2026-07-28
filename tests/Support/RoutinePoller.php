@@ -12,8 +12,8 @@ use DateTimeImmutable;
  * pattern from the docs as-is.
  *
  * It holds last_run_at and, on every tick, asks the evaluator "is there a
- * matching date-time in (last_run_at, now]?"; if so it fires and updates
- * last_run_at. Grace only trims the lower bound of the question interval.
+ * scheduled point after the last run, through now?"; if so it fires and
+ * updates last_run_at. Grace only moves up the start of the period.
  */
 final class RoutinePoller
 {
