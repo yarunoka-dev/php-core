@@ -91,8 +91,10 @@ $evaluator->occurrencesIn($payday, $from, $to);     // which occurrences lie fro
   as `YrnkDateTime` instants on the configured timezone's clock, all-day
   occurrences as `YrnkDate` dates (both are `DateTimeImmutable`
   subclasses, and the kind is read from the type) — the two kinds never
-  merge — in ascending order of comparison instant (an all-day
-  occurrence stands at 00:00 of its day)
+  merge — in ascending order, an all-day occurrence taking the start of
+  its day as its place in the order. A window holds an all-day occurrence
+  as soon as it holds any part of that day, so asking partway through a
+  day still answers for it
 - Scheduled points on DST transition days resolve per RFC 5545 §3.3.5 — a
   point at a nonexistent time is pushed forward, and a point at a time
   that occurs twice counts only as its first occurrence
@@ -155,9 +157,10 @@ if ($evaluator->hasMatchIn($schedule, $lastRunAt, $now)) {
   (the half-open interval)
 - **"At least N seconds apart" throttling**: an execution-side concern,
   not a schedule. AND the distance from last_run_at on the caller's side
-- **allday**: the scheduled point is the start of the day, 00:00, so it
-  is picked up exactly once by the first question after the date changes.
-  "Any time within the day" is achieved by not trimming the grace
+- **allday**: a day is due for as long as it lasts, so every question
+  whose window touches the day answers yes — including one asked late in
+  the day. A caller that runs an all-day task once keeps that count on
+  its own side; the schedule says which days, not how often to act
 
 ## Exceptions
 

@@ -106,13 +106,13 @@ class OccurrencesInTest extends TestCase
     }
 
     #[Test]
-    public function an_allday_occurrence_whose_comparison_instant_precedes_the_window_is_out_of_range(): void
+    public function an_allday_occurrence_is_answered_from_partway_through_its_own_day(): void
     {
         $schedule = $this->schedule(['days' => ['mon'], 'allday' => true]);
 
-        // 7/13 is a Monday, but its comparison instant (7/13 00:00) lies
-        // before the window start at noon.
-        $this->assertSame(['2026-07-20'], $this->rendered($this->evaluator()->occurrencesIn(
+        // 7/13 is a Monday. Asking at noon still asks about 7/13, so the
+        // day is part of the answer.
+        $this->assertSame(['2026-07-13', '2026-07-20'], $this->rendered($this->evaluator()->occurrencesIn(
             $schedule,
             $this->at('2026-07-13T12:00:00+09:00'),
             $this->at('2026-07-20T00:00:00+09:00'),

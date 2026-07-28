@@ -84,13 +84,18 @@ class PollerScenarioTest extends TestCase
     }
 
     #[Test]
-    public function allday_fires_on_the_first_tick_after_the_date_changes_and_never_twice_a_day(): void
+    public function an_allday_day_answers_yes_for_as_long_as_the_day_lasts(): void
     {
         $poller = $this->poller(['days' => [['3rd', 'mon']], 'allday' => true], '2026-07-19T23:59:00+09:00');
 
         $this->assertTrue($poller->tick($this->at('2026-07-20T00:00:30+09:00')));
-        $this->assertFalse($poller->tick($this->at('2026-07-20T08:00:00+09:00')));
-        $this->assertFalse($poller->tick($this->at('2026-07-20T23:59:00+09:00')));
+        $this->assertTrue($poller->tick($this->at('2026-07-20T08:00:00+09:00')));
+        $this->assertTrue($poller->tick($this->at('2026-07-20T23:59:00+09:00')));
+
+        // The tick that crosses midnight still covers the last minute of
+        // 7/20; the one after it is wholly inside 7/21.
+        $this->assertTrue($poller->tick($this->at('2026-07-21T00:00:30+09:00')));
+        $this->assertFalse($poller->tick($this->at('2026-07-21T08:00:00+09:00')));
     }
 
     #[Test]

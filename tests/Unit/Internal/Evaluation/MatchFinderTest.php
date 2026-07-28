@@ -431,7 +431,7 @@ class MatchFinderTest extends TestCase
     }
 
     #[Test]
-    public function the_allday_point_stands_at_the_start_of_the_day(): void
+    public function an_allday_day_is_reached_by_any_interval_touching_it(): void
     {
         $finder = $this->finder();
         $schedule = $this->schedule(['days' => [['3rd', 'mon']], 'allday' => true]);
@@ -441,10 +441,15 @@ class MatchFinderTest extends TestCase
             $this->at('2026-07-19T23:59:00+09:00'),
             $this->at('2026-07-20T00:00:00+09:00'),
         ));
-        $this->assertFalse($finder->hasMatchIn(
+        $this->assertTrue($finder->hasMatchIn(
             $schedule,
             $this->at('2026-07-20T00:00:00+09:00'),
             $this->at('2026-07-20T23:59:00+09:00'),
+        ));
+        $this->assertFalse($finder->hasMatchIn(
+            $schedule,
+            $this->at('2026-07-21T00:00:00+09:00'),
+            $this->at('2026-07-21T23:59:00+09:00'),
         ));
     }
 
