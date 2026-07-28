@@ -24,9 +24,4 @@ final readonly class EverySequence implements TimesSpec
             throw new InvalidValueException("Count of every must be an integer of at least 1: {$amount}");
         }
     }
-
-    public function stepSeconds(): int
-    {
-        return $this->amount * $this->unit->seconds();
-    }
 }

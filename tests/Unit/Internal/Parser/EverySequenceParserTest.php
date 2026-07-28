@@ -18,14 +18,20 @@ class EverySequenceParserTest extends TestCase
 
         $this->assertSame(36, $sequence->amount);
         $this->assertSame(TimeUnit::Hour, $sequence->unit);
-        $this->assertSame(36 * 3600, $sequence->stepSeconds());
     }
 
     #[Test]
     public function has_no_one_day_cap_unlike_the_grid(): void
     {
-        $this->assertSame(172800, EverySequenceParser::parse([172800, 'second'])->stepSeconds());
-        $this->assertSame(129600, EverySequenceParser::parse([2160, 'minute'])->stepSeconds());
+        $seconds = EverySequenceParser::parse([172800, 'second']); // two days
+
+        $this->assertSame(172800, $seconds->amount);
+        $this->assertSame(TimeUnit::Second, $seconds->unit);
+
+        $minutes = EverySequenceParser::parse([2160, 'minute']); // a day and a half
+
+        $this->assertSame(2160, $minutes->amount);
+        $this->assertSame(TimeUnit::Minute, $minutes->unit);
     }
 
     /**
