@@ -25,6 +25,9 @@ final readonly class EverySequence implements TimesSpec
         }
     }
 
+    /**
+     * @internal
+     */
     public function stepSeconds(): int
     {
         return $this->amount * $this->unit->seconds();
