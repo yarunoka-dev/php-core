@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Calendar;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\ReservedNameException;
 use Yarunoka\Calendar\YrnkCalendarParser;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\YrnkDate;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
@@ -55,14 +55,24 @@ class YrnkCalendarParserTest extends TestCase
     }
 
     #[Test]
-    public function parses_custom_values_and_validates_the_key_names(): void
+    public function parses_date_set_values_and_validates_the_key_names(): void
     {
         $calendar = (new YrnkCalendarParser())->parse([
-            'custom' => ['founding-day' => ['2026-10-01'], 'garbage-day' => 'garbage-days'],
+            'date_sets' => ['founding-day' => ['2026-10-01'], 'closing-day' => ['2026-12-29', '2026-12-30']],
         ], self::utc());
 
-        $this->assertInstanceOf(YrnkCustomDefinition::class, $calendar->custom['founding-day']);
-        $this->assertSame('garbage-days', $calendar->custom['garbage-day']);
+        $this->assertInstanceOf(YrnkDateSet::class, $calendar->dateSets['founding-day']);
+        $this->assertCount(2, $calendar->dateSets['closing-day']->dates);
+    }
+
+    #[Test]
+    public function rejects_a_date_set_value_that_is_a_name(): void
+    {
+        // An entry is where the document holds the dates it names, so it
+        // never stands for another name.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkCalendarParser())->parse(['date_sets' => ['garbage-day' => 'garbage-days']], self::utc());
     }
 
     #[Test]
@@ -86,7 +96,7 @@ class YrnkCalendarParserTest extends TestCase
     {
         $this->expectException(InvalidYrnkException::class);
 
-        (new YrnkCalendarParser())->parse(['custom' => ['anniversary' => '2026-10-01']], self::utc());
+        (new YrnkCalendarParser())->parse(['date_sets' => ['anniversary' => '2026-10-01']], self::utc());
     }
 
     #[Test]
@@ -102,7 +112,7 @@ class YrnkCalendarParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        (new YrnkCalendarParser())->parse(['custom' => ['holiday' => ['2026-01-01']]], self::utc());
+        (new YrnkCalendarParser())->parse(['date_sets' => ['holiday' => ['2026-01-01']]], self::utc());
     }
 
     #[Test]

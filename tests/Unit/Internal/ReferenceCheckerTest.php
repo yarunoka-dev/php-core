@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Internal;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
@@ -28,7 +28,7 @@ class ReferenceCheckerTest extends TestCase
             [$this->schedule(['days' => ['holiday', 'founding-day'], 'times' => ['09:00']])],
             new YrnkCalendar(
                 holidays: 'yasumi-jp',
-                custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
+                dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
                 resolverContainer: Bindings::of(['yasumi-jp' => Bindings::returning([])]),
             ),
         );
@@ -118,14 +118,32 @@ class ReferenceCheckerTest extends TestCase
     }
 
     #[Test]
-    public function resolver_names_in_custom_are_checked_too(): void
+    public function a_date_list_position_resolves_against_the_date_sets_too(): void
     {
-        $this->expectException(UnregisteredResolverException::class);
-
+        // One namespace: the name is an entry of date_sets here, and no
+        // binding is needed for it.
         ReferenceChecker::ensureResolvable(
-            [$this->schedule(['times' => ['09:00']])],
-            new YrnkCalendar(custom: ['garbage-day' => 'unknown']),
+            [$this->schedule(['days' => ['holiday'], 'times' => ['09:00']])],
+            new YrnkCalendar(
+                holidays: 'founding-day',
+                dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
+            ),
         );
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function a_name_in_days_resolves_against_the_bindings_too(): void
+    {
+        ReferenceChecker::ensureResolvable(
+            [$this->schedule(['days' => ['garbage-days'], 'times' => ['09:00']])],
+            new YrnkCalendar(
+                resolverContainer: Bindings::of(['garbage-days' => Bindings::returning([])]),
+            ),
+        );
+
+        $this->expectNotToPerformAssertions();
     }
 
     /**

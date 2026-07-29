@@ -2,7 +2,7 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Builder;
 
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
@@ -24,6 +24,6 @@ class DayAtomBuilderTest extends TestCase
         $this->assertSame('holiday', DayAtomBuilder::build(CalendarWord::Holiday));
         $this->assertSame(['3rd', 'mon'], DayAtomBuilder::build(new OrdinalWeekday(Ordinal::Third, YrnkDayName::Mon)));
         $this->assertSame('last_day_of_month', DayAtomBuilder::build(new LastDayOfMonth()));
-        $this->assertSame('fête-nationale', DayAtomBuilder::build(new CustomRef('fête-nationale')));
+        $this->assertSame('fête-nationale', DayAtomBuilder::build(new DateSetRef('fête-nationale')));
     }
 }

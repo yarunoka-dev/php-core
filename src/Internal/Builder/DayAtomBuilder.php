@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Builder;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\DayCycle;
 use Yarunoka\Schedule\LastDayOfMonth;
@@ -31,7 +31,7 @@ final class DayAtomBuilder
             $atom instanceof CalendarWord => $atom->value,
             $atom instanceof OrdinalWeekday => [$atom->ordinal->value, $atom->dayName->value],
             $atom instanceof LastDayOfMonth => 'last_day_of_month',
-            $atom instanceof CustomRef => $atom->name,
+            $atom instanceof DateSetRef => $atom->name,
             default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };
     }

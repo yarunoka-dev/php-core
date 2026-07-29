@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Unit\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\DayExpression;
 use Yarunoka\Schedule\LastDayOfMonth;
@@ -59,7 +59,7 @@ class DayAtomNodesTest extends TestCase
     #[Test]
     public function custom_ref_holds_the_reference_name(): void
     {
-        $this->assertSame('fête-nationale', (new CustomRef('fête-nationale'))->name);
+        $this->assertSame('fête-nationale', (new DateSetRef('fête-nationale'))->name);
     }
 
     #[Test]
@@ -67,7 +67,7 @@ class DayAtomNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new CustomRef('');
+        new DateSetRef('');
     }
 
     #[Test]
@@ -75,7 +75,7 @@ class DayAtomNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        new CustomRef('   ');
+        new DateSetRef('   ');
     }
 
     #[Test]
@@ -104,7 +104,7 @@ class DayAtomNodesTest extends TestCase
         $this->assertInstanceOf(DayAtomInterface::class, new Weekday(YrnkDayName::Mon));
         $this->assertInstanceOf(DayAtomInterface::class, new OrdinalWeekday(Ordinal::Last, YrnkDayName::Fri));
         $this->assertInstanceOf(DayAtomInterface::class, new LastDayOfMonth());
-        $this->assertInstanceOf(DayAtomInterface::class, new CustomRef('founding-day'));
+        $this->assertInstanceOf(DayAtomInterface::class, new DateSetRef('founding-day'));
         $this->assertInstanceOf(DayAtomInterface::class, CalendarWord::Holiday);
     }
 }

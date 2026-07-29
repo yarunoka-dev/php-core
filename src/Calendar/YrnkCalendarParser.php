@@ -4,7 +4,7 @@ namespace Yarunoka\Calendar;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Internal\Parser\ReservedWords;
+use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
@@ -13,12 +13,12 @@ use DateTimeZone;
 /**
  * The parser for the definitions part (RawCalendar). The top level is
  * the closed set of reserved keys (the built-in definitions); under
- * custom is the open namespace.
+ * date_sets is the open namespace.
  */
 final class YrnkCalendarParser
 {
     private const array KNOWN_KEYS = [
-        'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
+        'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'date_sets',
     ];
 
     public function parse(
@@ -51,7 +51,7 @@ final class YrnkCalendarParser
                 businessHours: array_key_exists('business_hours', $raw)
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
-                custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom'], $timezone) : [],
+                dateSets: array_key_exists('date_sets', $raw) ? self::parseDateSets($raw['date_sets'], $timezone) : [],
                 resolverContainer: $resolverContainer,
             );
         } catch (InvalidValueException $e) {
@@ -60,7 +60,11 @@ final class YrnkCalendarParser
     }
 
     /**
-     * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition
+     * A date-list position: either the array of date literals, or a name.
+     * The two forms are told apart by shape, which is why a date-shaped
+     * string is neither (it would otherwise read as a list of one).
+     *
+     * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays
      *
      * @param  class-string<T>  $class
      * @return T|string
@@ -72,17 +76,15 @@ final class YrnkCalendarParser
                 throw new InvalidYrnkException("{$key}: a single date is still written as a list: [\"{$raw}\"]");
             }
 
+            Name::ensureUsable($raw);
+
             return $raw;
         }
 
         if (is_array($raw) && array_is_list($raw)) {
-            foreach ($raw as $date) {
-                if (! is_string($date)) {
-                    throw new InvalidYrnkException("{$key}: dates must be YYYY-MM-DD strings");
-                }
-            }
-
             /** @var list<string> $raw */
+            $raw = self::dateStrings($raw, $key);
+
             // The trait-provided named constructor does not resolve to T
             // when called through class-string<T> (a false positive from a
             // phpstan limitation).
@@ -90,7 +92,23 @@ final class YrnkCalendarParser
             return $class::ofDates($raw, $timezone);
         }
 
-        throw new InvalidYrnkException("{$key} must be a date list or a resolver name");
+        throw new InvalidYrnkException("{$key} must be a date list or a name");
+    }
+
+    /**
+     * @param  array<mixed>  $raw
+     * @return list<string>
+     */
+    private static function dateStrings(array $raw, string $key): array
+    {
+        foreach ($raw as $date) {
+            if (! is_string($date)) {
+                throw new InvalidYrnkException("{$key}: dates must be YYYY-MM-DD strings");
+            }
+        }
+
+        /** @var list<string> */
+        return $raw;
     }
 
     private static function parseWorkweek(mixed $raw): YrnkWorkweek
@@ -135,24 +153,33 @@ final class YrnkCalendarParser
     }
 
     /**
-     * @return array<string, YrnkCustomDefinition|string>
+     * The open namespace. A value is a list of date literals and nothing
+     * else: this is where the document holds the dates it names, so an
+     * entry never stands for another name.
+     *
+     * @return array<string, YrnkDateSet>
      */
-    private static function parseCustom(mixed $raw, DateTimeZone $timezone): array
+    private static function parseDateSets(mixed $raw, DateTimeZone $timezone): array
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
-            throw new InvalidYrnkException('custom must be an object of name to date list');
+            throw new InvalidYrnkException('date_sets must be an object of name to date list');
         }
 
-        $custom = [];
+        $dateSets = [];
 
         foreach ($raw as $name => $value) {
             // PHP turns digits-only keys of a JSON object into ints. The
             // name validation rejects them.
             $name = (string) $name;
-            ReservedWords::ensureUsable($name);
-            $custom[$name] = self::parseDateSet($value, "custom.{$name}", YrnkCustomDefinition::class, $timezone);
+            Name::ensureUsable($name);
+
+            if (! is_array($value) || ! array_is_list($value)) {
+                throw new InvalidYrnkException("date_sets.{$name} must be a date list (a name cannot stand for another name)");
+            }
+
+            $dateSets[$name] = YrnkDateSet::ofDates(self::dateStrings($value, "date_sets.{$name}"), $timezone);
         }
 
-        return $custom;
+        return $dateSets;
     }
 }

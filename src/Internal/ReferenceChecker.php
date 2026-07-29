@@ -7,7 +7,7 @@ use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Schedule\BusinessHourRef;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Internal\Vocabulary\CalendarWord;
@@ -31,7 +31,7 @@ final class ReferenceChecker
     {
         foreach ($schedules as $schedule) {
             foreach (self::atomsOf($schedule) as $atom) {
-                if ($atom instanceof CustomRef && ! isset($calendar->custom[$atom->name])) {
+                if ($atom instanceof DateSetRef && ! self::resolves($atom->name, $calendar)) {
                     throw new UndefinedNameException("Undefined name: {$atom->name}");
                 }
 
@@ -49,11 +49,22 @@ final class ReferenceChecker
             }
         }
 
-        foreach (self::resolverReferences($calendar) as $context => $name) {
-            if (! $calendar->resolverContainer->has($name)) {
-                throw new UnregisteredResolverException("Unregistered resolver name ({$context}): {$name}");
+        foreach (self::nameReferences($calendar) as $context => $name) {
+            if (! self::resolves($name, $calendar)) {
+                throw new UnregisteredResolverException("No resolver is bound to this name ({$context}): {$name}");
             }
         }
+    }
+
+    /**
+     * A name denotes a date set, resolved either inside the document (an
+     * entry of date_sets) or outside it (a binding the host supplies).
+     * Which of the two makes no difference to where the name may be
+     * written, so both are consulted wherever one is checked.
+     */
+    private static function resolves(string $name, YrnkCalendar $calendar): bool
+    {
+        return isset($calendar->dateSets[$name]) || $calendar->resolverContainer->has($name);
     }
 
     private static function ensureCalendarWordDefined(CalendarWord $word, YrnkCalendar $calendar): void
@@ -96,9 +107,12 @@ final class ReferenceChecker
     }
 
     /**
-     * @return iterable<string, string> context label → resolver name
+     * The names written where a date list is expected. An entry of
+     * date_sets is not among them: it carries its dates itself.
+     *
+     * @return iterable<string, string> context label → name
      */
-    private static function resolverReferences(YrnkCalendar $calendar): iterable
+    private static function nameReferences(YrnkCalendar $calendar): iterable
     {
         foreach ([
             'holidays' => $calendar->holidays,
@@ -107,12 +121,6 @@ final class ReferenceChecker
         ] as $key => $definition) {
             if (is_string($definition)) {
                 yield $key => $definition;
-            }
-        }
-
-        foreach ($calendar->custom as $name => $definition) {
-            if (is_string($definition)) {
-                yield "custom.{$name}" => $definition;
             }
         }
     }

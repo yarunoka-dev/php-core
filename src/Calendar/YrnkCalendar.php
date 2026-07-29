@@ -2,13 +2,14 @@
 
 namespace Yarunoka\Calendar;
 
-use Yarunoka\Internal\Resolvers\ResolverName;
+use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Resolvers\YrnkResolverContainer;
 
 /**
  * The definitions part of a Yrnk document. Made of the built-in
  * definitions (the five reserved keys, carrying the layer-model
- * semantics) and custom (the user's open namespace), together with what
+ * semantics) and date_sets (the open namespace), together with what
  * the names it references resolve to.
  *
  * The bindings ride along because a definition naming a resolver is only
@@ -19,7 +20,9 @@ use Yarunoka\Resolvers\YrnkResolverContainer;
  * A date set is written as either of the two forms the DSL accepts: the
  * date list itself, or the name of what resolves it. The name is written
  * as the name — there is no wrapper for it, because the wrapper would
- * carry nothing the string does not.
+ * carry nothing the string does not. Whether the name is an entry of
+ * date_sets or one the host binds makes no difference to where it may be
+ * written: the two share one namespace.
  *
  * null means "undefined" — a document that uses vocabulary or references
  * requiring that definition is a parse error. This is distinct from an
@@ -29,7 +32,7 @@ use Yarunoka\Resolvers\YrnkResolverContainer;
 final readonly class YrnkCalendar
 {
     /**
-     * @param  array<string, YrnkCustomDefinition|string>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser
+     * @param  array<string, YrnkDateSet>  $dateSets  Key name constraints (reserved words, literal shapes) are validated by the parser
      */
     public function __construct(
         public YrnkHolidays|string|null $holidays = null,
@@ -37,12 +40,18 @@ final readonly class YrnkCalendar
         public YrnkBusinessDays|string|null $businessDays = null,
         public ?YrnkWorkweek $workweek = null,
         public ?YrnkBusinessHours $businessHours = null,
-        public array $custom = [],
+        public array $dateSets = [],
         public YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
     ) {
-        foreach ([$holidays, $businessHolidays, $businessDays, ...array_values($custom)] as $definition) {
-            if (is_string($definition)) {
-                ResolverName::ensureUsable($definition);
+        foreach ([$holidays, $businessHolidays, $businessDays] as $definition) {
+            if (! is_string($definition)) {
+                continue;
+            }
+
+            $problem = Name::problemWith($definition);
+
+            if ($problem !== null) {
+                throw new InvalidValueException($problem);
             }
         }
     }

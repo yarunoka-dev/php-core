@@ -6,7 +6,7 @@ use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
@@ -44,11 +44,11 @@ class ResolvedCalendarTest extends TestCase
     public function contains_for_custom_looks_up_the_set_per_name(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
-            custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
+            dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
         ), timezone: self::utc());
 
-        $this->assertTrue($resolved->customContains('founding-day', new YrnkDate('2026-10-01', self::utc())));
-        $this->assertFalse($resolved->customContains('founding-day', new YrnkDate('2026-10-02', self::utc())));
+        $this->assertTrue($resolved->nameContains('founding-day', new YrnkDate('2026-10-01', self::utc())));
+        $this->assertFalse($resolved->nameContains('founding-day', new YrnkDate('2026-10-02', self::utc())));
     }
 
     #[Test]
@@ -58,7 +58,7 @@ class ResolvedCalendarTest extends TestCase
 
         $this->expectException(UndefinedNameException::class);
 
-        $resolved->customContains('nowhere-to-be-found', new YrnkDate('2026-10-01', self::utc()));
+        $resolved->nameContains('nowhere-to-be-found', new YrnkDate('2026-10-01', self::utc()));
     }
 
     #[Test]

@@ -31,7 +31,7 @@ class YrnkParserTest extends TestCase
                 'business_days' => [],
                 'workweek' => ['mon', 'tue', 'wed', 'thu', 'fri'],
                 'business_hours' => [['09:00', '12:00'], ['13:00', '18:00']],
-                'custom' => ['founding-day' => ['2026-10-01']],
+                'date_sets' => ['founding-day' => ['2026-10-01']],
             ],
             'schedules' => [
                 ['days' => ['holiday'], 'times' => ['08:00']],
@@ -42,7 +42,7 @@ class YrnkParserTest extends TestCase
         $this->assertSame('1.0', $document->version);
         $this->assertSame('Asia/Tokyo', $document->timezone->getName());
         $this->assertSame('yasumi-jp', $document->calendar->holidays);
-        $this->assertArrayHasKey('founding-day', $document->calendar->custom);
+        $this->assertArrayHasKey('founding-day', $document->calendar->dateSets);
         $this->assertCount(2, $document->schedules);
     }
 
@@ -161,7 +161,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['holiday' => ['2026-01-01']]]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['date_sets' => ['holiday' => ['2026-01-01']]]]));
     }
 
     #[Test]
@@ -169,7 +169,7 @@ class YrnkParserTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['2026-01-01' => ['2026-01-01']]]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['date_sets' => ['2026-01-01' => ['2026-01-01']]]]));
     }
 
     #[Test]
@@ -179,7 +179,7 @@ class YrnkParserTest extends TestCase
         // array.
         $this->expectException(InvalidYrnkException::class);
 
-        (new YrnkParser())->parse($this->doc(['calendar' => ['custom' => ['anniversary' => '2026-10-01']]]));
+        (new YrnkParser())->parse($this->doc(['calendar' => ['date_sets' => ['anniversary' => '2026-10-01']]]));
     }
 
     #[Test]
@@ -199,15 +199,51 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
-    public function a_custom_value_can_reference_a_resolver_name_too(): void
+    public function a_date_set_value_cannot_be_a_name(): void
     {
-        $parser = new YrnkParser(Bindings::of(['garbage-days' => Bindings::returning([])]));
+        // The entry is where the document holds the dates it names, so it
+        // never stands for another name (no definition macros).
+        $this->expectException(InvalidYrnkException::class);
 
-        $document = $parser->parse($this->doc([
-            'calendar' => ['custom' => ['garbage-day' => 'garbage-days']],
+        (new YrnkParser())->parse($this->doc([
+            'calendar' => ['date_sets' => ['garbage-day' => 'garbage-days']],
+        ]));
+    }
+
+    #[Test]
+    public function a_date_list_position_accepts_the_name_of_a_date_set(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc([
+            'calendar' => [
+                'holidays' => 'founding-day',
+                'date_sets' => ['founding-day' => ['2026-10-01']],
+            ],
+            'schedules' => [['days' => ['holiday'], 'times' => ['09:00']]],
         ]));
 
-        $this->assertSame('garbage-days', $document->calendar->custom['garbage-day']);
+        $this->assertSame('founding-day', $document->calendar->holidays);
+    }
+
+    #[Test]
+    public function a_resolver_name_can_be_written_in_days(): void
+    {
+        $parser = new YrnkParser(Bindings::of(['garbage-days' => Bindings::returning(['2026-10-01'])]));
+
+        $document = $parser->parse($this->doc([
+            'schedules' => [['days' => ['garbage-days'], 'times' => ['09:00']]],
+        ]));
+
+        $this->assertCount(1, $document->schedules);
+    }
+
+    #[Test]
+    public function a_reserved_word_cannot_be_a_name_in_a_date_list_position(): void
+    {
+        // One namespace, one spelling rule: a name written as a date-set
+        // value is held to what every other name is held to.
+        $this->expectException(ReservedNameException::class);
+
+        (new YrnkParser())->parse($this->doc(['calendar' => ['holidays' => 'mon']]));
     }
 
     // ---- resolvability of references ----

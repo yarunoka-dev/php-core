@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
@@ -16,7 +16,7 @@ use Yarunoka\Internal\Vocabulary\Ordinal;
 /**
  * The parser for day expression atoms (RawDayAtom). Branches mechanically
  * on the type (int / string / two-element array) and fails loudly on
- * misplacements. A custom reference becomes a CustomRef holding the name
+ * misplacements. A name becomes a DateSetRef holding the name
  * as-is (validating that the referent exists is the job of the holder of
  * the definitions).
  *
@@ -88,11 +88,16 @@ final class DayAtomParser
 
         if (preg_match('/\A(\d+|\d{4}-\d{2}-\d{2}|\d{2}:\d{2})\z/', $word) === 1) {
             throw new InvalidYrnkException(
-                "A literal shape cannot be written directly in days: {$word} (give a specific date a name under a custom definition and refer to it)",
+                "A literal shape cannot be written directly in days: {$word} (give the dates a name under date_sets and refer to it)",
             );
         }
 
-        return new CustomRef($word);
+        // Whatever is left is a name, and it is held to what every name is
+        // held to — the vocabulary above has already taken the words that
+        // read as something else.
+        Name::ensureUsable($word);
+
+        return new DateSetRef($word);
     }
 
     /**

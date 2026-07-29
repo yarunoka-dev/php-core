@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Feature;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
@@ -58,7 +58,7 @@ class EvaluationConsistencyTest extends TestCase
                 '10:00:00',
             ],
             'a one-off event' => [['years' => [2026], 'months' => [7], 'days' => [15], 'times' => ['10:00']], '10:00:00'],
-            'a custom reference' => [['days' => ['anniversary'], 'times' => ['10:00']], '10:00:00'],
+            'a name reference' => [['days' => ['anniversary'], 'times' => ['10:00']], '10:00:00'],
             'every 2 days' => [[
                 'from' => '2026-06-20 00:00', 'days' => [['every', 2, 'day']], 'times' => ['10:00'],
             ], '10:00:00'],
@@ -169,7 +169,7 @@ class EvaluationConsistencyTest extends TestCase
                 holidays: YrnkHolidays::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
                 businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
                 businessDays: YrnkBusinessDays::ofDates([], self::tz()),
-                custom: ['anniversary' => YrnkCustomDefinition::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
+                dateSets: ['anniversary' => YrnkDateSet::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

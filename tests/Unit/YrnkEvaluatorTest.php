@@ -54,7 +54,7 @@ class YrnkEvaluatorTest extends TestCase
         $document = (new YrnkParser())->parse([
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
-            'calendar' => ['custom' => ['founding-day' => ['2026-10-01']]],
+            'calendar' => ['date_sets' => ['founding-day' => ['2026-10-01']]],
             'schedules' => [['days' => ['founding-day'], 'times' => ['09:00']]],
         ]);
 

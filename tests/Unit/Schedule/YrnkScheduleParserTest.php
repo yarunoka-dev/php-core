@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Schedule;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\BusinessHourRef;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Schedule\IfGuard;
@@ -51,7 +51,7 @@ class YrnkScheduleParserTest extends TestCase
         $this->assertSame(CalendarWord::Holiday, $atoms[2]);
         $this->assertInstanceOf(OrdinalWeekday::class, $atoms[3]);
         $this->assertSame(Ordinal::Third, $atoms[3]->ordinal);
-        $this->assertInstanceOf(CustomRef::class, $atoms[5]);
+        $this->assertInstanceOf(DateSetRef::class, $atoms[5]);
     }
 
     #[Test]
@@ -61,7 +61,7 @@ class YrnkScheduleParserTest extends TestCase
         // definitions (YrnkParser / YrnkEvaluator).
         $schedule = $this->parser->parse(['days' => ['name-defined-nowhere'], 'times' => ['10:00']], self::utc());
 
-        $this->assertInstanceOf(CustomRef::class, $schedule->days?->atoms[0] ?? null);
+        $this->assertInstanceOf(DateSetRef::class, $schedule->days?->atoms[0] ?? null);
     }
 
     #[Test]

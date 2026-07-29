@@ -4,7 +4,7 @@ namespace Yarunoka\Tests\Unit\Calendar;
 
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidValueException;
@@ -117,15 +117,24 @@ class CalendarNodesTest extends TestCase
     }
 
     #[Test]
-    public function a_custom_entry_may_be_a_name_too_and_follows_the_same_rule(): void
+    public function a_reserved_word_is_rejected_as_a_name_too(): void
     {
-        $calendar = new YrnkCalendar(custom: ['garbage-day' => 'garbage-days']);
-
-        $this->assertSame('garbage-days', $calendar->custom['garbage-day']);
-
+        // All names share one namespace, so a name written where a date
+        // list is expected is held to the same spelling rule as a
+        // date_sets key.
         $this->expectException(InvalidValueException::class);
 
-        new YrnkCalendar(custom: ['garbage-day' => '2026-01-01']);
+        new YrnkCalendar(holidays: 'mon');
+    }
+
+    #[Test]
+    public function a_date_sets_entry_carries_its_dates(): void
+    {
+        $calendar = new YrnkCalendar(
+            dateSets: ['garbage-day' => YrnkDateSet::ofDates(['2026-07-03'], self::utc())],
+        );
+
+        $this->assertSame('2026-07-03', $calendar->dateSets['garbage-day']->dates[0]->format('Y-m-d'));
     }
 
 
@@ -213,12 +222,12 @@ class CalendarNodesTest extends TestCase
             businessDays: null,
             workweek: null,
             businessHours: null,
-            custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
+            dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
         );
 
         $this->assertSame('yasumi-jp', $calendar->holidays);
         $this->assertNull($calendar->businessHolidays);
-        $this->assertArrayHasKey('founding-day', $calendar->custom);
+        $this->assertArrayHasKey('founding-day', $calendar->dateSets);
     }
 
     private static function utc(): DateTimeZone

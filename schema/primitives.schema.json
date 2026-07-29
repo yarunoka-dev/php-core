@@ -2,8 +2,29 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://yarunoka.dev/schema/1.0/primitives.schema.json",
     "title": "Yrnk primitives",
-    "description": "Primitive value vocabulary shared by the calendar and schedule schemas: day names, wall-clock times, and time windows. Times are zero-padded HH:MM; '24:00' is a token allowed only as the end of a window. A window is a half-open interval [start, end) and must satisfy start < end (validated by implementations, not expressible here).",
+    "description": "Primitive value vocabulary shared by the calendar and schedule schemas: names, day names, wall-clock times, and time windows. A name denotes a date set; the document either defines it under 'calendar.date_sets' or declares it under 'resolvers' and leaves it to a host binding, and the two share one namespace. A name must therefore not be spelled like a reserved word or like a literal (digits only, time-shaped, date-shaped). Times are zero-padded HH:MM; '24:00' is a token allowed only as the end of a window. A window is a half-open interval [start, end) and must satisfy start < end (validated by implementations, not expressible here).",
     "$defs": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"enum": [
+                    "weekday", "weekend", "holiday", "business_day", "business_holiday", "business_hour",
+                    "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+                    "1st", "2nd", "3rd", "4th", "5th", "last",
+                    "last_day_of_month",
+                    "not", "prev", "next", "or_same",
+                    "hour", "minute", "second", "day",
+                    "version", "timezone", "resolvers", "calendar", "schedules",
+                    "years", "months", "days", "shift", "if", "times", "allday", "every", "between", "from", "until",
+                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "date_sets"
+                ]}},
+                {"not": {"pattern": "^\\d+$"}},
+                {"not": {"pattern": "^\\d{2}:\\d{2}$"}},
+                {"not": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}
+            ]
+        },
         "dayName": {"enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]},
         "time": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
         "timeOrEndOfDay": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^(([01]\\d|2[0-3]):[0-5]\\d|24:00)$"},

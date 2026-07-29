@@ -64,7 +64,7 @@ class RoundTripTest extends TestCase
                     'business_days' => [],
                     'workweek' => ['tue', 'wed', 'thu', 'fri', 'sat'],
                     'business_hours' => [['09:00', '12:00'], ['13:00', '18:00']],
-                    'custom' => ['founding-day' => ['2026-10-01']],
+                    'date_sets' => ['founding-day' => ['2026-10-01']],
                 ],
                 'schedules' => [
                     ['days' => [25], 'shift' => ['prev', 'or_same', 'business_day'], 'times' => ['10:00']],
@@ -76,10 +76,12 @@ class RoundTripTest extends TestCase
                 'timezone' => 'Asia/Tokyo',
                 'calendar' => [
                     'holidays' => 'yasumi-jp',
-                    'custom' => ['garbage-day' => 'garbage-days'],
+                    'business_holidays' => 'garbage-days',
+                    'date_sets' => ['founding-day' => ['2026-10-01']],
                 ],
                 'schedules' => [
                     ['days' => ['holiday'], 'times' => ['08:00']],
+                    ['days' => ['garbage-days', 'founding-day'], 'allday' => true],
                 ],
             ]],
             'notation preservation (times order and every unit)' => [[
@@ -161,7 +163,7 @@ class RoundTripTest extends TestCase
             '1st' => [['1st', 'fri']], '2nd' => [['2nd', 'fri']], '3rd' => [['3rd', 'fri']],
             '4th' => [['4th', 'fri']], '5th' => [['5th', 'fri']], 'last' => [['last', 'fri']],
             'end of month' => ['last_day_of_month'],
-            'a custom name' => ['fête-nationale'],
+            'a date set name' => ['fête-nationale'],
         ];
     }
 
@@ -273,7 +275,7 @@ class RoundTripTest extends TestCase
             'workweek' => [['workweek' => ['tue', 'wed', 'thu', 'fri', 'sat']]],
             'business_hours' => [['business_hours' => [['09:00', '12:00'], ['13:00', '18:00']]]],
             'a resolver name' => [['holidays' => 'yasumi-jp']],
-            'several custom entries' => [['custom' => ['founding-day' => ['2026-10-01'], 'garbage-day' => ['2026-07-03', '2026-07-17']]]],
+            'several date_sets entries' => [['date_sets' => ['founding-day' => ['2026-10-01'], 'garbage-day' => ['2026-07-03', '2026-07-17']]]],
         ];
     }
 
@@ -284,7 +286,7 @@ class RoundTripTest extends TestCase
         $raw = [
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
-            'calendar' => ['custom' => ['anniversary' => ['2026-10-01']]],
+            'calendar' => ['date_sets' => ['anniversary' => ['2026-10-01']]],
             'schedules' => [['days' => ['anniversary'], 'times' => ['09:00']]],
         ];
         $parser = new YrnkParser();

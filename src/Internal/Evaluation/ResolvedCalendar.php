@@ -5,7 +5,7 @@ namespace Yarunoka\Internal\Evaluation;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
@@ -54,12 +54,13 @@ final class ResolvedCalendar
         return isset($this->dateSet('business_days', $this->calendar->businessDays, $date)[$date->format('Y-m-d')]);
     }
 
-    public function customContains(string $name, YrnkDate $date): bool
+    public function nameContains(string $name, YrnkDate $date): bool
     {
-        $definition = $this->calendar->custom[$name]
-            ?? throw new UndefinedNameException("Undefined name: {$name}");
+        if (! isset($this->calendar->dateSets[$name]) && ! $this->calendar->resolverContainer->has($name)) {
+            throw new UndefinedNameException("Undefined name: {$name}");
+        }
 
-        return isset($this->dateSet("custom.{$name}", $definition, $date)[$date->format('Y-m-d')]);
+        return isset($this->named($name, $date)[$date->format('Y-m-d')]);
     }
 
     public function isInWorkweek(YrnkDayName $dayOfWeek): bool
@@ -90,14 +91,14 @@ final class ResolvedCalendar
 
     /**
      * The set to consult for this day. A written date list stands whole,
-     * so it is built once; a resolved list is asked for the year the day
-     * falls in, since that is the granularity the question reaches.
+     * so it is built once; a name is resolved under its own key, so two
+     * positions naming the same set consult one resolution.
      *
      * @return array<string, true>
      */
     private function dateSet(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string|null $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|string|null $definition,
         YrnkDate $date,
     ): array {
         if ($definition === null) {
@@ -106,36 +107,58 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition is required");
         }
 
-        $scope = is_string($definition) ? (int) $date->format('Y') : 'all';
+        if (is_string($definition)) {
+            return $this->named($definition, $date);
+        }
 
-        return $this->sets[$key][$scope] ??= $this->resolve($key, $definition, $scope);
+        return $this->sets[$key]['all'] ??= self::setOfDates($definition);
+    }
+
+    /**
+     * What a name denotes. One namespace with two ways of resolving: an
+     * entry of date_sets carries the list itself, and anything else is
+     * left to the binding the host supplies. A written list stands whole;
+     * a resolver is asked for the year the day falls in, since that is
+     * the granularity the question reaches.
+     *
+     * @return array<string, true>
+     */
+    private function named(string $name, YrnkDate $date): array
+    {
+        $entry = $this->calendar->dateSets[$name] ?? null;
+
+        if ($entry !== null) {
+            return $this->sets[$name]['all'] ??= self::setOfDates($entry);
+        }
+
+        $resolver = $this->calendar->resolverContainer->get($name)
+            ?? throw new UnregisteredResolverException("No resolver is bound to this name: {$name}");
+
+        $scope = (int) $date->format('Y');
+
+        if (isset($this->sets[$name][$scope])) {
+            return $this->sets[$name][$scope];
+        }
+
+        $from = new YrnkDate("{$scope}-01-01", $this->timezone);
+        $through = new YrnkDate("{$scope}-12-31", $this->timezone);
+
+        return $this->sets[$name][$scope] = $this->dateSetOf($resolver->resolve($from, $through), $name);
     }
 
     /**
      * @return array<string, true>
      */
-    private function resolve(
-        string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string $definition,
-        int|string $scope,
+    private static function setOfDates(
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkDateSet $definition,
     ): array {
-        if (! is_string($definition)) {
-            $set = [];
+        $set = [];
 
-            foreach ($definition->dates as $date) {
-                $set[$date->format('Y-m-d')] = true;
-            }
-
-            return $set;
+        foreach ($definition->dates as $date) {
+            $set[$date->format('Y-m-d')] = true;
         }
 
-        $resolver = $this->calendar->resolverContainer->get($definition)
-            ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition}");
-
-        $from = new YrnkDate("{$scope}-01-01", $this->timezone);
-        $through = new YrnkDate("{$scope}-12-31", $this->timezone);
-
-        return $this->dateSetOf($resolver->resolve($from, $through), $key);
+        return $set;
     }
 
     /**

@@ -5,9 +5,9 @@ namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
@@ -43,10 +43,10 @@ class DayMatcherTest extends TestCase
     #[Test]
     public function a_custom_reference_looks_up_the_defined_set(): void
     {
-        $matcher = $this->matcher(custom: ['founding-day' => ['2026-10-01']]);
+        $matcher = $this->matcher(dateSets: ['founding-day' => ['2026-10-01']]);
 
-        $this->assertTrue($matcher->matches(new CustomRef('founding-day'), $this->day('2026-10-01')));
-        $this->assertFalse($matcher->matches(new CustomRef('founding-day'), $this->day('2026-10-02')));
+        $this->assertTrue($matcher->matches(new DateSetRef('founding-day'), $this->day('2026-10-01')));
+        $this->assertFalse($matcher->matches(new DateSetRef('founding-day'), $this->day('2026-10-02')));
     }
 
     #[Test]
@@ -95,21 +95,21 @@ class DayMatcherTest extends TestCase
      * @param  list<string>  $holidays
      * @param  list<string>  $businessHolidays
      * @param  list<string>  $businessDays
-     * @param  array<string, list<string>>  $custom
+     * @param  array<string, list<string>>  $dateSets
      */
     private function matcher(
         array $holidays = [],
         array $businessHolidays = [],
         array $businessDays = [],
-        array $custom = [],
+        array $dateSets = [],
     ): DayMatcher {
         return new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
             holidays: YrnkHolidays::ofDates($holidays, self::utc()),
             businessHolidays: YrnkBusinessHolidays::ofDates($businessHolidays, self::utc()),
             businessDays: YrnkBusinessDays::ofDates($businessDays, self::utc()),
-            custom: array_map(
-                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
-                $custom,
+            dateSets: array_map(
+                static fn(array $dates): YrnkDateSet => YrnkDateSet::ofDates($dates, self::utc()),
+                $dateSets,
             ),
         ), timezone: self::utc()));
     }

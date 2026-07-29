@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://yarunoka.dev/schema/1.0/schedule.schema.json",
     "title": "Yrnk schedule",
-    "description": "A single schedule: a pure expression that describes a set of points in time. Fields are the date axes (years, months, days), the date modifiers (shift, if), the time part (exactly one of times, allday, or every), and the validity range (from, until). A schedule refers to calendar vocabulary and custom names by name only; it carries no definitions of its own.",
+    "description": "A single schedule: a pure expression that describes a set of points in time. Fields are the date axes (years, months, days), the date modifiers (shift, if), the time part (exactly one of times, allday, or every), and the validity range (from, until). A schedule refers to calendar vocabulary and date sets by name only; it carries no definitions of its own.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
@@ -100,9 +100,9 @@
                     "1st", "2nd", "3rd", "4th", "5th", "last",
                     "not", "prev", "next", "or_same",
                     "hour", "minute", "second", "day",
-                    "version", "timezone", "calendar", "schedules",
+                    "version", "timezone", "resolvers", "calendar", "schedules",
                     "years", "months", "days", "shift", "if", "times", "allday", "every", "between", "from", "until",
-                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "custom"
+                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "date_sets"
                 ]}},
                 {"not": {"pattern": "^\\d+$"}},
                 {"not": {"pattern": "^\\d{2}:\\d{2}$"}},

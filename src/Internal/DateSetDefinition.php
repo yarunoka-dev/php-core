@@ -9,7 +9,7 @@ use DateTimeZone;
 
 /**
  * The shared implementation of a written date list. The public types with
- * meaning (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
+ * meaning (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkDateSet)
  * use this. A trait so that the types stay separate while the
  * implementation is shared; the public contract lives on each class.
  *

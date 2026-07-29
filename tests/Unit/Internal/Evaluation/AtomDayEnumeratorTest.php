@@ -5,10 +5,10 @@ namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
@@ -108,12 +108,12 @@ class AtomDayEnumeratorTest extends TestCase
     #[Test]
     public function a_custom_reference_enumerates_only_that_month_in_ascending_order(): void
     {
-        $enumerator = $this->enumerator(custom: [
+        $enumerator = $this->enumerator(dateSets: [
             'anniversary' => ['2026-07-20', '2026-07-05', '2026-08-01', '2025-07-10'],
         ]);
 
-        $this->assertSame([5, 20], $enumerator->daysIn(new CustomRef('anniversary'), 2026, 7));
-        $this->assertSame([], $enumerator->daysIn(new CustomRef('anniversary'), 2026, 9));
+        $this->assertSame([5, 20], $enumerator->daysIn(new DateSetRef('anniversary'), 2026, 7));
+        $this->assertSame([], $enumerator->daysIn(new DateSetRef('anniversary'), 2026, 9));
     }
 
     // ---- calendar vocabulary ----
@@ -176,13 +176,13 @@ class AtomDayEnumeratorTest extends TestCase
      * @param  list<string>  $holidays
      * @param  list<string>  $businessDays
      * @param  list<string>|null  $workweek
-     * @param  array<string, list<string>>  $custom
+     * @param  array<string, list<string>>  $dateSets
      */
     private function enumerator(
         array $holidays = [],
         array $businessDays = [],
         ?array $workweek = null,
-        array $custom = [],
+        array $dateSets = [],
     ): AtomDayEnumerator {
         return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
             holidays: YrnkHolidays::ofDates($holidays, self::utc()),
@@ -191,9 +191,9 @@ class AtomDayEnumeratorTest extends TestCase
             workweek: $workweek === null ? null : new YrnkWorkweek(
                 array_map(static fn(string $day): YrnkDayName => YrnkDayName::from($day), $workweek),
             ),
-            custom: array_map(
-                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
-                $custom,
+            dateSets: array_map(
+                static fn(array $dates): YrnkDateSet => YrnkDateSet::ofDates($dates, self::utc()),
+                $dateSets,
             ),
         ), timezone: self::utc())), self::utc());
     }
