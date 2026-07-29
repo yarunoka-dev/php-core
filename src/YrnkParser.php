@@ -24,7 +24,7 @@ final class YrnkParser
     private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
 
     public function __construct(
-        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+        private readonly YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
         private readonly YrnkScheduleParser $scheduleParser = new YrnkScheduleParser(),
         private readonly YrnkCalendarParser $calendarParser = new YrnkCalendarParser(),
     ) {}
@@ -54,7 +54,7 @@ final class YrnkParser
         // points on the document's clock, so neither can be parsed
         // without it.
         $timezone = $this->parseTimezone($input);
-        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolvers);
+        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolverContainer);
 
         try {
             $document = new Yrnk(

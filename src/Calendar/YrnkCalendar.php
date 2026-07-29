@@ -38,7 +38,7 @@ final readonly class YrnkCalendar
         public ?YrnkWorkweek $workweek = null,
         public ?YrnkBusinessHours $businessHours = null,
         public array $custom = [],
-        public YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+        public YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
     ) {
         foreach ([$holidays, $businessHolidays, $businessDays, ...array_values($custom)] as $definition) {
             if (is_string($definition)) {

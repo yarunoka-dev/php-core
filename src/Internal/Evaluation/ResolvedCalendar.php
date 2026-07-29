@@ -129,7 +129,7 @@ final class ResolvedCalendar
             return $set;
         }
 
-        $resolver = $this->calendar->resolvers->get($definition)
+        $resolver = $this->calendar->resolverContainer->get($definition)
             ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition}");
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);

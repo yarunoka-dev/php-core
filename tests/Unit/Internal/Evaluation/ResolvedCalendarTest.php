@@ -104,7 +104,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'counting',
-                resolvers: Bindings::of(['counting' => $resolver]),
+                resolverContainer: Bindings::of(['counting' => $resolver]),
             ),
             timezone: self::utc(),
         );
@@ -136,7 +136,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'broken',
-                resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
+                resolverContainer: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
             ),
             timezone: self::utc(),
         );
@@ -162,7 +162,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'jp',
-                resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
+                resolverContainer: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
             ),
             timezone: self::utc(),
         );

@@ -50,7 +50,7 @@ final class ReferenceChecker
         }
 
         foreach (self::resolverReferences($calendar) as $context => $name) {
-            if (! $calendar->resolvers->has($name)) {
+            if (! $calendar->resolverContainer->has($name)) {
                 throw new UnregisteredResolverException("Unregistered resolver name ({$context}): {$name}");
             }
         }

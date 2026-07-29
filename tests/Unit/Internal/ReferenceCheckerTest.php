@@ -29,7 +29,7 @@ class ReferenceCheckerTest extends TestCase
             new YrnkCalendar(
                 holidays: 'yasumi-jp',
                 custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
-                resolvers: Bindings::of(['yasumi-jp' => Bindings::returning([])]),
+                resolverContainer: Bindings::of(['yasumi-jp' => Bindings::returning([])]),
             ),
         );
 

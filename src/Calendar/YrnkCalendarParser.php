@@ -24,7 +24,7 @@ final class YrnkCalendarParser
     public function parse(
         mixed $raw,
         DateTimeZone $timezone,
-        YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+        YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
     ): YrnkCalendar {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
@@ -52,7 +52,7 @@ final class YrnkCalendarParser
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
                 custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom'], $timezone) : [],
-                resolvers: $resolvers,
+                resolverContainer: $resolverContainer,
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
