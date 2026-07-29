@@ -57,13 +57,13 @@ class DayAtomNodesTest extends TestCase
     }
 
     #[Test]
-    public function custom_ref_holds_the_reference_name(): void
+    public function a_date_set_ref_holds_the_name(): void
     {
         $this->assertSame('fête-nationale', (new DateSetRef('fête-nationale'))->name);
     }
 
     #[Test]
-    public function custom_ref_rejects_an_empty_name(): void
+    public function a_date_set_ref_rejects_an_empty_name(): void
     {
         $this->expectException(InvalidValueException::class);
 
@@ -71,7 +71,7 @@ class DayAtomNodesTest extends TestCase
     }
 
     #[Test]
-    public function custom_ref_rejects_a_whitespace_only_name(): void
+    public function a_date_set_ref_rejects_a_whitespace_only_name(): void
     {
         $this->expectException(InvalidValueException::class);
 

@@ -57,6 +57,28 @@ final class ReferenceChecker
     }
 
     /**
+     * Every name the schedules and the calendar write. The holder of a
+     * whole document reads this to check its declarations against what it
+     * actually uses; nothing here needs a binding to be enumerated, which
+     * is what lets a document be read before its bindings exist.
+     *
+     * @param  iterable<YrnkSchedule>  $schedules
+     * @return iterable<string, string> context label → name
+     */
+    public static function namesUsedIn(iterable $schedules, YrnkCalendar $calendar): iterable
+    {
+        yield from self::nameReferences($calendar);
+
+        foreach ($schedules as $schedule) {
+            foreach (self::atomsOf($schedule) as $atom) {
+                if ($atom instanceof DateSetRef) {
+                    yield 'days' => $atom->name;
+                }
+            }
+        }
+    }
+
+    /**
      * A name denotes a date set, resolved either inside the document (an
      * entry of date_sets) or outside it (a binding the host supplies).
      * Which of the two makes no difference to where the name may be

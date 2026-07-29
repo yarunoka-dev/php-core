@@ -92,7 +92,7 @@ class YrnkCalendarParserTest extends TestCase
     }
 
     #[Test]
-    public function rejects_a_single_date_string_in_custom_too(): void
+    public function rejects_a_single_date_string_in_a_date_sets_value_too(): void
     {
         $this->expectException(InvalidYrnkException::class);
 
@@ -108,7 +108,7 @@ class YrnkCalendarParserTest extends TestCase
     }
 
     #[Test]
-    public function rejects_a_reserved_word_as_a_custom_name(): void
+    public function rejects_a_reserved_word_as_a_date_sets_name(): void
     {
         $this->expectException(ReservedNameException::class);
 

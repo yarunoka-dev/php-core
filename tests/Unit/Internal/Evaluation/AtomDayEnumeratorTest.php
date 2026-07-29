@@ -103,10 +103,10 @@ class AtomDayEnumeratorTest extends TestCase
         $this->assertSame([29], $enumerator->daysIn(new LastDayOfMonth(), 2024, 2));
     }
 
-    // ---- custom references ----
+    // ---- names ----
 
     #[Test]
-    public function a_custom_reference_enumerates_only_that_month_in_ascending_order(): void
+    public function a_name_enumerates_only_that_month_in_ascending_order(): void
     {
         $enumerator = $this->enumerator(dateSets: [
             'anniversary' => ['2026-07-20', '2026-07-05', '2026-08-01', '2025-07-10'],

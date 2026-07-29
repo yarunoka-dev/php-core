@@ -195,7 +195,7 @@ class MatchesTest extends TestCase
     }
 
     #[Test]
-    public function hits_the_date_set_of_a_custom_definition(): void
+    public function hits_the_date_set_a_name_denotes(): void
     {
         $evaluator = $this->evaluator(dateSets: ['founding-day' => ['2026-10-01']]);
         $schedule = $this->schedule(['days' => ['founding-day'], 'times' => ['10:00']]);
@@ -377,7 +377,7 @@ class MatchesTest extends TestCase
     // ---- the top-level OR and errors ----
 
     #[Test]
-    public function an_undefined_custom_reference_in_a_hand_composed_tree_is_validated_before_evaluation(): void
+    public function an_undefined_name_in_a_hand_composed_tree_is_validated_before_evaluation(): void
     {
         $evaluator = $this->evaluator();
         $schedule = $this->schedule(['days' => ['name-defined-nowhere'], 'times' => ['10:00']]);

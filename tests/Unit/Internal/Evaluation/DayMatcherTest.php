@@ -41,7 +41,7 @@ class DayMatcherTest extends TestCase
     }
 
     #[Test]
-    public function a_custom_reference_looks_up_the_defined_set(): void
+    public function a_name_looks_up_the_defined_set(): void
     {
         $matcher = $this->matcher(dateSets: ['founding-day' => ['2026-10-01']]);
 

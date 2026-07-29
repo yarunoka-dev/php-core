@@ -61,7 +61,7 @@ class DayAtomParserTest extends TestCase
     }
 
     #[Test]
-    public function an_unknown_word_becomes_a_custom_ref(): void
+    public function an_unknown_word_becomes_a_date_set_ref(): void
     {
         $this->assertEquals(new DateSetRef('fête-nationale'), DayAtomParser::parse('fête-nationale'));
     }

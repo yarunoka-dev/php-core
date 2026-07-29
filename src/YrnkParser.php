@@ -5,7 +5,10 @@ namespace Yarunoka;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
+use Yarunoka\Exceptions\UndefinedNameException;
+use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Calendar\YrnkCalendarParser;
+use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Schedule\YrnkScheduleParser;
@@ -21,7 +24,7 @@ use Exception;
  */
 final class YrnkParser
 {
-    private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
+    private const array KNOWN_KEYS = ['version', 'timezone', 'resolvers', 'calendar', 'schedules'];
 
     public function __construct(
         private readonly YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
@@ -62,14 +65,95 @@ final class YrnkParser
                 timezone: $timezone,
                 calendar: $calendar,
                 schedules: $this->parseSchedules($input, $timezone),
+                resolvers: $this->parseResolvers($input),
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
         }
 
+        // Before the references are checked, so that a name the document
+        // never declared is reported as that rather than as one nothing
+        // resolves.
+        self::ensureDeclarationsHold($document);
+
         ReferenceChecker::ensureResolvable($document->schedules, $calendar);
 
         return $document;
+    }
+
+    /**
+     * @param  array<mixed>  $input
+     * @return list<string>
+     */
+    private function parseResolvers(array $input): array
+    {
+        if (! array_key_exists('resolvers', $input)) {
+            return [];
+        }
+
+        $raw = $input['resolvers'];
+
+        if (! is_array($raw) || ! array_is_list($raw)) {
+            throw new InvalidYrnkException('resolvers must be a list of names');
+        }
+
+        if ($raw === []) {
+            // "requires nothing" has one spelling, and it is the absence of
+            // the key.
+            throw new InvalidYrnkException('resolvers cannot be empty (a document that leaves nothing to its host omits the key)');
+        }
+
+        foreach ($raw as $name) {
+            if (! is_string($name)) {
+                throw new InvalidYrnkException('resolvers must be a list of names');
+            }
+
+            Name::ensureUsable($name);
+        }
+
+        /** @var list<string> */
+        return $raw;
+    }
+
+    /**
+     * The three things a declaration has to satisfy. Completeness is what
+     * makes the list worth reading: a host prepares exactly what it says,
+     * so a name used and left undefined has to be in it, and a name cannot
+     * be declared and defined at once. The bindings are checked whole, so
+     * a host missing several learns all of them at once instead of one per
+     * attempt.
+     */
+    private static function ensureDeclarationsHold(Yrnk $document): void
+    {
+        $calendar = $document->calendar;
+        $declared = array_fill_keys($document->resolvers, true);
+
+        foreach (array_keys($calendar->dateSets) as $name) {
+            if (isset($declared[$name])) {
+                throw new InvalidYrnkException(
+                    "A name is either defined or left to the host, never both: {$name}",
+                );
+            }
+        }
+
+        foreach (ReferenceChecker::namesUsedIn($document->schedules, $calendar) as $context => $name) {
+            if (! isset($calendar->dateSets[$name]) && ! isset($declared[$name])) {
+                throw new UndefinedNameException(
+                    "Undefined name ({$context}): {$name} (define it under date_sets, or declare it under resolvers)",
+                );
+            }
+        }
+
+        $unbound = array_values(array_filter(
+            $document->resolvers,
+            static fn(string $name): bool => ! $calendar->resolverContainer->has($name),
+        ));
+
+        if ($unbound !== []) {
+            throw new UnregisteredResolverException(
+                'No resolver is bound to these declared names: ' . implode(', ', $unbound),
+            );
+        }
     }
 
     /**

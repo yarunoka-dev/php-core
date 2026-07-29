@@ -94,6 +94,7 @@ class SchemaConformanceTest extends TestCase
             'the holiday-skipping if' => [self::doc(
                 '{"days": ["mon"], "if": ["not", "holiday"], "times": ["07:30"]}',
                 calendar: '{"holidays": "yasumi-jp"}',
+                resolvers: '["yasumi-jp"]',
             )],
             'the day before the end of the month (if without days)' => [self::doc('{"if": ["next", "last_day_of_month"], "times": ["09:00"]}')],
             'an allday on a specific date' => [self::doc('{"years": [2043], "months": [6], "days": [15], "allday": true}')],
@@ -112,6 +113,11 @@ class SchemaConformanceTest extends TestCase
             )],
             'a resolver name written in days' => [self::doc(
                 '{"days": ["yasumi-jp"], "times": ["09:00"]}',
+                resolvers: '["yasumi-jp"]',
+            )],
+            'a declared name that is never used' => [self::doc(
+                '{"times": ["09:00"]}',
+                resolvers: '["yasumi-jp"]',
             )],
             'a timezone with DST' => ['{"version": "1.0", "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
             'the per-unit maximum of every (hours)' => [self::doc('{"times": {"every": [24, "hour"]}}')],
@@ -232,6 +238,10 @@ class SchemaConformanceTest extends TestCase
             'the interval every without from' => [self::doc('{"every": [36, "hour"]}')],
             'the reserved word day as a date_sets name' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {"day": ["2026-01-01"]}}')],
             'the reserved word from as a date_sets name' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {"from": ["2026-01-01"]}}')],
+            'an empty declaration list' => [self::doc('{"times": ["09:00"]}', resolvers: '[]')],
+            'a duplicate declaration' => [self::doc('{"times": ["09:00"]}', resolvers: '["a-name", "a-name"]')],
+            'a reserved word as a declared name' => [self::doc('{"times": ["09:00"]}', resolvers: '["mon"]')],
+            'a declaration written as an object' => [self::doc('{"times": ["09:00"]}', resolvers: '{"a-name": true}')],
         ];
     }
 
@@ -253,7 +263,19 @@ class SchemaConformanceTest extends TestCase
             'business_hour without the business_hours definition' => [self::doc(
                 '{"times": {"every": [1, "hour"], "between": "business_hour"}}',
             )],
-            'an unregistered resolver name' => [self::doc('{"times": ["09:00"]}', calendar: '{"holidays": "unknown-resolver"}')],
+            'a used name that is neither defined nor declared' => [self::doc(
+                '{"times": ["09:00"]}',
+                calendar: '{"holidays": "unknown-resolver"}',
+            )],
+            'a declared name the host never bound' => [self::doc(
+                '{"times": ["09:00"]}',
+                resolvers: '["unknown-resolver"]',
+            )],
+            'a name that is both defined and declared' => [self::doc(
+                '{"times": ["09:00"]}',
+                calendar: '{"date_sets": {"founding-day": ["2026-10-01"]}}',
+                resolvers: '["founding-day"]',
+            )],
             'a timezone that does not exist' => ['{"version": "1.0", "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
             'a fixed-offset timezone' => ['{"version": "1.0", "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
             'a timezone abbreviation' => ['{"version": "1.0", "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
@@ -276,11 +298,13 @@ class SchemaConformanceTest extends TestCase
 
     // ---- helpers ----
 
-    private static function doc(string $scheduleJson, ?string $calendar = null): string
+    private static function doc(string $scheduleJson, ?string $calendar = null, ?string $resolvers = null): string
     {
+        $resolversPart = $resolvers === null ? '' : ', "resolvers": ' . $resolvers;
         $calendarPart = $calendar === null ? '' : ', "calendar": ' . $calendar;
 
-        return '{"version": "1.0", "timezone": "Asia/Tokyo"' . $calendarPart . ', "schedules": [' . $scheduleJson . ']}';
+        return '{"version": "1.0", "timezone": "Asia/Tokyo"' . $resolversPart . $calendarPart
+            . ', "schedules": [' . $scheduleJson . ']}';
     }
 
     private function parser(): YrnkParser

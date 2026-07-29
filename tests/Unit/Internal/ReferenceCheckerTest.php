@@ -37,7 +37,7 @@ class ReferenceCheckerTest extends TestCase
     }
 
     #[Test]
-    public function an_undefined_custom_reference_raises(): void
+    public function an_undefined_name_raises(): void
     {
         $this->expectException(UndefinedNameException::class);
 

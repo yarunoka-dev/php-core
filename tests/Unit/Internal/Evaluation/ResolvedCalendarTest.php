@@ -41,7 +41,7 @@ class ResolvedCalendarTest extends TestCase
     }
 
     #[Test]
-    public function contains_for_custom_looks_up_the_set_per_name(): void
+    public function contains_for_a_name_looks_up_the_set_per_name(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
             dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
@@ -52,7 +52,7 @@ class ResolvedCalendarTest extends TestCase
     }
 
     #[Test]
-    public function an_undefined_custom_name_raises(): void
+    public function an_undefined_name_raises(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 

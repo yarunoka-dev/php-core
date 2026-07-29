@@ -8,9 +8,7 @@ use Yarunoka\Schedule\YrnkScheduleBuilder;
 /**
  * The mirror image of YrnkParser. Yrnk → a Yrnk document (an array /
  * JSON). Round-tripping is the identity: building a Yrnk parsed from the
- * DSL yields the original array representation (the one exception is a
- * hand-composed Yrnk containing Closures, which are folded into
- * snapshots).
+ * DSL yields the original array representation.
  */
 final class YrnkBuilder
 {
@@ -28,6 +26,12 @@ final class YrnkBuilder
             'version' => $document->version,
             'timezone' => $document->timezone->getName(),
         ];
+
+        // A document that leaves nothing to its host omits the key rather
+        // than writing an empty list.
+        if ($document->resolvers !== []) {
+            $raw['resolvers'] = $document->resolvers;
+        }
 
         $calendar = $this->calendarBuilder->build($document->calendar, $document->timezone);
 

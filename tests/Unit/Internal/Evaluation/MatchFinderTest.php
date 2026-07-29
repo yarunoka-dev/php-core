@@ -284,7 +284,7 @@ class MatchFinderTest extends TestCase
     #[Test]
     public function a_shift_landing_searches_up_to_exactly_the_366_day_contract(): void
     {
-        // A sparse custom landing condition creates the distance.
+        // A sparse named landing condition creates the distance.
         // 2027-06-16 is exactly 366 days from the 2026-06-15 base day.
         $lands = $this->finder(dateSets: ['desk-open-day' => ['2027-06-16']]);
         $schedule = $this->schedule([

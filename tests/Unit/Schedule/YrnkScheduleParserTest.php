@@ -55,7 +55,7 @@ class YrnkScheduleParserTest extends TestCase
     }
 
     #[Test]
-    public function whether_a_custom_reference_exists_is_not_schedule_parsers_concern(): void
+    public function whether_a_name_resolves_is_not_schedule_parsers_concern(): void
     {
         // Resolving references is the job of the holders of the
         // definitions (YrnkParser / YrnkEvaluator).
@@ -101,7 +101,7 @@ class YrnkScheduleParserTest extends TestCase
     #[Test]
     public function rejects_a_date_literal_as_a_days_atom(): void
     {
-        // A specific date is given a name under a custom definition and
+        // A specific date is given a name under date_sets and
         // referred to.
         $this->expectException(InvalidYrnkException::class);
 

@@ -74,6 +74,7 @@ class RoundTripTest extends TestCase
             'resolver name references' => [[
                 'version' => '1.0',
                 'timezone' => 'Asia/Tokyo',
+                'resolvers' => ['yasumi-jp', 'garbage-days'],
                 'calendar' => [
                     'holidays' => 'yasumi-jp',
                     'business_holidays' => 'garbage-days',
@@ -247,14 +248,16 @@ class RoundTripTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $calendar
+     * @param  list<string>  $resolvers
      */
     #[Test]
     #[DataProvider('definitionsForms')]
-    public function a_definitions_round_trip_is_the_identity(array $calendar): void
+    public function a_definitions_round_trip_is_the_identity(array $calendar, array $resolvers = []): void
     {
         $raw = [
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
+            ...($resolvers === [] ? [] : ['resolvers' => $resolvers]),
             'calendar' => $calendar,
             'schedules' => [['times' => ['09:00']]],
         ];
@@ -264,7 +267,7 @@ class RoundTripTest extends TestCase
     }
 
     /**
-     * @return array<string, list<array<string, mixed>>>
+     * @return array<string, list<array<string, mixed>|list<string>>>
      */
     public static function definitionsForms(): array
     {
@@ -274,7 +277,7 @@ class RoundTripTest extends TestCase
             'business_days' => [['business_days' => ['2026-07-11']]],
             'workweek' => [['workweek' => ['tue', 'wed', 'thu', 'fri', 'sat']]],
             'business_hours' => [['business_hours' => [['09:00', '12:00'], ['13:00', '18:00']]]],
-            'a resolver name' => [['holidays' => 'yasumi-jp']],
+            'a resolver name' => [['holidays' => 'yasumi-jp'], ['yasumi-jp']],
             'several date_sets entries' => [['date_sets' => ['founding-day' => ['2026-10-01'], 'garbage-day' => ['2026-07-03', '2026-07-17']]]],
         ];
     }
