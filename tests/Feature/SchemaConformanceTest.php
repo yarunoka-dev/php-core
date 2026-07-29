@@ -119,6 +119,15 @@ class SchemaConformanceTest extends TestCase
                 '{"times": ["09:00"]}',
                 resolvers: '["yasumi-jp"]',
             )],
+            'the document model example of the specification' => ['{"version": "1.0", "timezone": "Asia/Tokyo", '
+                . '"resolvers": ["yasumi-jp"], '
+                . '"calendar": {"holidays": "yasumi-jp", "date_sets": {"founding-day": ["2026-10-01"]}}, '
+                . '"schedules": [{"days": ["founding-day"], "allday": true}]}'],
+            'an empty date_sets object' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {}}')],
+            'an empty list under date_sets' => [self::doc(
+                '{"days": ["no-such-day"], "times": ["09:00"]}',
+                calendar: '{"date_sets": {"no-such-day": []}}',
+            )],
             'a timezone with DST' => ['{"version": "1.0", "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
             'the per-unit maximum of every (hours)' => [self::doc('{"times": {"every": [24, "hour"]}}')],
             'the minute maximum of every' => [self::doc('{"times": {"every": [1440, "minute"]}}')],
