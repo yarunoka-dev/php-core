@@ -2,10 +2,12 @@
 
 namespace Yarunoka\Tests\Unit\Calendar;
 
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Tests\Support\CountingResolver;
@@ -19,13 +21,47 @@ use PHPUnit\Framework\TestCase;
 
 class CalendarNodesTest extends TestCase
 {
-    // ---- date set definitions (YrnkHolidays stands in for the four
+    // ---- the date set family ----
+
+    #[Test]
+    public function every_kind_of_date_set_is_a_date_set(): void
+    {
+        foreach ([
+            YrnkHolidaysDateSet::ofDates([], self::utc()),
+            YrnkBusinessHolidaysDateSet::ofDates([], self::utc()),
+            YrnkBusinessDaysDateSet::ofDates([], self::utc()),
+            YrnkDateSet::ofDates([], self::utc()),
+        ] as $definition) {
+            $this->assertInstanceOf(YrnkDateSet::class, $definition);
+        }
+    }
+
+    #[Test]
+    public function of_dates_hands_back_the_kind_it_was_called_on(): void
+    {
+        // What the built-in kinds are for: the shared implementation must
+        // not flatten them into the base, or a position could not tell one
+        // from another.
+        $this->assertInstanceOf(YrnkHolidaysDateSet::class, YrnkHolidaysDateSet::ofDates([], self::utc()));
+        $this->assertNotInstanceOf(YrnkHolidaysDateSet::class, YrnkDateSet::ofDates([], self::utc()));
+    }
+
+    #[Test]
+    public function a_built_in_slot_refuses_another_kind(): void
+    {
+        $this->expectException(\TypeError::class);
+
+        // @phpstan-ignore argument.type
+        new YrnkCalendar(holidays: YrnkBusinessDaysDateSet::ofDates([], self::utc()));
+    }
+
+    // ---- date set definitions (YrnkHolidaysDateSet stands in for the four
     // structurally identical types) ----
 
     #[Test]
     public function of_dates_holds_date_strings_as_a_list_of_local_dates(): void
     {
-        $holidays = YrnkHolidays::ofDates(['2026-01-01', '2026-01-12'], self::utc());
+        $holidays = YrnkHolidaysDateSet::ofDates(['2026-01-01', '2026-01-12'], self::utc());
 
         $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
@@ -38,13 +74,13 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        YrnkHolidays::ofDates(['2026-1-1'], self::utc());
+        YrnkHolidaysDateSet::ofDates(['2026-1-1'], self::utc());
     }
 
     #[Test]
     public function of_dates_takes_the_date_time_objects_an_application_already_holds(): void
     {
-        $holidays = YrnkHolidays::ofDates(
+        $holidays = YrnkHolidaysDateSet::ofDates(
             [new DateTimeImmutable('2026-01-01 09:30:15', self::utc()), '2026-01-12'],
             self::utc(),
         );
@@ -61,7 +97,7 @@ class CalendarNodesTest extends TestCase
         // The instant is 2026-01-02 08:00 in Tokyo, but a calendar carries
         // wall-clock dates and defines no zone of its own, so the day the
         // value spells is the day it means.
-        $holidays = YrnkHolidays::ofDates(
+        $holidays = YrnkHolidaysDateSet::ofDates(
             [new DateTimeImmutable('2026-01-01 23:00', self::utc())],
             new DateTimeZone('Asia/Tokyo'),
         );
@@ -72,7 +108,7 @@ class CalendarNodesTest extends TestCase
     #[Test]
     public function of_dates_puts_every_date_on_the_documents_clock(): void
     {
-        $holidays = YrnkHolidays::ofDates(
+        $holidays = YrnkHolidaysDateSet::ofDates(
             [new DateTimeImmutable('2026-01-01', self::utc()), '2026-01-02'],
             new DateTimeZone('Asia/Tokyo'),
         );
@@ -87,7 +123,7 @@ class CalendarNodesTest extends TestCase
     {
         $this->expectException(InvalidValueException::class);
 
-        YrnkHolidays::ofDates(['2026-01-01', new DateTimeImmutable('2026-01-01', self::utc())], self::utc());
+        YrnkHolidaysDateSet::ofDates(['2026-01-01', new DateTimeImmutable('2026-01-01', self::utc())], self::utc());
     }
 
     #[Test]

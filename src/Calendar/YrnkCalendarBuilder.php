@@ -58,18 +58,16 @@ final class YrnkCalendarBuilder
     /**
      * @return list<string>|string
      */
-    private static function buildDateSet(
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|string $definition,
-    ): array|string {
+    private static function buildDateSet(YrnkDateSet|string $definition): array|string
+    {
         return is_string($definition) ? $definition : self::datesOf($definition);
     }
 
     /**
      * @return list<string>
      */
-    private static function datesOf(
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkDateSet $definition,
-    ): array {
+    private static function datesOf(YrnkDateSet $definition): array
+    {
         return array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
             $definition->dates,

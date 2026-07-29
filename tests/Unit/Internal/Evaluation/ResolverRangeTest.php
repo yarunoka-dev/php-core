@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\YrnkDate;
@@ -65,7 +65,7 @@ class ResolverRangeTest extends TestCase
     public function a_fixed_date_list_is_not_affected_by_the_range(): void
     {
         $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::ofDates(['2026-01-01', '2027-01-01'], self::utc())),
+            new YrnkCalendar(holidays: YrnkHolidaysDateSet::ofDates(['2026-01-01', '2027-01-01'], self::utc())),
             timezone: self::utc(),
         );
 

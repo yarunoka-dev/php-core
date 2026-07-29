@@ -35,9 +35,9 @@ final readonly class YrnkCalendar
      * @param  array<string, YrnkDateSet>  $dateSets  Key name constraints (reserved words, literal shapes) are validated by the parser
      */
     public function __construct(
-        public YrnkHolidays|string|null $holidays = null,
-        public YrnkBusinessHolidays|string|null $businessHolidays = null,
-        public YrnkBusinessDays|string|null $businessDays = null,
+        public YrnkHolidaysDateSet|string|null $holidays = null,
+        public YrnkBusinessHolidaysDateSet|string|null $businessHolidays = null,
+        public YrnkBusinessDaysDateSet|string|null $businessDays = null,
         public ?YrnkWorkweek $workweek = null,
         public ?YrnkBusinessHours $businessHours = null,
         public array $dateSets = [],

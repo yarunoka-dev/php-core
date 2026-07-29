@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use DateTimeImmutable;
@@ -166,9 +166,9 @@ class EvaluationConsistencyTest extends TestCase
     {
         return new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
-                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
-                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                holidays: YrnkHolidaysDateSet::ofDates(['2026-07-20', '2026-08-11'], self::tz()),
+                businessHolidays: YrnkBusinessHolidaysDateSet::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDaysDateSet::ofDates([], self::tz()),
                 dateSets: ['anniversary' => YrnkDateSet::ofDates(['2026-07-05', '2026-08-20'], self::tz())],
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),

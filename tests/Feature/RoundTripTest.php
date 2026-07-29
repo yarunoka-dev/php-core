@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Feature;
 use Yarunoka\Schedule\YrnkScheduleBuilder;
 use Yarunoka\YrnkBuilder;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkParser;

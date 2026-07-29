@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
@@ -480,9 +480,9 @@ class MatchFinderTest extends TestCase
     private function finder(array $holidays = [], array $dateSets = []): MatchFinder
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
-            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
-            businessHolidays: YrnkBusinessHolidays::ofDates([], self::utc()),
-            businessDays: YrnkBusinessDays::ofDates([], self::utc()),
+            holidays: YrnkHolidaysDateSet::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidaysDateSet::ofDates([], self::utc()),
+            businessDays: YrnkBusinessDaysDateSet::ofDates([], self::utc()),
             dateSets: array_map(
                 static fn(array $dates): YrnkDateSet => YrnkDateSet::ofDates($dates, self::utc()),
                 $dateSets,

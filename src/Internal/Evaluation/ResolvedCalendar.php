@@ -2,11 +2,8 @@
 
 namespace Yarunoka\Internal\Evaluation;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
@@ -98,7 +95,7 @@ final class ResolvedCalendar
      */
     private function dateSet(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|string|null $definition,
+        YrnkDateSet|string|null $definition,
         YrnkDate $date,
     ): array {
         if ($definition === null) {
@@ -149,9 +146,8 @@ final class ResolvedCalendar
     /**
      * @return array<string, true>
      */
-    private static function setOfDates(
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkDateSet $definition,
-    ): array {
+    private static function setOfDates(YrnkDateSet $definition): array
+    {
         $set = [];
 
         foreach ($definition->dates as $date) {

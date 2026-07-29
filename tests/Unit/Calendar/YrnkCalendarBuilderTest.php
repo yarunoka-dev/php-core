@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Calendar;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Calendar\YrnkCalendarBuilder;
@@ -21,7 +21,7 @@ class YrnkCalendarBuilderTest extends TestCase
     public function builds_each_definition_into_its_raw_dsl_shape_omitting_null_keys(): void
     {
         $calendar = new YrnkCalendar(
-            holidays: YrnkHolidays::ofDates(['2026-01-01'], self::utc()),
+            holidays: YrnkHolidaysDateSet::ofDates(['2026-01-01'], self::utc()),
             workweek: new YrnkWorkweek([YrnkDayName::Tue, YrnkDayName::Sat]),
             businessHours: new YrnkBusinessHours([YrnkTimeWindow::fromStrings('09:00', '18:00')]),
             dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
