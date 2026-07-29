@@ -13,6 +13,7 @@ use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -30,10 +31,10 @@ class RoundTripTest extends TestCase
     #[DataProvider('documents')]
     public function a_document_round_trip_is_the_identity(array $raw): void
     {
-        $parser = new YrnkParser(resolvers: [
-            'yasumi-jp' => static fn(): array => ['2026-01-01'],
-            'garbage-days' => static fn(): array => [],
-        ]);
+        $parser = new YrnkParser(Bindings::of([
+            'yasumi-jp' => Bindings::returning(['2026-01-01']),
+            'garbage-days' => Bindings::returning([]),
+        ]));
 
         $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }
@@ -255,7 +256,7 @@ class RoundTripTest extends TestCase
             'calendar' => $calendar,
             'schedules' => [['times' => ['09:00']]],
         ];
-        $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => []]);
+        $parser = new YrnkParser(Bindings::of(['yasumi-jp' => Bindings::returning([])]));
 
         $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }
@@ -276,24 +277,6 @@ class RoundTripTest extends TestCase
         ];
     }
 
-    #[Test]
-    public function a_hand_composed_deferred_is_folded_into_a_snapshot(): void
-    {
-        // A Closure is not writable in the DSL, so it is outside the
-        // identity; build outputs it as the resolved list.
-        $document = new Yrnk(
-            version: '1.0',
-            timezone: new DateTimeZone('Asia/Tokyo'),
-            calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::deferred(static fn(): array => ['2026-01-01']),
-            ),
-            schedules: [new YrnkSchedule(times: new AllDay())],
-        );
-
-        $built = (new YrnkBuilder())->build($document);
-
-        $this->assertSame(['holidays' => ['2026-01-01']], $built['calendar'] ?? null);
-    }
 
     #[Test]
     public function to_json_parses_back_to_the_same_meaning(): void

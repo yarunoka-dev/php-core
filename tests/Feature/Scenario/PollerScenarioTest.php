@@ -14,6 +14,7 @@ use Yarunoka\YrnkEvaluator;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -104,14 +105,14 @@ class PollerScenarioTest extends TestCase
         $resolver = new HoldingResolver(['2026-07-20']);
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('db-holidays'),
+                holidays: 'db-holidays',
                 businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
                 businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                // A resolver is asked per question, so a poller that does
+                // not want a lookup per tick holds the answer itself.
+                resolvers: Bindings::of(['db-holidays' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            // A resolver is asked per question, so a poller that does not
-            // want a lookup per tick holds the answer itself.
-            resolvers: ['db-holidays' => $resolver],
         );
         $poller = new RoutinePoller(
             $evaluator,

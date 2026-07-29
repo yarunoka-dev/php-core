@@ -44,44 +44,13 @@ class YrnkCalendarBuilderTest extends TestCase
     #[Test]
     public function a_resolver_name_reference_comes_out_as_the_name_itself(): void
     {
-        $calendar = new YrnkCalendar(holidays: YrnkHolidays::byResolver('yasumi-jp'));
+        $calendar = new YrnkCalendar(holidays: 'yasumi-jp');
 
         $this->assertSame(['holidays' => 'yasumi-jp'], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
     }
 
-    #[Test]
-    public function deferred_becomes_a_resolved_snapshot(): void
-    {
-        $calendar = new YrnkCalendar(
-            holidays: YrnkHolidays::deferred(static fn(): array => ['2026-01-01']),
-        );
 
-        $this->assertSame(['holidays' => ['2026-01-01']], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
-    }
 
-    #[Test]
-    public function a_contract_violation_of_deferred_raises(): void
-    {
-        $calendar = new YrnkCalendar(
-            holidays: YrnkHolidays::deferred(static fn(): array => ['2026/01/01']),
-        );
-
-        $this->expectException(InvalidCalendarDataException::class);
-
-        (new YrnkCalendarBuilder())->build($calendar, self::utc());
-    }
-
-    #[Test]
-    public function deferred_returning_a_non_array_raises_too(): void
-    {
-        $calendar = new YrnkCalendar(
-            holidays: YrnkHolidays::deferred(static fn(): string => 'not-an-array'),
-        );
-
-        $this->expectException(InvalidCalendarDataException::class);
-
-        (new YrnkCalendarBuilder())->build($calendar, self::utc());
-    }
 
     private static function utc(): DateTimeZone
     {

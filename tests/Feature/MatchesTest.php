@@ -16,6 +16,8 @@ use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkSchedule;
 use DateTimeImmutable;
 use DateTimeZone;
+use Yarunoka\Tests\Support\Bindings;
+use Yarunoka\Tests\Support\CountingResolver;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -390,19 +392,17 @@ class MatchesTest extends TestCase
     #[Test]
     public function a_resolver_is_not_called_at_construction_and_answers_each_question_afresh(): void
     {
-        $calls = 0;
+        $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
-            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
+            calendar: new YrnkCalendar(
+                holidays: 'counting',
+                resolvers: Bindings::of(['counting' => $resolver]),
+            ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
-                $calls++;
-
-                return ['2026-01-01'];
-            }],
         );
         $schedule = $this->schedule(['days' => ['holiday'], 'times' => ['10:00']]);
 
-        $this->assertSame(0, $calls);
+        $this->assertSame(0, $resolver->calls);
 
         $evaluator->matches($schedule, $this->at('2026-01-01T10:00:00+09:00'));
         $evaluator->matches($schedule, $this->at('2026-01-02T10:00:00+09:00'));
@@ -410,21 +410,19 @@ class MatchesTest extends TestCase
 
         // Three questions, each resolving the year it lands in. Holding
         // the list across questions is the resolver's own business.
-        $this->assertSame(3, $calls);
+        $this->assertSame(3, $resolver->calls);
     }
 
     #[Test]
     public function a_resolver_is_asked_once_for_a_year_within_one_question(): void
     {
-        $calls = 0;
+        $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
-            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
+            calendar: new YrnkCalendar(
+                holidays: 'counting',
+                resolvers: Bindings::of(['counting' => $resolver]),
+            ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: ['counting' => function (YrnkDate $from, YrnkDate $through) use (&$calls): array {
-                $calls++;
-
-                return ['2026-01-01'];
-            }],
         );
         $schedule = $this->schedule(['days' => ['holiday'], 'times' => ['10:00']]);
 
@@ -434,7 +432,7 @@ class MatchesTest extends TestCase
             $this->at('2026-12-31T23:59:59+09:00'),
         );
 
-        $this->assertSame(1, $calls);
+        $this->assertSame(1, $resolver->calls);
     }
 
     // ---- helpers ----

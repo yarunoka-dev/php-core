@@ -9,8 +9,6 @@ use Yarunoka\Internal\Evaluation\MatchFinder;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Internal\ReferenceChecker;
-use Yarunoka\Resolvers\YrnkResolverInterface;
-use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -35,14 +33,25 @@ use DateTimeZone;
  */
 final class YrnkEvaluator
 {
-    /**
-     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
-     */
     public function __construct(
         private readonly YrnkCalendar $calendar,
         private readonly DateTimeZone $timezone,
-        private readonly array $resolvers = [],
     ) {}
+
+    /**
+     * One built from a whole document, for a caller that has one. The two
+     * things this needs are the document's, and taking them apart to hand
+     * them back in is where a calendar can end up read on a timezone that
+     * is not the one it was written against.
+     *
+     * The constructor stays for the other case: a runtime that keeps its
+     * schedules of its own (rows of a table, say) and reads the rest from
+     * its configuration never assembles a document to begin with.
+     */
+    public static function fromYrnk(Yrnk $document): self
+    {
+        return new self($document->calendar, $document->timezone);
+    }
 
     /**
      * The machinery for one question. Definitions resolve into it as the
@@ -51,7 +60,7 @@ final class YrnkEvaluator
      */
     private function finder(): MatchFinder
     {
-        $resolved = new ResolvedCalendar($this->calendar, $this->resolvers, $this->timezone);
+        $resolved = new ResolvedCalendar($this->calendar, $this->timezone);
         $dayMatcher = new DayMatcher($resolved);
 
         return new MatchFinder(
@@ -139,6 +148,6 @@ final class YrnkEvaluator
      */
     private function ensureResolvable(YrnkSchedule $schedule): void
     {
-        ReferenceChecker::ensureResolvable([$schedule], $this->calendar, $this->resolvers);
+        ReferenceChecker::ensureResolvable([$schedule], $this->calendar);
     }
 }

@@ -12,17 +12,14 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
-use Yarunoka\Internal\Resolvers\ResolverRegistry;
-use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
-use Closure;
 use DateTimeZone;
 
 /**
- * Resolution of the definitions for one question. A resolver / Closure is
- * asked for the year a consulted day falls in, and the answer is held
+ * Resolution of the definitions for one question. A resolver is asked
+ * for the year a consulted day falls in, and the answer is held
  * until the question is done — the working data of a single computation,
  * not a cache: a new question resolves anew, so a caller that wants
  * results kept holds them in its own resolver.
@@ -37,18 +34,10 @@ final class ResolvedCalendar
     /** @var array<string, true>|null The workweek day set (YrnkDayName->value => true) */
     private ?array $workweekSet = null;
 
-    private readonly ResolverRegistry $registry;
-
-    /**
-     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers
-     */
     public function __construct(
         private readonly YrnkCalendar $calendar,
-        array $resolvers,
         private readonly DateTimeZone $timezone,
-    ) {
-        $this->registry = new ResolverRegistry($resolvers);
-    }
+    ) {}
 
     public function holidayContains(YrnkDate $date): bool
     {
@@ -108,7 +97,7 @@ final class ResolvedCalendar
      */
     private function dateSet(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|null $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string|null $definition,
         YrnkDate $date,
     ): array {
         if ($definition === null) {
@@ -117,7 +106,7 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition is required");
         }
 
-        $scope = $definition->dates !== null ? 'all' : (int) $date->format('Y');
+        $scope = is_string($definition) ? (int) $date->format('Y') : 'all';
 
         return $this->sets[$key][$scope] ??= $this->resolve($key, $definition, $scope);
     }
@@ -127,10 +116,10 @@ final class ResolvedCalendar
      */
     private function resolve(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string $definition,
         int|string $scope,
     ): array {
-        if ($definition->dates !== null) {
+        if (! is_string($definition)) {
             $set = [];
 
             foreach ($definition->dates as $date) {
@@ -140,19 +129,25 @@ final class ResolvedCalendar
             return $set;
         }
 
-        $resolve = $definition->resolver !== null
-            ? ($this->registry->get($definition->resolver)
-                ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}"))
-            : $definition->closure;
-
-        if ($resolve === null) {
-            throw new MissingCalendarDataException("The {$key} definition has no source of dates");
-        }
+        $resolver = $this->calendar->resolvers->get($definition)
+            ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition}");
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);
         $through = new YrnkDate("{$scope}-12-31", $this->timezone);
-        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $through) : $resolve($from, $through);
 
+        return $this->dateSetOf($resolver->resolve($from, $through), $key);
+    }
+
+    /**
+     * The set a resolver handed back. Takes mixed on purpose: the value
+     * crossed the boundary from host code, so what the contract says it is
+     * has to be checked rather than assumed — the spec asks implementations
+     * to validate that a resolver yields date literals.
+     *
+     * @return array<string, true>
+     */
+    private function dateSetOf(mixed $resolved, string $key): array
+    {
         if (! is_array($resolved)) {
             throw new InvalidCalendarDataException("{$key}: the resolver must return a list of date strings");
         }

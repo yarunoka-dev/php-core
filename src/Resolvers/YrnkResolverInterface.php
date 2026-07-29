@@ -5,12 +5,11 @@ namespace Yarunoka\Resolvers;
 use Yarunoka\YrnkDate;
 
 /**
- * The contract for supplying a date set. Usable as the resolution target
- * of a resolver name reference in the definitions, or — alongside a
- * Closure — as the source of a deferred list. The range asked for is the
- * range the answer has to cover; dates outside it are ignored, and dates
- * missing inside it read as "not in this set". The format of the return
- * value is validated by the evaluating side.
+ * The contract for supplying a date set — what a resolver name in the
+ * definitions resolves to. The range asked for is the range the answer has
+ * to cover; dates outside it are ignored, and dates missing inside it read
+ * as "not in this set". The format of the return value is validated by the
+ * evaluating side.
  *
  * An implementation is called again whenever a range it has not covered
  * is reached, so it is free to compute only what it is asked for. Holding

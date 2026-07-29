@@ -487,7 +487,7 @@ class MatchFinderTest extends TestCase
                 static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: [], timezone: self::utc());
+        ), timezone: self::utc());
         $dayMatcher = new DayMatcher($resolved);
 
         return new MatchFinder(

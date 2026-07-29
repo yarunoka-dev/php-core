@@ -5,6 +5,7 @@ namespace Yarunoka\Calendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Internal\Parser\ReservedWords;
+use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
@@ -20,8 +21,11 @@ final class YrnkCalendarParser
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public function parse(mixed $raw, DateTimeZone $timezone): YrnkCalendar
-    {
+    public function parse(
+        mixed $raw,
+        DateTimeZone $timezone,
+        YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+    ): YrnkCalendar {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
         }
@@ -48,6 +52,7 @@ final class YrnkCalendarParser
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
                 custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom'], $timezone) : [],
+                resolvers: $resolvers,
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
@@ -58,20 +63,16 @@ final class YrnkCalendarParser
      * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition
      *
      * @param  class-string<T>  $class
-     * @return T
+     * @return T|string
      */
-    private static function parseDateSet(mixed $raw, string $key, string $class, DateTimeZone $timezone): object
+    private static function parseDateSet(mixed $raw, string $key, string $class, DateTimeZone $timezone): object|string
     {
         if (is_string($raw)) {
             if (preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $raw) === 1) {
                 throw new InvalidYrnkException("{$key}: a single date is still written as a list: [\"{$raw}\"]");
             }
 
-            // The trait-provided named constructor does not resolve to T
-            // when called through class-string<T> (a false positive from a
-            // phpstan limitation).
-            // @phpstan-ignore return.type
-            return $class::byResolver($raw);
+            return $raw;
         }
 
         if (is_array($raw) && array_is_list($raw)) {
@@ -82,7 +83,10 @@ final class YrnkCalendarParser
             }
 
             /** @var list<string> $raw */
-            // @phpstan-ignore return.type (the same false positive as byResolver)
+            // The trait-provided named constructor does not resolve to T
+            // when called through class-string<T> (a false positive from a
+            // phpstan limitation).
+            // @phpstan-ignore return.type
             return $class::ofDates($raw, $timezone);
         }
 
@@ -131,7 +135,7 @@ final class YrnkCalendarParser
     }
 
     /**
-     * @return array<string, YrnkCustomDefinition>
+     * @return array<string, YrnkCustomDefinition|string>
      */
     private static function parseCustom(mixed $raw, DateTimeZone $timezone): array
     {

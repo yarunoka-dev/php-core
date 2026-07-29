@@ -6,6 +6,7 @@ use Yarunoka\Exceptions\ExceptionInterface;
 use Yarunoka\YrnkParser;
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -266,7 +267,7 @@ class SchemaConformanceTest extends TestCase
 
     private function parser(): YrnkParser
     {
-        return new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => ['2026-01-01']]);
+        return new YrnkParser(Bindings::of(['yasumi-jp' => Bindings::returning(['2026-01-01'])]));
     }
 
     private function schemaAccepts(string $json): bool

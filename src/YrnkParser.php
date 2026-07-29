@@ -7,9 +7,8 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Calendar\YrnkCalendarParser;
 use Yarunoka\Internal\ReferenceChecker;
-use Yarunoka\Resolvers\YrnkResolverInterface;
+use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Schedule\YrnkScheduleParser;
-use Closure;
 use DateTimeZone;
 use Exception;
 
@@ -24,11 +23,8 @@ final class YrnkParser
 {
     private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
 
-    /**
-     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
-     */
     public function __construct(
-        private readonly array $resolvers = [],
+        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
         private readonly YrnkScheduleParser $scheduleParser = new YrnkScheduleParser(),
         private readonly YrnkCalendarParser $calendarParser = new YrnkCalendarParser(),
     ) {}
@@ -58,7 +54,7 @@ final class YrnkParser
         // points on the document's clock, so neither can be parsed
         // without it.
         $timezone = $this->parseTimezone($input);
-        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone);
+        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolvers);
 
         try {
             $document = new Yrnk(
@@ -71,7 +67,7 @@ final class YrnkParser
             throw new InvalidYrnkException($e->getMessage());
         }
 
-        ReferenceChecker::ensureResolvable($document->schedules, $calendar, $this->resolvers);
+        ReferenceChecker::ensureResolvable($document->schedules, $calendar);
 
         return $document;
     }
