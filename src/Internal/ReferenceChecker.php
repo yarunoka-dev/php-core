@@ -68,7 +68,7 @@ final class ReferenceChecker
             ],
         };
 
-        $missing = array_keys(array_filter($required, static fn(?object $definition): bool => $definition === null));
+        $missing = array_keys(array_filter($required, static fn(object|string|null $definition): bool => $definition === null));
 
         if ($missing !== []) {
             throw new MissingCalendarDataException(sprintf(
@@ -105,14 +105,14 @@ final class ReferenceChecker
             'business_holidays' => $calendar->businessHolidays,
             'business_days' => $calendar->businessDays,
         ] as $key => $definition) {
-            if ($definition?->resolver !== null) {
-                yield $key => $definition->resolver;
+            if (is_string($definition)) {
+                yield $key => $definition;
             }
         }
 
         foreach ($calendar->custom as $name => $definition) {
-            if ($definition->resolver !== null) {
-                yield "custom.{$name}" => $definition->resolver;
+            if (is_string($definition)) {
+                yield "custom.{$name}" => $definition;
             }
         }
     }

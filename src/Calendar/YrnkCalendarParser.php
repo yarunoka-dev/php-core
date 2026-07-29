@@ -63,20 +63,16 @@ final class YrnkCalendarParser
      * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition
      *
      * @param  class-string<T>  $class
-     * @return T
+     * @return T|string
      */
-    private static function parseDateSet(mixed $raw, string $key, string $class, DateTimeZone $timezone): object
+    private static function parseDateSet(mixed $raw, string $key, string $class, DateTimeZone $timezone): object|string
     {
         if (is_string($raw)) {
             if (preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $raw) === 1) {
                 throw new InvalidYrnkException("{$key}: a single date is still written as a list: [\"{$raw}\"]");
             }
 
-            // The trait-provided named constructor does not resolve to T
-            // when called through class-string<T> (a false positive from a
-            // phpstan limitation).
-            // @phpstan-ignore return.type
-            return $class::byResolver($raw);
+            return $raw;
         }
 
         if (is_array($raw) && array_is_list($raw)) {
@@ -87,7 +83,10 @@ final class YrnkCalendarParser
             }
 
             /** @var list<string> $raw */
-            // @phpstan-ignore return.type (the same false positive as byResolver)
+            // The trait-provided named constructor does not resolve to T
+            // when called through class-string<T> (a false positive from a
+            // phpstan limitation).
+            // @phpstan-ignore return.type
             return $class::ofDates($raw, $timezone);
         }
 
@@ -136,7 +135,7 @@ final class YrnkCalendarParser
     }
 
     /**
-     * @return array<string, YrnkCustomDefinition>
+     * @return array<string, YrnkCustomDefinition|string>
      */
     private static function parseCustom(mixed $raw, DateTimeZone $timezone): array
     {

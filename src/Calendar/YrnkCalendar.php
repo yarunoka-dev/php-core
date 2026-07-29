@@ -2,6 +2,7 @@
 
 namespace Yarunoka\Calendar;
 
+use Yarunoka\Internal\Resolvers\ResolverName;
 use Yarunoka\Resolvers\YrnkResolverContainer;
 
 /**
@@ -15,6 +16,11 @@ use Yarunoka\Resolvers\YrnkResolverContainer;
  * everything needed to answer from it, and there is no second place to
  * hand them over and forget.
  *
+ * A date set is written as either of the two forms the DSL accepts: the
+ * date list itself, or the name of what resolves it. The name is written
+ * as the name — there is no wrapper for it, because the wrapper would
+ * carry nothing the string does not.
+ *
  * null means "undefined" — a document that uses vocabulary or references
  * requiring that definition is a parse error. This is distinct from an
  * explicit empty list (the statement that there are no such days). Only
@@ -23,15 +29,21 @@ use Yarunoka\Resolvers\YrnkResolverContainer;
 final readonly class YrnkCalendar
 {
     /**
-     * @param  array<string, YrnkCustomDefinition>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser
+     * @param  array<string, YrnkCustomDefinition|string>  $custom  Key name constraints (reserved words, literal shapes) are validated by the parser
      */
     public function __construct(
-        public ?YrnkHolidays $holidays = null,
-        public ?YrnkBusinessHolidays $businessHolidays = null,
-        public ?YrnkBusinessDays $businessDays = null,
+        public YrnkHolidays|string|null $holidays = null,
+        public YrnkBusinessHolidays|string|null $businessHolidays = null,
+        public YrnkBusinessDays|string|null $businessDays = null,
         public ?YrnkWorkweek $workweek = null,
         public ?YrnkBusinessHours $businessHours = null,
         public array $custom = [],
         public YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
-    ) {}
+    ) {
+        foreach ([$holidays, $businessHolidays, $businessDays, ...array_values($custom)] as $definition) {
+            if (is_string($definition)) {
+                ResolverName::ensureUsable($definition);
+            }
+        }
+    }
 }

@@ -8,31 +8,27 @@ use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * The shared implementation of a date set definition (a fixed list | a
- * resolver name reference). The public types with meaning
- * (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
+ * The shared implementation of a written date list. The public types with
+ * meaning (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
  * use this. A trait so that the types stay separate while the
  * implementation is shared; the public contract lives on each class.
  *
- * The two states are the two forms a date-list position accepts in the
- * DSL, so nothing here is wider than what can be written and read back.
+ * The other form a date-list position accepts — a name — is written as
+ * the name, so it needs no type of its own.
  *
  * @internal
  */
 trait DateSetDefinition
 {
-    /** @var list<YrnkDate>|null */
-    public readonly ?array $dates;
-
-    public readonly ?string $resolver;
+    /** @var list<YrnkDate> */
+    public readonly array $dates;
 
     /**
-     * @param  list<YrnkDate>|null  $dates
+     * @param  list<YrnkDate>  $dates
      */
-    private function __construct(?array $dates, ?string $resolver)
+    private function __construct(array $dates)
     {
         $this->dates = $dates;
-        $this->resolver = $resolver;
     }
 
     /**
@@ -69,25 +65,6 @@ trait DateSetDefinition
             $seen[$key] = true;
         }
 
-        return new self($parsed, null);
-    }
-
-    /**
-     * A resolver name reference. The actual dates are resolved by a
-     * resolver registered with the Parser / YrnkEvaluator.
-     */
-    public static function byResolver(string $name): self
-    {
-        if (preg_match('/\\S/u', $name) !== 1) {
-            throw new InvalidValueException('Resolver name cannot be empty or whitespace only');
-        }
-
-        // Date literals and resolver names are distinguished by shape, so
-        // a date-shaped name is not allowed.
-        if (preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $name) === 1) {
-            throw new InvalidValueException("A date-shaped string cannot be used as a resolver name: {$name}");
-        }
-
-        return new self(null, $name);
+        return new self($parsed);
     }
 }

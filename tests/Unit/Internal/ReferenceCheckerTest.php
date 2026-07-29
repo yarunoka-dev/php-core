@@ -27,7 +27,7 @@ class ReferenceCheckerTest extends TestCase
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['holiday', 'founding-day'], 'times' => ['09:00']])],
             new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('yasumi-jp'),
+                holidays: 'yasumi-jp',
                 custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
                 resolvers: Bindings::of(['yasumi-jp' => Bindings::returning([])]),
             ),
@@ -113,7 +113,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['days' => ['weekday'], 'times' => ['09:00']])],
-            new YrnkCalendar(businessDays: YrnkBusinessDays::byResolver('unknown')),
+            new YrnkCalendar(businessDays: 'unknown'),
         );
     }
 
@@ -124,7 +124,7 @@ class ReferenceCheckerTest extends TestCase
 
         ReferenceChecker::ensureResolvable(
             [$this->schedule(['times' => ['09:00']])],
-            new YrnkCalendar(custom: ['garbage-day' => YrnkCustomDefinition::byResolver('unknown')]),
+            new YrnkCalendar(custom: ['garbage-day' => 'unknown']),
         );
     }
 

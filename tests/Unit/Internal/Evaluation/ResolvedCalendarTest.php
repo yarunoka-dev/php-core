@@ -103,7 +103,7 @@ class ResolvedCalendarTest extends TestCase
         $resolver = new CountingResolver(['2026-01-01']);
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('counting'),
+                holidays: 'counting',
                 resolvers: Bindings::of(['counting' => $resolver]),
             ),
             timezone: self::utc(),
@@ -121,7 +121,7 @@ class ResolvedCalendarTest extends TestCase
     public function an_unregistered_resolver_name_raises(): void
     {
         $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('unknown')),
+            new YrnkCalendar(holidays: 'unknown'),
             timezone: self::utc(),
         );
 
@@ -135,7 +135,7 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('broken'),
+                holidays: 'broken',
                 resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
             ),
             timezone: self::utc(),
@@ -161,7 +161,7 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('jp'),
+                holidays: 'jp',
                 resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
             ),
             timezone: self::utc(),

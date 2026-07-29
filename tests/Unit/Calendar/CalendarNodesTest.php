@@ -29,9 +29,8 @@ class CalendarNodesTest extends TestCase
 
         $this->assertSame(['2026-01-01', '2026-01-12'], array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
-            $holidays->dates ?? [],
+            $holidays->dates,
         ));
-        $this->assertNull($holidays->resolver);
     }
 
     #[Test]
@@ -92,30 +91,41 @@ class CalendarNodesTest extends TestCase
     }
 
     #[Test]
-    public function by_resolver_holds_the_resolver_name(): void
+    public function a_definition_can_be_the_name_of_what_resolves_it(): void
     {
-        $holidays = YrnkHolidays::byResolver('yasumi-jp');
+        $calendar = new YrnkCalendar(holidays: 'yasumi-jp');
 
-        $this->assertSame('yasumi-jp', $holidays->resolver);
-        $this->assertNull($holidays->dates);
+        $this->assertSame('yasumi-jp', $calendar->holidays);
     }
 
     #[Test]
-    public function by_resolver_rejects_an_empty_name(): void
+    public function a_name_that_is_empty_or_whitespace_only_is_rejected(): void
     {
         $this->expectException(InvalidValueException::class);
 
-        YrnkHolidays::byResolver('');
+        new YrnkCalendar(holidays: '   ');
     }
 
     #[Test]
-    public function by_resolver_rejects_a_date_shaped_name(): void
+    public function a_date_shaped_name_is_rejected(): void
     {
         // Date literals and resolver names are distinguished by shape, so
         // a date-shaped name is not allowed.
         $this->expectException(InvalidValueException::class);
 
-        YrnkHolidays::byResolver('2026-01-01');
+        new YrnkCalendar(holidays: '2026-01-01');
+    }
+
+    #[Test]
+    public function a_custom_entry_may_be_a_name_too_and_follows_the_same_rule(): void
+    {
+        $calendar = new YrnkCalendar(custom: ['garbage-day' => 'garbage-days']);
+
+        $this->assertSame('garbage-days', $calendar->custom['garbage-day']);
+
+        $this->expectException(InvalidValueException::class);
+
+        new YrnkCalendar(custom: ['garbage-day' => '2026-01-01']);
     }
 
 
@@ -198,7 +208,7 @@ class CalendarNodesTest extends TestCase
     public function definitions_holds_each_definition_and_null_means_undefined(): void
     {
         $calendar = new YrnkCalendar(
-            holidays: YrnkHolidays::byResolver('yasumi-jp'),
+            holidays: 'yasumi-jp',
             businessHolidays: null,
             businessDays: null,
             workweek: null,
@@ -206,7 +216,7 @@ class CalendarNodesTest extends TestCase
             custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
         );
 
-        $this->assertSame('yasumi-jp', $calendar->holidays?->resolver);
+        $this->assertSame('yasumi-jp', $calendar->holidays);
         $this->assertNull($calendar->businessHolidays);
         $this->assertArrayHasKey('founding-day', $calendar->custom);
     }

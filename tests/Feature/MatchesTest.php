@@ -395,7 +395,7 @@ class MatchesTest extends TestCase
         $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('counting'),
+                holidays: 'counting',
                 resolvers: Bindings::of(['counting' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
@@ -419,7 +419,7 @@ class MatchesTest extends TestCase
         $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('counting'),
+                holidays: 'counting',
                 resolvers: Bindings::of(['counting' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),

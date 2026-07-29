@@ -59,15 +59,15 @@ final class YrnkCalendarBuilder
      * @return list<string>|string
      */
     private static function buildDateSet(
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string $definition,
     ): array|string {
-        if ($definition->resolver !== null) {
-            return $definition->resolver;
+        if (is_string($definition)) {
+            return $definition;
         }
 
         return array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
-            $definition->dates ?? [],
+            $definition->dates,
         );
     }
 }

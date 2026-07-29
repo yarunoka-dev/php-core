@@ -105,7 +105,7 @@ class PollerScenarioTest extends TestCase
         $resolver = new HoldingResolver(['2026-07-20']);
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('db-holidays'),
+                holidays: 'db-holidays',
                 businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
                 businessDays: YrnkBusinessDays::ofDates([], self::tz()),
                 // A resolver is asked per question, so a poller that does

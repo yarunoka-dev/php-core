@@ -97,7 +97,7 @@ final class ResolvedCalendar
      */
     private function dateSet(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|null $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string|null $definition,
         YrnkDate $date,
     ): array {
         if ($definition === null) {
@@ -106,7 +106,7 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition is required");
         }
 
-        $scope = $definition->dates !== null ? 'all' : (int) $date->format('Y');
+        $scope = is_string($definition) ? (int) $date->format('Y') : 'all';
 
         return $this->sets[$key][$scope] ??= $this->resolve($key, $definition, $scope);
     }
@@ -116,10 +116,10 @@ final class ResolvedCalendar
      */
     private function resolve(
         string $key,
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string $definition,
         int|string $scope,
     ): array {
-        if ($definition->dates !== null) {
+        if (! is_string($definition)) {
             $set = [];
 
             foreach ($definition->dates as $date) {
@@ -129,12 +129,8 @@ final class ResolvedCalendar
             return $set;
         }
 
-        if ($definition->resolver === null) {
-            throw new MissingCalendarDataException("The {$key} definition has no source of dates");
-        }
-
-        $resolver = $this->calendar->resolvers->get($definition->resolver)
-            ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}");
+        $resolver = $this->calendar->resolvers->get($definition)
+            ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition}");
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);
         $through = new YrnkDate("{$scope}-12-31", $this->timezone);

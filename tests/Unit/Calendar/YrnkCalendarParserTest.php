@@ -5,6 +5,7 @@ namespace Yarunoka\Tests\Unit\Calendar;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\ReservedNameException;
 use Yarunoka\Calendar\YrnkCalendarParser;
+use Yarunoka\Calendar\YrnkCustomDefinition;
 use Yarunoka\YrnkDate;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
@@ -30,7 +31,7 @@ class YrnkCalendarParserTest extends TestCase
     {
         $calendar = (new YrnkCalendarParser())->parse(['business_days' => 'special-days'], self::utc());
 
-        $this->assertSame('special-days', $calendar->businessDays?->resolver);
+        $this->assertSame('special-days', $calendar->businessDays);
     }
 
     #[Test]
@@ -60,8 +61,8 @@ class YrnkCalendarParserTest extends TestCase
             'custom' => ['founding-day' => ['2026-10-01'], 'garbage-day' => 'garbage-days'],
         ], self::utc());
 
-        $this->assertNotNull($calendar->custom['founding-day']->dates);
-        $this->assertSame('garbage-days', $calendar->custom['garbage-day']->resolver);
+        $this->assertInstanceOf(YrnkCustomDefinition::class, $calendar->custom['founding-day']);
+        $this->assertSame('garbage-days', $calendar->custom['garbage-day']);
     }
 
     #[Test]

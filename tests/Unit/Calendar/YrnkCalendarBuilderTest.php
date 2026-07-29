@@ -44,7 +44,7 @@ class YrnkCalendarBuilderTest extends TestCase
     #[Test]
     public function a_resolver_name_reference_comes_out_as_the_name_itself(): void
     {
-        $calendar = new YrnkCalendar(holidays: YrnkHolidays::byResolver('yasumi-jp'));
+        $calendar = new YrnkCalendar(holidays: 'yasumi-jp');
 
         $this->assertSame(['holidays' => 'yasumi-jp'], (new YrnkCalendarBuilder())->build($calendar, self::utc()));
     }

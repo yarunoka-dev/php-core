@@ -77,7 +77,7 @@ class ResolverRangeTest extends TestCase
     {
         return new ResolvedCalendar(
             new YrnkCalendar(
-                holidays: YrnkHolidays::byResolver('jp'),
+                holidays: 'jp',
                 resolvers: Bindings::of(['jp' => $resolver]),
             ),
             timezone: self::utc(),

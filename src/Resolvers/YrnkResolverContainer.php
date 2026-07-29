@@ -3,6 +3,7 @@
 namespace Yarunoka\Resolvers;
 
 use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Internal\Resolvers\ResolverName;
 use Yarunoka\Internal\Resolvers\YasumiProviders;
 
 /**
@@ -35,13 +36,7 @@ final class YrnkResolverContainer
      */
     public function add(string $name, YrnkResolverInterface $resolver): void
     {
-        if (preg_match('/\S/u', $name) !== 1) {
-            throw new InvalidValueException('Resolver name cannot be empty or whitespace only');
-        }
-
-        if (preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $name) === 1) {
-            throw new InvalidValueException("A date-shaped string cannot be used as a resolver name: {$name}");
-        }
+        ResolverName::ensureUsable($name);
 
         if (isset($this->bindings[$name])) {
             throw new InvalidValueException("A resolver is already bound to this name: {$name}");
