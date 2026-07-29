@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
@@ -64,7 +64,7 @@ class ReferenceCheckerTest extends TestCase
         try {
             ReferenceChecker::ensureResolvable(
                 [$this->schedule(['days' => ['business_day'], 'times' => ['09:00']])],
-                new YrnkCalendar(holidays: YrnkHolidays::ofDates([], self::utc())),
+                new YrnkCalendar(holidays: YrnkHolidaysDateSet::ofDates([], self::utc())),
             );
             $this->fail('MissingCalendarDataException was not thrown');
         } catch (MissingCalendarDataException $e) {

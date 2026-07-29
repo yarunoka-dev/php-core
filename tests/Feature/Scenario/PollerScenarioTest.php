@@ -2,10 +2,10 @@
 
 namespace Yarunoka\Tests\Feature\Scenario;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\Tests\Support\RoutinePoller;
 use Yarunoka\Tests\Support\HoldingResolver;
@@ -106,8 +106,8 @@ class PollerScenarioTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
                 holidays: 'db-holidays',
-                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
-                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                businessHolidays: YrnkBusinessHolidaysDateSet::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDaysDateSet::ofDates([], self::tz()),
                 // A resolver is asked per question, so a poller that does
                 // not want a lookup per tick holds the answer itself.
                 resolverContainer: Bindings::of(['db-holidays' => $resolver]),
@@ -138,9 +138,9 @@ class PollerScenarioTest extends TestCase
     {
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::ofDates([], self::tz()),
-                businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
-                businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                holidays: YrnkHolidaysDateSet::ofDates([], self::tz()),
+                businessHolidays: YrnkBusinessHolidaysDateSet::ofDates([], self::tz()),
+                businessDays: YrnkBusinessDaysDateSet::ofDates([], self::tz()),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );

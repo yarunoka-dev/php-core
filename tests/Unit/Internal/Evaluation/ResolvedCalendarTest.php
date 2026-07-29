@@ -2,12 +2,12 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
@@ -29,9 +29,9 @@ class ResolvedCalendarTest extends TestCase
     public function contains_per_layer_is_true_only_for_the_defined_dates(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
-            holidays: YrnkHolidays::ofDates(['2026-01-01'], self::utc()),
-            businessHolidays: YrnkBusinessHolidays::ofDates(['2026-08-13'], self::utc()),
-            businessDays: YrnkBusinessDays::ofDates(['2026-07-11'], self::utc()),
+            holidays: YrnkHolidaysDateSet::ofDates(['2026-01-01'], self::utc()),
+            businessHolidays: YrnkBusinessHolidaysDateSet::ofDates(['2026-08-13'], self::utc()),
+            businessDays: YrnkBusinessDaysDateSet::ofDates(['2026-07-11'], self::utc()),
         ), timezone: self::utc());
 
         $this->assertTrue($resolved->holidayContains(new YrnkDate('2026-01-01', self::utc())));

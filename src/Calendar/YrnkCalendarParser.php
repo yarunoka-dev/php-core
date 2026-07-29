@@ -39,13 +39,13 @@ final class YrnkCalendarParser
         try {
             return new YrnkCalendar(
                 holidays: array_key_exists('holidays', $raw)
-                    ? self::parseDateSet($raw['holidays'], 'holidays', YrnkHolidays::class, $timezone)
+                    ? self::parseDateSet($raw['holidays'], 'holidays', YrnkHolidaysDateSet::class, $timezone)
                     : null,
                 businessHolidays: array_key_exists('business_holidays', $raw)
-                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', YrnkBusinessHolidays::class, $timezone)
+                    ? self::parseDateSet($raw['business_holidays'], 'business_holidays', YrnkBusinessHolidaysDateSet::class, $timezone)
                     : null,
                 businessDays: array_key_exists('business_days', $raw)
-                    ? self::parseDateSet($raw['business_days'], 'business_days', YrnkBusinessDays::class, $timezone)
+                    ? self::parseDateSet($raw['business_days'], 'business_days', YrnkBusinessDaysDateSet::class, $timezone)
                     : null,
                 workweek: array_key_exists('workweek', $raw) ? self::parseWorkweek($raw['workweek']) : null,
                 businessHours: array_key_exists('business_hours', $raw)
@@ -64,7 +64,7 @@ final class YrnkCalendarParser
      * The two forms are told apart by shape, which is why a date-shaped
      * string is neither (it would otherwise read as a list of one).
      *
-     * @template T of YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays
+     * @template T of YrnkDateSet
      *
      * @param  class-string<T>  $class
      * @return T|string
@@ -85,10 +85,6 @@ final class YrnkCalendarParser
             /** @var list<string> $raw */
             $raw = self::dateStrings($raw, $key);
 
-            // The trait-provided named constructor does not resolve to T
-            // when called through class-string<T> (a false positive from a
-            // phpstan limitation).
-            // @phpstan-ignore return.type
             return $class::ofDates($raw, $timezone);
         }
 

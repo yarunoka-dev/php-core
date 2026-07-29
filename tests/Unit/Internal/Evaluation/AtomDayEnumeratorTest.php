@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
@@ -185,9 +185,9 @@ class AtomDayEnumeratorTest extends TestCase
         array $dateSets = [],
     ): AtomDayEnumerator {
         return new AtomDayEnumerator(new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
-            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
-            businessHolidays: YrnkBusinessHolidays::ofDates([], self::utc()),
-            businessDays: YrnkBusinessDays::ofDates($businessDays, self::utc()),
+            holidays: YrnkHolidaysDateSet::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidaysDateSet::ofDates([], self::utc()),
+            businessDays: YrnkBusinessDaysDateSet::ofDates($businessDays, self::utc()),
             workweek: $workweek === null ? null : new YrnkWorkweek(
                 array_map(static fn(string $day): YrnkDayName => YrnkDayName::from($day), $workweek),
             ),

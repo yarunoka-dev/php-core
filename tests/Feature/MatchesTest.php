@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Feature;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Schedule\YrnkScheduleParser;
@@ -453,9 +453,9 @@ class MatchesTest extends TestCase
     ): YrnkEvaluator {
         return new YrnkEvaluator(
             calendar: new YrnkCalendar(
-                holidays: YrnkHolidays::ofDates($holidays, self::tz()),
-                businessHolidays: YrnkBusinessHolidays::ofDates($businessHolidays, self::tz()),
-                businessDays: YrnkBusinessDays::ofDates($businessDays, self::tz()),
+                holidays: YrnkHolidaysDateSet::ofDates($holidays, self::tz()),
+                businessHolidays: YrnkBusinessHolidaysDateSet::ofDates($businessHolidays, self::tz()),
+                businessDays: YrnkBusinessDaysDateSet::ofDates($businessDays, self::tz()),
                 workweek: $workweek === null ? null : new YrnkWorkweek(
                     array_map(static fn(string $day) => YrnkDayName::from($day), $workweek),
                 ),

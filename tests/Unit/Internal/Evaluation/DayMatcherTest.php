@@ -2,11 +2,11 @@
 
 namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 
-use Yarunoka\Calendar\YrnkBusinessDays;
-use Yarunoka\Calendar\YrnkBusinessHolidays;
+use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
+use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
-use Yarunoka\Calendar\YrnkHolidays;
+use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
@@ -104,9 +104,9 @@ class DayMatcherTest extends TestCase
         array $dateSets = [],
     ): DayMatcher {
         return new DayMatcher(new ResolvedCalendar(new YrnkCalendar(
-            holidays: YrnkHolidays::ofDates($holidays, self::utc()),
-            businessHolidays: YrnkBusinessHolidays::ofDates($businessHolidays, self::utc()),
-            businessDays: YrnkBusinessDays::ofDates($businessDays, self::utc()),
+            holidays: YrnkHolidaysDateSet::ofDates($holidays, self::utc()),
+            businessHolidays: YrnkBusinessHolidaysDateSet::ofDates($businessHolidays, self::utc()),
+            businessDays: YrnkBusinessDaysDateSet::ofDates($businessDays, self::utc()),
             dateSets: array_map(
                 static fn(array $dates): YrnkDateSet => YrnkDateSet::ofDates($dates, self::utc()),
                 $dateSets,
