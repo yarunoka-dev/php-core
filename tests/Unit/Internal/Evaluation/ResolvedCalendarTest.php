@@ -19,6 +19,7 @@ use Yarunoka\YrnkDate;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -31,7 +32,7 @@ class ResolvedCalendarTest extends TestCase
             holidays: YrnkHolidays::ofDates(['2026-01-01'], self::utc()),
             businessHolidays: YrnkBusinessHolidays::ofDates(['2026-08-13'], self::utc()),
             businessDays: YrnkBusinessDays::ofDates(['2026-07-11'], self::utc()),
-        ), resolvers: [], timezone: self::utc());
+        ), timezone: self::utc());
 
         $this->assertTrue($resolved->holidayContains(new YrnkDate('2026-01-01', self::utc())));
         $this->assertFalse($resolved->holidayContains(new YrnkDate('2026-01-02', self::utc())));
@@ -44,7 +45,7 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
             custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
-        ), resolvers: [], timezone: self::utc());
+        ), timezone: self::utc());
 
         $this->assertTrue($resolved->customContains('founding-day', new YrnkDate('2026-10-01', self::utc())));
         $this->assertFalse($resolved->customContains('founding-day', new YrnkDate('2026-10-02', self::utc())));
@@ -53,7 +54,7 @@ class ResolvedCalendarTest extends TestCase
     #[Test]
     public function an_undefined_custom_name_raises(): void
     {
-        $resolved = new ResolvedCalendar(new YrnkCalendar(), resolvers: [], timezone: self::utc());
+        $resolved = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 
         $this->expectException(UndefinedNameException::class);
 
@@ -63,7 +64,7 @@ class ResolvedCalendarTest extends TestCase
     #[Test]
     public function the_workweek_default_is_monday_through_friday(): void
     {
-        $resolved = new ResolvedCalendar(new YrnkCalendar(), resolvers: [], timezone: self::utc());
+        $resolved = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 
         $this->assertTrue($resolved->isInWorkweek(YrnkDayName::Mon));
         $this->assertTrue($resolved->isInWorkweek(YrnkDayName::Fri));
@@ -75,7 +76,7 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
             workweek: new YrnkWorkweek([YrnkDayName::Tue, YrnkDayName::Sat]),
-        ), resolvers: [], timezone: self::utc());
+        ), timezone: self::utc());
 
         $this->assertTrue($resolved->isInWorkweek(YrnkDayName::Sat));
         $this->assertFalse($resolved->isInWorkweek(YrnkDayName::Mon));
@@ -86,8 +87,8 @@ class ResolvedCalendarTest extends TestCase
     {
         $withWindows = new ResolvedCalendar(new YrnkCalendar(
             businessHours: new YrnkBusinessHours([YrnkTimeWindow::fromStrings('09:00', '18:00')]),
-        ), resolvers: [], timezone: self::utc());
-        $without = new ResolvedCalendar(new YrnkCalendar(), resolvers: [], timezone: self::utc());
+        ), timezone: self::utc());
+        $without = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 
         $this->assertCount(1, $withWindows->businessHourWindows());
 
@@ -99,23 +100,19 @@ class ResolvedCalendarTest extends TestCase
     #[Test]
     public function a_resolver_resolves_on_first_reference_and_is_called_at_most_once(): void
     {
-        $calls = 0;
+        $resolver = new CountingResolver(['2026-01-01']);
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
-            resolvers: ['counting' => function () use (&$calls): array {
-                $calls++;
-
-                return ['2026-01-01'];
-            }],
+            resolvers: Bindings::of(['counting' => $resolver]),
             timezone: self::utc(),
         );
 
-        $this->assertSame(0, $calls);
+        $this->assertSame(0, $resolver->calls);
 
         $resolved->holidayContains(new YrnkDate('2026-01-01', self::utc()));
         $resolved->holidayContains(new YrnkDate('2026-05-05', self::utc()));
 
-        $this->assertSame(1, $calls);
+        $this->assertSame(1, $resolver->calls);
     }
 
     #[Test]
@@ -123,7 +120,6 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('unknown')),
-            resolvers: [],
             timezone: self::utc(),
         );
 
@@ -137,7 +133,7 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('broken')),
-            resolvers: ['broken' => static fn(): array => ['2026/01/01']],
+            resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
             timezone: self::utc(),
         );
 
@@ -149,7 +145,7 @@ class ResolvedCalendarTest extends TestCase
     #[Test]
     public function referencing_an_undefined_layer_raises_the_safeguard_error(): void
     {
-        $resolved = new ResolvedCalendar(new YrnkCalendar(), resolvers: [], timezone: self::utc());
+        $resolved = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 
         $this->expectException(MissingCalendarDataException::class);
 
@@ -157,11 +153,11 @@ class ResolvedCalendarTest extends TestCase
     }
 
     #[Test]
-    public function a_resolver_contract_instance_can_be_a_source_too(): void
+    public function a_resolver_supplies_the_dates_of_the_name_it_is_bound_to(): void
     {
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(holidays: YrnkHolidays::byResolver('jp')),
-            resolvers: ['jp' => new CountingResolver(['2026-01-01'])],
+            resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
             timezone: self::utc(),
         );
 
@@ -169,35 +165,7 @@ class ResolvedCalendarTest extends TestCase
         $this->assertFalse($resolved->holidayContains(new YrnkDate('2026-01-02', self::utc())));
     }
 
-    #[Test]
-    public function a_resolver_contract_instance_is_called_at_most_once_too(): void
-    {
-        $resolver = new CountingResolver(['2026-01-01']);
-        $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('jp')),
-            resolvers: ['jp' => $resolver],
-            timezone: self::utc(),
-        );
 
-        $resolved->holidayContains(new YrnkDate('2026-01-01', self::utc()));
-        $resolved->holidayContains(new YrnkDate('2026-01-02', self::utc()));
-
-        $this->assertSame(1, $resolver->calls);
-    }
-
-    #[Test]
-    public function the_return_value_of_a_resolver_contract_instance_is_validated_too(): void
-    {
-        $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('broken')),
-            resolvers: ['broken' => new CountingResolver(['2026/01/01'])],
-            timezone: self::utc(),
-        );
-
-        $this->expectException(InvalidCalendarDataException::class);
-
-        $resolved->holidayContains(new YrnkDate('2026-01-01', self::utc()));
-    }
 
     private static function utc(): DateTimeZone
     {

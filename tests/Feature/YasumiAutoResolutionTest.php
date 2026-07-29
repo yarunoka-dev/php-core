@@ -2,11 +2,12 @@
 
 namespace Yarunoka\Tests\Feature;
 
+use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
-use Yarunoka\YrnkDate;
+use Yarunoka\Resolvers\YrnkResolverContainer;
+use Yarunoka\Tests\Support\Bindings;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkParser;
-use Closure;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -22,11 +23,9 @@ class YasumiAutoResolutionTest extends TestCase
         return new DateTimeImmutable($iso);
     }
 
-    /**
-     * @param  array<string, Closure(YrnkDate, YrnkDate): list<string>>  $resolvers
-     */
-    private function evaluate(string $holidays, string $at, array $resolvers = []): bool
+    private function evaluate(string $holidays, string $at, ?YrnkResolverContainer $resolvers = null): bool
     {
+        $resolvers ??= new YrnkResolverContainer();
         $document = (new YrnkParser($resolvers))->parse([
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
@@ -53,12 +52,11 @@ class YasumiAutoResolutionTest extends TestCase
     }
 
     #[Test]
-    public function a_host_binding_of_the_same_name_is_used_instead(): void
+    public function binding_the_same_name_raises_rather_than_taking_precedence(): void
     {
-        $bound = ['yasumi-Japan' => fn(YrnkDate $from, YrnkDate $through): array => ['2026-01-05']];
+        $this->expectException(InvalidValueException::class);
 
-        $this->assertFalse($this->evaluate('yasumi-Japan', '2026-01-01T10:00:00+09:00', $bound));
-        $this->assertTrue($this->evaluate('yasumi-Japan', '2026-01-05T10:00:00+09:00', $bound));
+        (new YrnkResolverContainer())->add('yasumi-Japan', Bindings::returning(['2026-01-05']));
     }
 
     #[Test]

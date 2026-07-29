@@ -195,7 +195,7 @@ class AtomDayEnumeratorTest extends TestCase
                 static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: [], timezone: self::utc())), self::utc());
+        ), timezone: self::utc())), self::utc());
     }
 
     private static function utc(): DateTimeZone

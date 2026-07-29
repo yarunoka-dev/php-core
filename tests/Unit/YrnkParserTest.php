@@ -9,6 +9,7 @@ use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\YrnkParser;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +20,7 @@ class YrnkParserTest extends TestCase
     #[Test]
     public function parses_a_complete_document(): void
     {
-        $parser = new YrnkParser(resolvers: ['yasumi-jp' => fn(): array => ['2026-01-01']]);
+        $parser = new YrnkParser(Bindings::of(['yasumi-jp' => Bindings::returning(['2026-01-01'])]));
 
         $document = $parser->parse([
             'version' => '1.0',
@@ -200,7 +201,7 @@ class YrnkParserTest extends TestCase
     #[Test]
     public function a_custom_value_can_reference_a_resolver_name_too(): void
     {
-        $parser = new YrnkParser(resolvers: ['garbage-days' => fn(): array => []]);
+        $parser = new YrnkParser(Bindings::of(['garbage-days' => Bindings::returning([])]));
 
         $document = $parser->parse($this->doc([
             'calendar' => ['custom' => ['garbage-day' => 'garbage-days']],

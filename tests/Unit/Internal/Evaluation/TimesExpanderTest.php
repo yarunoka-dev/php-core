@@ -104,7 +104,7 @@ class TimesExpanderTest extends TestCase
                 static fn(array $pair): YrnkTimeWindow => YrnkTimeWindow::fromStrings($pair[0], $pair[1]),
                 $businessHours,
             )),
-        ), resolvers: [], timezone: self::utc()));
+        ), timezone: self::utc()));
     }
 
     private static function utc(): DateTimeZone

@@ -14,6 +14,7 @@ use Yarunoka\YrnkEvaluator;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -111,7 +112,7 @@ class PollerScenarioTest extends TestCase
             timezone: new DateTimeZone('Asia/Tokyo'),
             // A resolver is asked per question, so a poller that does not
             // want a lookup per tick holds the answer itself.
-            resolvers: ['db-holidays' => $resolver],
+            resolvers: Bindings::of(['db-holidays' => $resolver]),
         );
         $poller = new RoutinePoller(
             $evaluator,

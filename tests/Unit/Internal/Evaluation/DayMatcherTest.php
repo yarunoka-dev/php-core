@@ -111,7 +111,7 @@ class DayMatcherTest extends TestCase
                 static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
                 $custom,
             ),
-        ), resolvers: [], timezone: self::utc()));
+        ), timezone: self::utc()));
     }
 
     private function day(string $date): YrnkDate

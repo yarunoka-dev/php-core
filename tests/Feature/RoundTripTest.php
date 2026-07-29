@@ -13,6 +13,7 @@ use Yarunoka\Yrnk;
 use Yarunoka\YrnkSchedule;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Yarunoka\Tests\Support\Bindings;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -30,10 +31,10 @@ class RoundTripTest extends TestCase
     #[DataProvider('documents')]
     public function a_document_round_trip_is_the_identity(array $raw): void
     {
-        $parser = new YrnkParser(resolvers: [
-            'yasumi-jp' => static fn(): array => ['2026-01-01'],
-            'garbage-days' => static fn(): array => [],
-        ]);
+        $parser = new YrnkParser(Bindings::of([
+            'yasumi-jp' => Bindings::returning(['2026-01-01']),
+            'garbage-days' => Bindings::returning([]),
+        ]));
 
         $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }
@@ -255,7 +256,7 @@ class RoundTripTest extends TestCase
             'calendar' => $calendar,
             'schedules' => [['times' => ['09:00']]],
         ];
-        $parser = new YrnkParser(resolvers: ['yasumi-jp' => static fn(): array => []]);
+        $parser = new YrnkParser(Bindings::of(['yasumi-jp' => Bindings::returning([])]));
 
         $this->assertSame($raw, (new YrnkBuilder())->build($parser->parse($raw)));
     }

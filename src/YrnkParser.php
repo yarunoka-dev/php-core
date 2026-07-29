@@ -7,9 +7,8 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Calendar\YrnkCalendarParser;
 use Yarunoka\Internal\ReferenceChecker;
-use Yarunoka\Resolvers\YrnkResolverInterface;
+use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Schedule\YrnkScheduleParser;
-use Closure;
 use DateTimeZone;
 use Exception;
 
@@ -24,11 +23,8 @@ final class YrnkParser
 {
     private const array KNOWN_KEYS = ['version', 'timezone', 'calendar', 'schedules'];
 
-    /**
-     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers  Resolver name → date list supplier (a function | the resolver contract)
-     */
     public function __construct(
-        private readonly array $resolvers = [],
+        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
         private readonly YrnkScheduleParser $scheduleParser = new YrnkScheduleParser(),
         private readonly YrnkCalendarParser $calendarParser = new YrnkCalendarParser(),
     ) {}

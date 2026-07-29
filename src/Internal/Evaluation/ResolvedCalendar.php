@@ -12,17 +12,15 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
-use Yarunoka\Internal\Resolvers\ResolverRegistry;
-use Yarunoka\Resolvers\YrnkResolverInterface;
+use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
-use Closure;
 use DateTimeZone;
 
 /**
- * Resolution of the definitions for one question. A resolver / Closure is
- * asked for the year a consulted day falls in, and the answer is held
+ * Resolution of the definitions for one question. A resolver is asked
+ * for the year a consulted day falls in, and the answer is held
  * until the question is done — the working data of a single computation,
  * not a cache: a new question resolves anew, so a caller that wants
  * results kept holds them in its own resolver.
@@ -37,18 +35,11 @@ final class ResolvedCalendar
     /** @var array<string, true>|null The workweek day set (YrnkDayName->value => true) */
     private ?array $workweekSet = null;
 
-    private readonly ResolverRegistry $registry;
-
-    /**
-     * @param  array<string, (Closure(YrnkDate, YrnkDate): list<string>)|YrnkResolverInterface>  $resolvers
-     */
     public function __construct(
         private readonly YrnkCalendar $calendar,
-        array $resolvers,
         private readonly DateTimeZone $timezone,
-    ) {
-        $this->registry = new ResolverRegistry($resolvers);
-    }
+        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+    ) {}
 
     public function holidayContains(YrnkDate $date): bool
     {
@@ -144,15 +135,13 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition has no source of dates");
         }
 
-        $resolve = $this->registry->get($definition->resolver)
+        $resolver = $this->resolvers->get($definition->resolver)
             ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}");
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);
         $through = new YrnkDate("{$scope}-12-31", $this->timezone);
-        return $this->dateSetOf(
-            $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $through) : $resolve($from, $through),
-            $key,
-        );
+
+        return $this->dateSetOf($resolver->resolve($from, $through), $key);
     }
 
     /**
