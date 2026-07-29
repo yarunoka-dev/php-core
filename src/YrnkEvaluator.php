@@ -39,6 +39,21 @@ final class YrnkEvaluator
     ) {}
 
     /**
+     * One built from a whole document, for a caller that has one. The two
+     * things this needs are the document's, and taking them apart to hand
+     * them back in is where a calendar can end up read on a timezone that
+     * is not the one it was written against.
+     *
+     * The constructor stays for the other case: a runtime that keeps its
+     * schedules of its own (rows of a table, say) and reads the rest from
+     * its configuration never assembles a document to begin with.
+     */
+    public static function fromYrnk(Yrnk $document): self
+    {
+        return new self($document->calendar, $document->timezone);
+    }
+
+    /**
      * The machinery for one question. Definitions resolve into it as the
      * question reaches them and go away with it, so an answer never rests
      * on what an earlier question happened to resolve.
