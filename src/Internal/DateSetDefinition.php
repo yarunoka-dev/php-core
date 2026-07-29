@@ -3,18 +3,19 @@
 namespace Yarunoka\Internal;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Resolvers\YrnkResolverInterface;
 use Yarunoka\YrnkDate;
-use Closure;
 use DateTimeInterface;
 use DateTimeZone;
 
 /**
  * The shared implementation of a date set definition (a fixed list | a
- * resolver name reference | a deferred closure). The public types with
- * meaning (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
+ * resolver name reference). The public types with meaning
+ * (YrnkHolidays / YrnkBusinessHolidays / YrnkBusinessDays / YrnkCustomDefinition)
  * use this. A trait so that the types stay separate while the
  * implementation is shared; the public contract lives on each class.
+ *
+ * The two states are the two forms a date-list position accepts in the
+ * DSL, so nothing here is wider than what can be written and read back.
  *
  * @internal
  */
@@ -26,18 +27,12 @@ trait DateSetDefinition
     public readonly ?string $resolver;
 
     /**
-     * @internal
-     */
-    public readonly ?Closure $closure;
-
-    /**
      * @param  list<YrnkDate>|null  $dates
      */
-    private function __construct(?array $dates, ?string $resolver, ?Closure $closure)
+    private function __construct(?array $dates, ?string $resolver)
     {
         $this->dates = $dates;
         $this->resolver = $resolver;
-        $this->closure = $closure;
     }
 
     /**
@@ -74,7 +69,7 @@ trait DateSetDefinition
             $seen[$key] = true;
         }
 
-        return new self($parsed, null, null);
+        return new self($parsed, null);
     }
 
     /**
@@ -93,20 +88,6 @@ trait DateSetDefinition
             throw new InvalidValueException("A date-shaped string cannot be used as a resolver name: {$name}");
         }
 
-        return new self(null, $name, null);
-    }
-
-    /**
-     * A deferred list (not writable in the DSL; only when composing in
-     * PHP). An instance of the resolver contract is held wrapped in a
-     * Closure.
-     */
-    public static function deferred(Closure|YrnkResolverInterface $resolve): self
-    {
-        if ($resolve instanceof YrnkResolverInterface) {
-            $resolve = static fn(YrnkDate $from, YrnkDate $through): array => $resolve->resolve($from, $through);
-        }
-
-        return new self(null, null, $resolve);
+        return new self(null, $name);
     }
 }

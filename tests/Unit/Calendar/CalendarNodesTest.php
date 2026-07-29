@@ -32,7 +32,6 @@ class CalendarNodesTest extends TestCase
             $holidays->dates ?? [],
         ));
         $this->assertNull($holidays->resolver);
-        $this->assertNull($holidays->closure);
     }
 
     #[Test]
@@ -119,35 +118,7 @@ class CalendarNodesTest extends TestCase
         YrnkHolidays::byResolver('2026-01-01');
     }
 
-    #[Test]
-    public function deferred_holds_the_closure_unevaluated(): void
-    {
-        $calls = 0;
-        $holidays = YrnkHolidays::deferred(function () use (&$calls): array {
-            $calls++;
 
-            return [];
-        });
-
-        $this->assertNotNull($holidays->closure);
-        $this->assertSame(0, $calls);
-    }
-
-    #[Test]
-    public function deferred_accepts_a_resolver_contract_instance_unevaluated(): void
-    {
-        $resolver = new CountingResolver(['2026-01-01']);
-
-        $holidays = YrnkHolidays::deferred($resolver);
-
-        $this->assertNotNull($holidays->closure);
-        $this->assertSame(0, $resolver->calls);
-        $this->assertSame(['2026-01-01'], ($holidays->closure)(
-            new YrnkDate('2026-01-01', self::utc()),
-            new YrnkDate('2026-12-31', self::utc()),
-        ));
-        $this->assertSame(1, $resolver->calls);
-    }
 
     // ---- workweek ----
 

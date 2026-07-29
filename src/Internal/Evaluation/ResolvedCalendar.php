@@ -140,19 +140,31 @@ final class ResolvedCalendar
             return $set;
         }
 
-        $resolve = $definition->resolver !== null
-            ? ($this->registry->get($definition->resolver)
-                ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}"))
-            : $definition->closure;
-
-        if ($resolve === null) {
+        if ($definition->resolver === null) {
             throw new MissingCalendarDataException("The {$key} definition has no source of dates");
         }
 
+        $resolve = $this->registry->get($definition->resolver)
+            ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}");
+
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);
         $through = new YrnkDate("{$scope}-12-31", $this->timezone);
-        $resolved = $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $through) : $resolve($from, $through);
+        return $this->dateSetOf(
+            $resolve instanceof YrnkResolverInterface ? $resolve->resolve($from, $through) : $resolve($from, $through),
+            $key,
+        );
+    }
 
+    /**
+     * The set a resolver handed back. Takes mixed on purpose: the value
+     * crossed the boundary from host code, so what the contract says it is
+     * has to be checked rather than assumed — the spec asks implementations
+     * to validate that a resolver yields date literals.
+     *
+     * @return array<string, true>
+     */
+    private function dateSetOf(mixed $resolved, string $key): array
+    {
         if (! is_array($resolved)) {
             throw new InvalidCalendarDataException("{$key}: the resolver must return a list of date strings");
         }
