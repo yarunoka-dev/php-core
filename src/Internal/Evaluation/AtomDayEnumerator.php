@@ -15,7 +15,7 @@ use DateTimeZone;
  * Atom × (year, month) → the enumeration of matching days of that month
  * (day numbers). Atoms determined by the structure of the calendar are
  * computed directly by arithmetic; atoms backed by definition data
- * (custom references, calendar vocabulary) are picked by running the days
+ * (names, calendar vocabulary) are picked by running the days
  * of the month through the DayMatcher. The DayMatcher is the single
  * authority on membership semantics; this is its enumerating form.
  *

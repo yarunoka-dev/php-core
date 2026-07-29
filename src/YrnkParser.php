@@ -19,8 +19,8 @@ use Exception;
  * Parses a Yrnk document (RawYrnk) into a Yrnk. Delegates each element of
  * schedules to the YrnkScheduleParser, and validates here what can only be
  * validated with the whole document and its definitions together —
- * resolvability of custom references, the data behind the built-in
- * vocabulary, and resolver names.
+ * resolvability of every name, the data behind the built-in
+ * vocabulary, and the declarations the document makes.
  */
 final class YrnkParser
 {

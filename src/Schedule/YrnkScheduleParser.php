@@ -15,10 +15,10 @@ use DateTimeZone;
 
 /**
  * Parses one element of the DSL's schedules[] (RawSchedule) into a
- * YrnkSchedule, fully parsed and validated as such. That custom
- * references are not checked for existence here is not a limitation but
- * a property of the data: a YrnkSchedule carries no definitions
- * (resolving references is the job of YrnkParser / YrnkEvaluator).
+ * YrnkSchedule, fully parsed and validated as such. That names are not
+ * checked for resolvability here is not a limitation but a property of
+ * the data: a YrnkSchedule carries no definitions (resolving names is the
+ * job of YrnkParser / YrnkEvaluator).
  */
 final class YrnkScheduleParser
 {
