@@ -6,7 +6,7 @@ use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkBusinessHours;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
@@ -41,24 +41,24 @@ class ResolvedCalendarTest extends TestCase
     }
 
     #[Test]
-    public function contains_for_custom_looks_up_the_set_per_name(): void
+    public function contains_for_a_name_looks_up_the_set_per_name(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
-            custom: ['founding-day' => YrnkCustomDefinition::ofDates(['2026-10-01'], self::utc())],
+            dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())],
         ), timezone: self::utc());
 
-        $this->assertTrue($resolved->customContains('founding-day', new YrnkDate('2026-10-01', self::utc())));
-        $this->assertFalse($resolved->customContains('founding-day', new YrnkDate('2026-10-02', self::utc())));
+        $this->assertTrue($resolved->nameContains('founding-day', new YrnkDate('2026-10-01', self::utc())));
+        $this->assertFalse($resolved->nameContains('founding-day', new YrnkDate('2026-10-02', self::utc())));
     }
 
     #[Test]
-    public function an_undefined_custom_name_raises(): void
+    public function an_undefined_name_raises(): void
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(), timezone: self::utc());
 
         $this->expectException(UndefinedNameException::class);
 
-        $resolved->customContains('nowhere-to-be-found', new YrnkDate('2026-10-01', self::utc()));
+        $resolved->nameContains('nowhere-to-be-found', new YrnkDate('2026-10-01', self::utc()));
     }
 
     #[Test]
@@ -104,7 +104,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'counting',
-                resolvers: Bindings::of(['counting' => $resolver]),
+                resolverContainer: Bindings::of(['counting' => $resolver]),
             ),
             timezone: self::utc(),
         );
@@ -136,7 +136,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'broken',
-                resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
+                resolverContainer: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
             ),
             timezone: self::utc(),
         );
@@ -162,7 +162,7 @@ class ResolvedCalendarTest extends TestCase
         $resolved = new ResolvedCalendar(
             new YrnkCalendar(
                 holidays: 'jp',
-                resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
+                resolverContainer: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
             ),
             timezone: self::utc(),
         );

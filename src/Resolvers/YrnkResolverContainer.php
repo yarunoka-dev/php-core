@@ -3,7 +3,7 @@
 namespace Yarunoka\Resolvers;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Internal\Resolvers\ResolverName;
+use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Internal\Resolvers\YasumiProviders;
 
 /**
@@ -30,13 +30,17 @@ final class YrnkResolverContainer
 
     /**
      * Binds a name to what resolves it. The name is the document's, so it
-     * is held to the same rules the document is: not blank, and not shaped
-     * like a date literal (the two forms a date-list position accepts are
-     * told apart by shape).
+     * is held to the rules every name is held to — a name that can be
+     * bound is a name that can be written.
      */
     public function add(string $name, YrnkResolverInterface $resolver): void
     {
-        ResolverName::ensureUsable($name);
+        $problem = Name::problemWith($name);
+
+        if ($problem !== null) {
+            throw new InvalidValueException($problem);
+        }
+
 
         if (isset($this->bindings[$name])) {
             throw new InvalidValueException("A resolver is already bound to this name: {$name}");

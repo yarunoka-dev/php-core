@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Internal\Evaluation;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
@@ -284,9 +284,9 @@ class MatchFinderTest extends TestCase
     #[Test]
     public function a_shift_landing_searches_up_to_exactly_the_366_day_contract(): void
     {
-        // A sparse custom landing condition creates the distance.
+        // A sparse named landing condition creates the distance.
         // 2027-06-16 is exactly 366 days from the 2026-06-15 base day.
-        $lands = $this->finder(custom: ['desk-open-day' => ['2027-06-16']]);
+        $lands = $this->finder(dateSets: ['desk-open-day' => ['2027-06-16']]);
         $schedule = $this->schedule([
             'years' => [2026], 'months' => [6], 'days' => [15],
             'shift' => ['next', 'or_same', 'desk-open-day'], 'times' => ['10:00'],
@@ -307,7 +307,7 @@ class MatchFinderTest extends TestCase
     {
         // 2027-06-17 is 367 days from 2026-06-15. A contract violation, so
         // it does not land.
-        $tooFar = $this->finder(custom: ['desk-open-day' => ['2027-06-17']]);
+        $tooFar = $this->finder(dateSets: ['desk-open-day' => ['2027-06-17']]);
         $schedule = $this->schedule([
             'years' => [2026], 'months' => [6], 'days' => [15],
             'shift' => ['next', 'or_same', 'desk-open-day'], 'times' => ['10:00'],
@@ -327,7 +327,7 @@ class MatchFinderTest extends TestCase
         // The strict form starts one day past the base day but obeys the
         // same maximum displacement. 2027-06-16 is exactly 366 days from
         // the 2026-06-15 base day.
-        $lands = $this->finder(custom: ['desk-open-day' => ['2027-06-16']]);
+        $lands = $this->finder(dateSets: ['desk-open-day' => ['2027-06-16']]);
         $schedule = $this->schedule([
             'years' => [2026], 'months' => [6], 'days' => [15],
             'shift' => ['next', 'desk-open-day'], 'times' => ['10:00'],
@@ -348,7 +348,7 @@ class MatchFinderTest extends TestCase
         // the strict form too (the spec's maximum displacement of 366
         // calendar days is uniform across both forms), and the judgment
         // at a point and the judgment over a period must agree on that.
-        $tooFar = $this->finder(custom: ['desk-open-day' => ['2027-06-17']]);
+        $tooFar = $this->finder(dateSets: ['desk-open-day' => ['2027-06-17']]);
         $schedule = $this->schedule([
             'years' => [2026], 'months' => [6], 'days' => [15],
             'shift' => ['next', 'desk-open-day'], 'times' => ['10:00'],
@@ -475,17 +475,17 @@ class MatchFinderTest extends TestCase
 
     /**
      * @param  list<string>  $holidays
-     * @param  array<string, list<string>>  $custom
+     * @param  array<string, list<string>>  $dateSets
      */
-    private function finder(array $holidays = [], array $custom = []): MatchFinder
+    private function finder(array $holidays = [], array $dateSets = []): MatchFinder
     {
         $resolved = new ResolvedCalendar(new YrnkCalendar(
             holidays: YrnkHolidays::ofDates($holidays, self::utc()),
             businessHolidays: YrnkBusinessHolidays::ofDates([], self::utc()),
             businessDays: YrnkBusinessDays::ofDates([], self::utc()),
-            custom: array_map(
-                static fn(array $dates): YrnkCustomDefinition => YrnkCustomDefinition::ofDates($dates, self::utc()),
-                $custom,
+            dateSets: array_map(
+                static fn(array $dates): YrnkDateSet => YrnkDateSet::ofDates($dates, self::utc()),
+                $dateSets,
             ),
         ), timezone: self::utc());
         $dayMatcher = new DayMatcher($resolved);

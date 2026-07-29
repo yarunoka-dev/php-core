@@ -3,7 +3,7 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\InvalidYrnkException;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
 use Yarunoka\Schedule\OrdinalWeekday;
@@ -61,9 +61,9 @@ class DayAtomParserTest extends TestCase
     }
 
     #[Test]
-    public function an_unknown_word_becomes_a_custom_ref(): void
+    public function an_unknown_word_becomes_a_date_set_ref(): void
     {
-        $this->assertEquals(new CustomRef('fête-nationale'), DayAtomParser::parse('fête-nationale'));
+        $this->assertEquals(new DateSetRef('fête-nationale'), DayAtomParser::parse('fête-nationale'));
     }
 
     #[Test]

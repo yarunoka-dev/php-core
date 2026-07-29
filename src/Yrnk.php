@@ -5,6 +5,7 @@ namespace Yarunoka;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
+use Yarunoka\Internal\Parser\Name;
 use DateTimeZone;
 
 /**
@@ -12,6 +13,11 @@ use DateTimeZone;
  * between the DSL and objects — the output of YrnkParser and the input of
  * YrnkBuilder. Not something an application runtime carries around (in an
  * execution context, use YrnkEvaluator + YrnkSchedule).
+ *
+ * The declared names ride here rather than on the calendar: they are what
+ * the whole document leaves to its host, and the names they cover are
+ * written on both sides of the document (a calendar definition and the
+ * days axis of a schedule).
  */
 final readonly class Yrnk
 {
@@ -22,6 +28,7 @@ final readonly class Yrnk
 
     /**
      * @param  list<YrnkSchedule>  $schedules  Unvalidated input. An empty list violates the invariants
+     * @param  list<string>  $resolvers  The names this document leaves to its host. Empty means it leaves none
      */
     public function __construct(
         /** @internal */
@@ -29,6 +36,7 @@ final readonly class Yrnk
         public DateTimeZone $timezone,
         public YrnkCalendar $calendar,
         array $schedules,
+        public array $resolvers = [],
     ) {
         // The spec requires rejecting a declared version this
         // implementation does not know rather than interpreting it.
@@ -50,6 +58,22 @@ final readonly class Yrnk
 
         if ($schedules === []) {
             throw new InvalidValueException('schedules cannot be empty');
+        }
+
+        $seen = [];
+
+        foreach ($resolvers as $name) {
+            $problem = Name::problemWith($name);
+
+            if ($problem !== null) {
+                throw new InvalidValueException($problem);
+            }
+
+            if (isset($seen[$name])) {
+                throw new InvalidValueException("Duplicate declared name: {$name}");
+            }
+
+            $seen[$name] = true;
         }
 
         $this->schedules = $schedules;

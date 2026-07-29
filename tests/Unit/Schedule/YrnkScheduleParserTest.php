@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Unit\Schedule;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Schedule\AllDay;
 use Yarunoka\Schedule\BusinessHourRef;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\EveryGrid;
 use Yarunoka\Schedule\FixedTimes;
 use Yarunoka\Schedule\IfGuard;
@@ -51,17 +51,17 @@ class YrnkScheduleParserTest extends TestCase
         $this->assertSame(CalendarWord::Holiday, $atoms[2]);
         $this->assertInstanceOf(OrdinalWeekday::class, $atoms[3]);
         $this->assertSame(Ordinal::Third, $atoms[3]->ordinal);
-        $this->assertInstanceOf(CustomRef::class, $atoms[5]);
+        $this->assertInstanceOf(DateSetRef::class, $atoms[5]);
     }
 
     #[Test]
-    public function whether_a_custom_reference_exists_is_not_schedule_parsers_concern(): void
+    public function whether_a_name_resolves_is_not_schedule_parsers_concern(): void
     {
         // Resolving references is the job of the holders of the
         // definitions (YrnkParser / YrnkEvaluator).
         $schedule = $this->parser->parse(['days' => ['name-defined-nowhere'], 'times' => ['10:00']], self::utc());
 
-        $this->assertInstanceOf(CustomRef::class, $schedule->days?->atoms[0] ?? null);
+        $this->assertInstanceOf(DateSetRef::class, $schedule->days?->atoms[0] ?? null);
     }
 
     #[Test]
@@ -101,7 +101,7 @@ class YrnkScheduleParserTest extends TestCase
     #[Test]
     public function rejects_a_date_literal_as_a_days_atom(): void
     {
-        // A specific date is given a name under a custom definition and
+        // A specific date is given a name under date_sets and
         // referred to.
         $this->expectException(InvalidYrnkException::class);
 

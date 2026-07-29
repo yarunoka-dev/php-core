@@ -3,7 +3,7 @@
 namespace Yarunoka\Internal\Evaluation;
 
 use Yarunoka\Exceptions\InvalidValueException;
-use Yarunoka\Schedule\CustomRef;
+use Yarunoka\Schedule\DateSetRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\LastDayOfMonth;
 use Yarunoka\Schedule\MonthDay;
@@ -39,7 +39,7 @@ final readonly class DayMatcher
             $atom instanceof Weekday => self::dayOfWeek($date) === $atom->dayName,
             $atom instanceof OrdinalWeekday => $this->matchesOrdinalWeekday($atom, $date),
             $atom instanceof LastDayOfMonth => self::dayOfMonth($date) === self::daysInMonth($date),
-            $atom instanceof CustomRef => $this->calendar->customContains($atom->name, $date),
+            $atom instanceof DateSetRef => $this->calendar->nameContains($atom->name, $date),
             $atom instanceof CalendarWord => $this->matchesCalendarWord($atom, $date),
             default => throw new InvalidValueException('Unknown day expression atom: ' . get_debug_type($atom)),
         };

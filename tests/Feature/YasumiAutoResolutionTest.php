@@ -14,7 +14,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * A document may name a holiday source the host never bound, as long as
- * it spells a yasumi provider.
+ * it spells a yasumi provider. The name is still declared: what a
+ * document leaves to its host is stated by the document, and that yasumi
+ * happens to answer for it is the host's side of the arrangement.
  */
 class YasumiAutoResolutionTest extends TestCase
 {
@@ -28,6 +30,7 @@ class YasumiAutoResolutionTest extends TestCase
         $document = (new YrnkParser($resolvers ?? new YrnkResolverContainer()))->parse([
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
+            'resolvers' => [$holidays],
             'calendar' => ['holidays' => $holidays],
             'schedules' => [['days' => ['holiday'], 'times' => ['10:00']]],
         ]);

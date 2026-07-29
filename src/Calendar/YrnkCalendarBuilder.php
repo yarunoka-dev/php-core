@@ -46,9 +46,9 @@ final class YrnkCalendarBuilder
             );
         }
 
-        if ($calendar->custom !== []) {
-            foreach ($calendar->custom as $name => $definition) {
-                $raw['custom'][$name] = self::buildDateSet($definition);
+        if ($calendar->dateSets !== []) {
+            foreach ($calendar->dateSets as $name => $definition) {
+                $raw['date_sets'][$name] = self::datesOf($definition);
             }
         }
 
@@ -59,12 +59,17 @@ final class YrnkCalendarBuilder
      * @return list<string>|string
      */
     private static function buildDateSet(
-        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkCustomDefinition|string $definition,
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|string $definition,
     ): array|string {
-        if (is_string($definition)) {
-            return $definition;
-        }
+        return is_string($definition) ? $definition : self::datesOf($definition);
+    }
 
+    /**
+     * @return list<string>
+     */
+    private static function datesOf(
+        YrnkHolidays|YrnkBusinessHolidays|YrnkBusinessDays|YrnkDateSet $definition,
+    ): array {
         return array_map(
             static fn(YrnkDate $date): string => $date->format('Y-m-d'),
             $definition->dates,

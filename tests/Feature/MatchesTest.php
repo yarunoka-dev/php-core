@@ -5,7 +5,7 @@ namespace Yarunoka\Tests\Feature;
 use Yarunoka\Calendar\YrnkBusinessDays;
 use Yarunoka\Calendar\YrnkBusinessHolidays;
 use Yarunoka\Calendar\YrnkCalendar;
-use Yarunoka\Calendar\YrnkCustomDefinition;
+use Yarunoka\Calendar\YrnkDateSet;
 use Yarunoka\Calendar\YrnkHolidays;
 use Yarunoka\Calendar\YrnkWorkweek;
 use Yarunoka\Exceptions\UndefinedNameException;
@@ -195,9 +195,9 @@ class MatchesTest extends TestCase
     }
 
     #[Test]
-    public function hits_the_date_set_of_a_custom_definition(): void
+    public function hits_the_date_set_a_name_denotes(): void
     {
-        $evaluator = $this->evaluator(custom: ['founding-day' => ['2026-10-01']]);
+        $evaluator = $this->evaluator(dateSets: ['founding-day' => ['2026-10-01']]);
         $schedule = $this->schedule(['days' => ['founding-day'], 'times' => ['10:00']]);
 
         $this->assertTrue($evaluator->matches($schedule, $this->at('2026-10-01T10:00:00+09:00')));
@@ -377,7 +377,7 @@ class MatchesTest extends TestCase
     // ---- the top-level OR and errors ----
 
     #[Test]
-    public function an_undefined_custom_reference_in_a_hand_composed_tree_is_validated_before_evaluation(): void
+    public function an_undefined_name_in_a_hand_composed_tree_is_validated_before_evaluation(): void
     {
         $evaluator = $this->evaluator();
         $schedule = $this->schedule(['days' => ['name-defined-nowhere'], 'times' => ['10:00']]);
@@ -396,7 +396,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
                 holidays: 'counting',
-                resolvers: Bindings::of(['counting' => $resolver]),
+                resolverContainer: Bindings::of(['counting' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -420,7 +420,7 @@ class MatchesTest extends TestCase
         $evaluator = new YrnkEvaluator(
             calendar: new YrnkCalendar(
                 holidays: 'counting',
-                resolvers: Bindings::of(['counting' => $resolver]),
+                resolverContainer: Bindings::of(['counting' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
         );
@@ -442,14 +442,14 @@ class MatchesTest extends TestCase
      * @param  list<string>  $businessHolidays
      * @param  list<string>  $businessDays
      * @param  list<string>|null  $workweek
-     * @param  array<string, list<string>>  $custom
+     * @param  array<string, list<string>>  $dateSets
      */
     private function evaluator(
         array $holidays = [],
         array $businessHolidays = [],
         array $businessDays = [],
         ?array $workweek = null,
-        array $custom = [],
+        array $dateSets = [],
     ): YrnkEvaluator {
         return new YrnkEvaluator(
             calendar: new YrnkCalendar(
@@ -459,9 +459,9 @@ class MatchesTest extends TestCase
                 workweek: $workweek === null ? null : new YrnkWorkweek(
                     array_map(static fn(string $day) => YrnkDayName::from($day), $workweek),
                 ),
-                custom: array_map(
-                    static fn(array $dates) => YrnkCustomDefinition::ofDates($dates, self::tz()),
-                    $custom,
+                dateSets: array_map(
+                    static fn(array $dates) => YrnkDateSet::ofDates($dates, self::tz()),
+                    $dateSets,
                 ),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),

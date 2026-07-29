@@ -24,9 +24,10 @@ plus an engine that answers questions about them:
 - **A document** carries a timezone, a **calendar**, and a list of
   **schedules**. The calendar is the definitions that give meaning to the
   calendar vocabulary: holidays, business holidays, extra business days,
-  the workweek, business hours, and custom named date sets. A date set is
-  written as a fixed date list or as the name of a resolver the
-  application registers at runtime.
+  the workweek, business hours, and named date sets of the document's own.
+  Wherever a date list is expected, a **name** may be written instead —
+  either one the calendar defines, or one the document declares under
+  `resolvers` and the application binds at runtime.
 - **A schedule** combines a day expression (days of the month, weekdays,
   ordinal weekdays, calendar words such as `holiday`, day cycles), an
   optional **shift** rule ("the previous business day"), and the times of

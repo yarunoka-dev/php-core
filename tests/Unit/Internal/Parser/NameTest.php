@@ -3,12 +3,12 @@
 namespace Yarunoka\Tests\Unit\Internal\Parser;
 
 use Yarunoka\Exceptions\ReservedNameException;
-use Yarunoka\Internal\Parser\ReservedWords;
+use Yarunoka\Internal\Parser\Name;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class ReservedWordsTest extends TestCase
+class NameTest extends TestCase
 {
     #[Test]
     #[DataProvider('reservedNames')]
@@ -16,7 +16,7 @@ class ReservedWordsTest extends TestCase
     {
         $this->expectException(ReservedNameException::class);
 
-        ReservedWords::ensureUsable($name);
+        Name::ensureUsable($name);
     }
 
     /**
@@ -33,7 +33,8 @@ class ReservedWordsTest extends TestCase
             'structural word' => ['not'],
             'unit word' => ['minute'],
             'document structural key' => ['schedules'],
-            'definitions reserved key' => ['custom'],
+            'the declaration key' => ['resolvers'],
+            'definitions reserved key' => ['date_sets'],
             'digits only' => ['25'],
             'time-shaped' => ['10:00'],
             'date-shaped' => ['2026-01-01'],
@@ -45,31 +46,46 @@ class ReservedWordsTest extends TestCase
     #[Test]
     public function accepts_ordinary_names(): void
     {
-        ReservedWords::ensureUsable('fête-nationale');
-        ReservedWords::ensureUsable('garbage-days');
+        Name::ensureUsable('fête-nationale');
+        Name::ensureUsable('garbage-days');
 
         $this->expectNotToPerformAssertions();
     }
 
     #[Test]
-    public function the_reserved_words_agree_with_the_custom_name_enum_of_the_json_schema(): void
+    public function a_usable_name_has_no_problem_to_report(): void
+    {
+        $this->assertNull(Name::problemWith('founding-day'));
+        $this->assertNotNull(Name::problemWith('holidays'));
+    }
+
+    #[Test]
+    public function the_word_custom_is_a_name_again(): void
+    {
+        // The open namespace moved to date_sets, so the old key name is no
+        // longer reserved.
+        $this->assertNull(Name::problemWith('custom'));
+    }
+
+    #[Test]
+    public function the_reserved_words_agree_with_the_name_enum_of_the_json_schema(): void
     {
         // Detects drift between the schema and the PHP duplicate (the JSON
         // Schema is the authority on the syntax).
-        $enum = $this->reservedWordsInSchema('calendar.schema.json', 'customName');
+        $enum = $this->reservedWordsInSchema('primitives.schema.json', 'name');
 
-        $this->assertSame([], array_diff(ReservedWords::WORDS, $enum), 'reserved word missing from the schema');
-        $this->assertSame([], array_diff($enum, ReservedWords::WORDS), 'reserved word missing from PHP');
+        $this->assertSame([], array_diff(Name::RESERVED_WORDS, $enum), 'reserved word missing from the schema');
+        $this->assertSame([], array_diff($enum, Name::RESERVED_WORDS), 'reserved word missing from PHP');
         $this->assertSame(array_unique($enum), $enum, 'duplicate in the schema enum');
     }
 
     #[Test]
-    public function the_day_atom_word_reserved_words_are_contained_in_the_custom_name_ones(): void
+    public function the_day_atom_word_reserved_words_are_contained_in_the_name_ones(): void
     {
-        $customWords = $this->reservedWordsInSchema('calendar.schema.json', 'customName');
+        $names = $this->reservedWordsInSchema('primitives.schema.json', 'name');
         $dayAtomWords = $this->reservedWordsInSchema('schedule.schema.json', 'dayAtomWord');
 
-        $this->assertSame([], array_diff($dayAtomWords, $customWords));
+        $this->assertSame([], array_diff($dayAtomWords, $names));
     }
 
     /**
