@@ -61,8 +61,8 @@ Requires PHP 8.4 or newer. No runtime dependencies.
 ## Quick example
 
 ```php
-use Yarunoka\Parser\YrnkParser;
 use Yarunoka\YrnkEvaluator;
+use Yarunoka\YrnkParser;
 
 $json = <<<'JSON'
 {
@@ -82,10 +82,7 @@ JSON;
 $document = (new YrnkParser())->parse($json);
 $payday = $document->schedules[0];
 
-$evaluator = new YrnkEvaluator(
-    calendar: $document->calendar,
-    timezone: $document->timezone,
-);
+$evaluator = YrnkEvaluator::fromYrnk($document);
 
 // 2026-07-25 is a Saturday, so the payday shifts back to Friday the 24th.
 $evaluator->matches($payday, new DateTimeImmutable('2026-07-24T10:00:00+09:00')); // true
@@ -99,8 +96,8 @@ $evaluator->hasMatchIn($payday, $lastRunAt, $now); // true
 
 ## Documentation
 
-- [Using the PHP implementation](docs/php-usage.md) — the public classes,
-  the two contexts, and the typical firing-decision patterns
+- [Guides](docs/guides/) — what the package requires, how to install it,
+  and how to read, write, evaluate, and supply dates at runtime
 - [The spec repository](https://github.com/yarunoka-dev/spec) — the DSL
   specification. The JSON Schemas under `schema/` are a verbatim copy of
   the spec's (the spec declares that every language implementation
