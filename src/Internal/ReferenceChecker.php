@@ -10,7 +10,6 @@ use Yarunoka\Schedule\BusinessHourRef;
 use Yarunoka\Schedule\CustomRef;
 use Yarunoka\Schedule\DayAtomInterface;
 use Yarunoka\Schedule\EveryGrid;
-use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Internal\Vocabulary\CalendarWord;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkSchedule;
@@ -28,11 +27,7 @@ final class ReferenceChecker
     /**
      * @param  iterable<YrnkSchedule>  $schedules
      */
-    public static function ensureResolvable(
-        iterable $schedules,
-        YrnkCalendar $calendar,
-        YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
-    ): void
+    public static function ensureResolvable(iterable $schedules, YrnkCalendar $calendar): void
     {
         foreach ($schedules as $schedule) {
             foreach (self::atomsOf($schedule) as $atom) {
@@ -55,7 +50,7 @@ final class ReferenceChecker
         }
 
         foreach (self::resolverReferences($calendar) as $context => $name) {
-            if (! $resolvers->has($name)) {
+            if (! $calendar->resolvers->has($name)) {
                 throw new UnregisteredResolverException("Unregistered resolver name ({$context}): {$name}");
             }
         }

@@ -2,10 +2,18 @@
 
 namespace Yarunoka\Calendar;
 
+use Yarunoka\Resolvers\YrnkResolverContainer;
+
 /**
  * The definitions part of a Yrnk document. Made of the built-in
  * definitions (the five reserved keys, carrying the layer-model
- * semantics) and custom (the user's open namespace).
+ * semantics) and custom (the user's open namespace), together with what
+ * the names it references resolve to.
+ *
+ * The bindings ride along because a definition naming a resolver is only
+ * half a definition without them: whoever holds the calendar holds
+ * everything needed to answer from it, and there is no second place to
+ * hand them over and forget.
  *
  * null means "undefined" — a document that uses vocabulary or references
  * requiring that definition is a parse error. This is distinct from an
@@ -24,5 +32,6 @@ final readonly class YrnkCalendar
         public ?YrnkWorkweek $workweek = null,
         public ?YrnkBusinessHours $businessHours = null,
         public array $custom = [],
+        public YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
     ) {}
 }

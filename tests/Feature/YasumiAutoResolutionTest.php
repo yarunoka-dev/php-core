@@ -25,14 +25,14 @@ class YasumiAutoResolutionTest extends TestCase
 
     private function evaluate(string $holidays, string $at, ?YrnkResolverContainer $resolvers = null): bool
     {
-        $resolvers ??= new YrnkResolverContainer();
-        $document = (new YrnkParser($resolvers))->parse([
+        $document = (new YrnkParser($resolvers ?? new YrnkResolverContainer()))->parse([
             'version' => '1.0',
             'timezone' => 'Asia/Tokyo',
             'calendar' => ['holidays' => $holidays],
             'schedules' => [['days' => ['holiday'], 'times' => ['10:00']]],
         ]);
-        $evaluator = new YrnkEvaluator($document->calendar, $document->timezone, $resolvers);
+        // The bindings rode along on the calendar the parser built.
+        $evaluator = new YrnkEvaluator($document->calendar, $document->timezone);
 
         return $evaluator->matches($document->schedules[0], $this->at($at));
     }

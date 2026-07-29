@@ -9,7 +9,6 @@ use Yarunoka\Internal\Evaluation\MatchFinder;
 use Yarunoka\Internal\Evaluation\ResolvedCalendar;
 use Yarunoka\Internal\Evaluation\TimesExpander;
 use Yarunoka\Internal\ReferenceChecker;
-use Yarunoka\Resolvers\YrnkResolverContainer;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -37,7 +36,6 @@ final class YrnkEvaluator
     public function __construct(
         private readonly YrnkCalendar $calendar,
         private readonly DateTimeZone $timezone,
-        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
     ) {}
 
     /**
@@ -47,7 +45,7 @@ final class YrnkEvaluator
      */
     private function finder(): MatchFinder
     {
-        $resolved = new ResolvedCalendar($this->calendar, $this->timezone, $this->resolvers);
+        $resolved = new ResolvedCalendar($this->calendar, $this->timezone);
         $dayMatcher = new DayMatcher($resolved);
 
         return new MatchFinder(
@@ -135,6 +133,6 @@ final class YrnkEvaluator
      */
     private function ensureResolvable(YrnkSchedule $schedule): void
     {
-        ReferenceChecker::ensureResolvable([$schedule], $this->calendar, $this->resolvers);
+        ReferenceChecker::ensureResolvable([$schedule], $this->calendar);
     }
 }

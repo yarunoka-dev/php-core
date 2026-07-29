@@ -394,9 +394,11 @@ class MatchesTest extends TestCase
     {
         $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
-            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('counting'),
+                resolvers: Bindings::of(['counting' => $resolver]),
+            ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: Bindings::of(['counting' => $resolver]),
         );
         $schedule = $this->schedule(['days' => ['holiday'], 'times' => ['10:00']]);
 
@@ -416,9 +418,11 @@ class MatchesTest extends TestCase
     {
         $resolver = new CountingResolver(['2026-01-01']);
         $evaluator = new YrnkEvaluator(
-            calendar: new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
+            calendar: new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('counting'),
+                resolvers: Bindings::of(['counting' => $resolver]),
+            ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            resolvers: Bindings::of(['counting' => $resolver]),
         );
         $schedule = $this->schedule(['days' => ['holiday'], 'times' => ['10:00']]);
 

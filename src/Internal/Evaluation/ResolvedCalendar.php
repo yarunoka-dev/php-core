@@ -12,7 +12,6 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
-use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use Yarunoka\YrnkDate;
@@ -38,7 +37,6 @@ final class ResolvedCalendar
     public function __construct(
         private readonly YrnkCalendar $calendar,
         private readonly DateTimeZone $timezone,
-        private readonly YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
     ) {}
 
     public function holidayContains(YrnkDate $date): bool
@@ -135,7 +133,7 @@ final class ResolvedCalendar
             throw new MissingCalendarDataException("The {$key} definition has no source of dates");
         }
 
-        $resolver = $this->resolvers->get($definition->resolver)
+        $resolver = $this->calendar->resolvers->get($definition->resolver)
             ?? throw new UnregisteredResolverException("Unregistered resolver name ({$key}): {$definition->resolver}");
 
         $from = new YrnkDate("{$scope}-01-01", $this->timezone);

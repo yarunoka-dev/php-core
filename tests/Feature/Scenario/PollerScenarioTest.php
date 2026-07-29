@@ -108,11 +108,11 @@ class PollerScenarioTest extends TestCase
                 holidays: YrnkHolidays::byResolver('db-holidays'),
                 businessHolidays: YrnkBusinessHolidays::ofDates([], self::tz()),
                 businessDays: YrnkBusinessDays::ofDates([], self::tz()),
+                // A resolver is asked per question, so a poller that does
+                // not want a lookup per tick holds the answer itself.
+                resolvers: Bindings::of(['db-holidays' => $resolver]),
             ),
             timezone: new DateTimeZone('Asia/Tokyo'),
-            // A resolver is asked per question, so a poller that does not
-            // want a lookup per tick holds the answer itself.
-            resolvers: Bindings::of(['db-holidays' => $resolver]),
         );
         $poller = new RoutinePoller(
             $evaluator,

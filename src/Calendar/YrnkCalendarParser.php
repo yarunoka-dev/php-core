@@ -5,6 +5,7 @@ namespace Yarunoka\Calendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Internal\Parser\ReservedWords;
+use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
@@ -20,8 +21,11 @@ final class YrnkCalendarParser
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'custom',
     ];
 
-    public function parse(mixed $raw, DateTimeZone $timezone): YrnkCalendar
-    {
+    public function parse(
+        mixed $raw,
+        DateTimeZone $timezone,
+        YrnkResolverContainer $resolvers = new YrnkResolverContainer(),
+    ): YrnkCalendar {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
         }
@@ -48,6 +52,7 @@ final class YrnkCalendarParser
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
                 custom: array_key_exists('custom', $raw) ? self::parseCustom($raw['custom'], $timezone) : [],
+                resolvers: $resolvers,
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());

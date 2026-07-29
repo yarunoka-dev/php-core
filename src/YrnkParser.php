@@ -54,7 +54,7 @@ final class YrnkParser
         // points on the document's clock, so neither can be parsed
         // without it.
         $timezone = $this->parseTimezone($input);
-        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone);
+        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolvers);
 
         try {
             $document = new Yrnk(
@@ -67,7 +67,7 @@ final class YrnkParser
             throw new InvalidYrnkException($e->getMessage());
         }
 
-        ReferenceChecker::ensureResolvable($document->schedules, $calendar, $this->resolvers);
+        ReferenceChecker::ensureResolvable($document->schedules, $calendar);
 
         return $document;
     }

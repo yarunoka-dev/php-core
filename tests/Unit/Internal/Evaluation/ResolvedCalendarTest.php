@@ -102,8 +102,10 @@ class ResolvedCalendarTest extends TestCase
     {
         $resolver = new CountingResolver(['2026-01-01']);
         $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('counting')),
-            resolvers: Bindings::of(['counting' => $resolver]),
+            new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('counting'),
+                resolvers: Bindings::of(['counting' => $resolver]),
+            ),
             timezone: self::utc(),
         );
 
@@ -132,8 +134,10 @@ class ResolvedCalendarTest extends TestCase
     public function a_contract_violation_in_the_resolver_return_value_raises(): void
     {
         $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('broken')),
-            resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
+            new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('broken'),
+                resolvers: Bindings::of(['broken' => Bindings::returning(['2026/01/01'])]),
+            ),
             timezone: self::utc(),
         );
 
@@ -156,8 +160,10 @@ class ResolvedCalendarTest extends TestCase
     public function a_resolver_supplies_the_dates_of_the_name_it_is_bound_to(): void
     {
         $resolved = new ResolvedCalendar(
-            new YrnkCalendar(holidays: YrnkHolidays::byResolver('jp')),
-            resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
+            new YrnkCalendar(
+                holidays: YrnkHolidays::byResolver('jp'),
+                resolvers: Bindings::of(['jp' => new CountingResolver(['2026-01-01'])]),
+            ),
             timezone: self::utc(),
         );
 
