@@ -3,6 +3,11 @@ parameters:
     paths:
         - src/
         - tests/
-    # PHPUnit lives in its own vendor-bin namespace, outside the root autoloader
+        - tools/
+    # Docgen fixtures are parse-only input for the extractor, never loaded code
+    excludePaths:
+        - tools/docgen/tests/fixtures/
+    # PHPUnit and php-parser live in their own vendor-bin namespaces, outside the root autoloader
     bootstrapFiles:
         - vendor-bin/phpunit/vendor/autoload.php
+        - vendor-bin/docgen/vendor/autoload.php
