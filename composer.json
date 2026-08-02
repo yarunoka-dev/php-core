@@ -37,7 +37,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Yarunoka\\Tests\\": "tests/"
+            "Yarunoka\\Tests\\": "tests/",
+            "Yarunoka\\Docgen\\": "tools/docgen/src/"
         }
     },
     "config": {
@@ -52,5 +53,9 @@
             "target-directory": "vendor-bin"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "scripts": {
+        "docs:generate": "php tools/docgen/generate.php",
+        "docs:check": "php tools/docgen/generate.php --check"
+    }
 }
