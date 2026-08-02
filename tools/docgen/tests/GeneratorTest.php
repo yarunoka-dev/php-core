@@ -1,6 +1,6 @@
 <?php
 
-namespace Yarunoka\Tests\Unit\Docgen;
+namespace Yarunoka\Docgen\Tests;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
