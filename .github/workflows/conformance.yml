@@ -14,10 +14,6 @@ permissions:
 jobs:
   conformance:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.4', '8.5']
     env:
       # The kit version conformance is claimed against. go install builds
       # it from source and verifies it against Go's checksum database.
@@ -30,7 +26,10 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: ${{ matrix.php }}
+          # The floor of the supported range — the claim is made in the
+          # weakest environment it covers. PHP-version variance is the
+          # per-PR unit suite's business, which runs the whole matrix.
+          php-version: '8.4'
           tools: composer:v2
           coverage: none
 
