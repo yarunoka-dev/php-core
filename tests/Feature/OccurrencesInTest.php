@@ -363,6 +363,32 @@ class OccurrencesInTest extends TestCase
         )));
     }
 
+    #[Test]
+    public function a_grid_time_in_the_fall_back_overlap_is_enumerated_only_at_its_first_occurrence(): void
+    {
+        // Europe/Berlin turns 03:00 CEST back to 02:00 CET on
+        // 2021-10-31, so an hourly grid between 01:00 and 04:00 crosses
+        // the fold: wall 02:00 occurs twice and counts only as its first
+        // occurrence (+02:00), and wall 03:00 comes only after the
+        // turn-back. Pinned east of UTC, where PHP's own reading of a
+        // repeated wall time lands on the second occurrence.
+        $timezone = new DateTimeZone('Europe/Berlin');
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), $timezone);
+        $schedule = (new YrnkScheduleParser())->parse(
+            ['years' => [2021], 'months' => [10], 'days' => [31], 'times' => ['every' => [1, 'hour'], 'between' => ['01:00', '04:00']]],
+            $timezone,
+        );
+
+        $this->assertSame(
+            ['2021-10-31T01:00:00+02:00', '2021-10-31T02:00:00+02:00', '2021-10-31T03:00:00+01:00'],
+            $this->rendered($evaluator->occurrencesIn(
+                $schedule,
+                $this->at('2021-10-31T00:00:00+02:00'),
+                $this->at('2021-10-31T04:00:00+01:00'),
+            )),
+        );
+    }
+
     // ---- agreement with the other queries ----
 
     #[Test]

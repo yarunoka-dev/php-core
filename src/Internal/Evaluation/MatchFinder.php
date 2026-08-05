@@ -7,6 +7,7 @@ use Yarunoka\Schedule\DayCycle;
 use Yarunoka\Schedule\EverySequence;
 use Yarunoka\Schedule\IfGuard;
 use Yarunoka\Schedule\Shift;
+use Yarunoka\Internal\FoldResolver;
 use Yarunoka\Internal\Vocabulary\Direction;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkDateTime;
@@ -978,11 +979,13 @@ final readonly class MatchFinder
      * on the document's clock like any other wall-clock point. Built from
      * the wall reading rather than by setTime on the day, whose late
      * static binding would hand back a YrnkDate — an all-day value where
-     * a timed one belongs.
+     * a timed one belongs. PHP's own reading of a time inside the
+     * fall-back overlap can land on the second occurrence, so the
+     * resolver moves it onto the first (RFC 5545 §3.3.5).
      */
     private function atTime(YrnkDate $day, int $secondsFromMidnight): YrnkDateTime
     {
-        return new YrnkDateTime(
+        return FoldResolver::firstOccurrence(new YrnkDateTime(
             sprintf(
                 '%s %02d:%02d:%02d',
                 $day->format('Y-m-d'),
@@ -991,7 +994,7 @@ final readonly class MatchFinder
                 $secondsFromMidnight % 60,
             ),
             $this->timezone,
-        );
+        ));
     }
 
     private static function isSameDay(YrnkDate $a, YrnkDate $b): bool
