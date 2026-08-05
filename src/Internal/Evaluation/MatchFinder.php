@@ -228,7 +228,14 @@ final readonly class MatchFinder
 
             foreach ($days as $day) {
                 if ($this->dayOverlaps($day, $from->getTimestamp(), $through->getTimestamp())) {
-                    $dates[] = $day;
+                    // Days are chosen on the calendar and compared by
+                    // their wall date, so their instants only matter
+                    // here, where a day leaves as an answer standing at
+                    // the start of its day. A midnight inside the
+                    // fall-back overlap reads as the second pass, so the
+                    // answered value is moved onto the first occurrence
+                    // (RFC 5545 §3.3.5).
+                    $dates[] = FoldResolver::firstOccurrence($day);
                 }
             }
 
