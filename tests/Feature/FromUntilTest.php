@@ -195,6 +195,42 @@ class FromUntilTest extends TestCase
         ));
     }
 
+    // ---- boundaries written in the fall-back overlap ----
+
+    #[Test]
+    public function a_from_in_the_fall_back_overlap_clips_at_the_first_occurrence(): void
+    {
+        // Europe/Berlin turns 03:00 CEST back to 02:00 CET on
+        // 2021-10-31, so "2021-10-31 02:30" names two instants. The
+        // boundary resolves to the first (RFC 5545 §3.3.5), like any
+        // scheduled point — the 02:30 point falls exactly on from and is
+        // included.
+        $timezone = new DateTimeZone('Europe/Berlin');
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
+        $schedule = (new YrnkScheduleParser())->parse([
+            'from' => '2021-10-31 02:30', 'times' => ['02:30'],
+        ], $timezone);
+
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2021-10-31T02:30:00+02:00')));
+        $this->assertFalse($evaluator->matches($schedule, $this->at('2021-10-31T02:30:00+01:00')));
+    }
+
+    #[Test]
+    public function an_until_in_the_fall_back_overlap_clips_at_the_first_occurrence(): void
+    {
+        // The same fold on the until side: the range ends at the first
+        // 02:30, so the 02:00 point is the last one in and the 02:30
+        // point, exactly at until, is excluded.
+        $timezone = new DateTimeZone('Europe/Berlin');
+        $evaluator = new YrnkEvaluator(calendar: new YrnkCalendar(), timezone: $timezone);
+        $schedule = (new YrnkScheduleParser())->parse([
+            'until' => '2021-10-31 02:30', 'times' => ['02:00', '02:30'],
+        ], $timezone);
+
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2021-10-31T02:00:00+02:00')));
+        $this->assertFalse($evaluator->matches($schedule, $this->at('2021-10-31T02:30:00+02:00')));
+    }
+
     // ---- helpers ----
 
     private function evaluator(): YrnkEvaluator
