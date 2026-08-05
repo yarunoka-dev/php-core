@@ -44,6 +44,25 @@ class MatchesTest extends TestCase
     }
 
     #[Test]
+    public function a_wall_time_in_the_fall_back_overlap_matches_only_at_its_first_occurrence(): void
+    {
+        // Europe/Berlin turns 03:00 CEST back to 02:00 CET on
+        // 2021-10-31, so wall 02:30 occurs at +02:00 and again at +01:00
+        // an hour later. The point stands only at the first occurrence
+        // (RFC 5545 §3.3.5). Pinned east of UTC, where PHP's own reading
+        // of a repeated wall time lands on the second occurrence.
+        $timezone = new DateTimeZone('Europe/Berlin');
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), $timezone);
+        $schedule = (new YrnkScheduleParser())->parse(
+            ['years' => [2021], 'months' => [10], 'days' => [31], 'times' => ['02:30']],
+            $timezone,
+        );
+
+        $this->assertTrue($evaluator->matches($schedule, $this->at('2021-10-31T02:30:00+02:00')));
+        $this->assertFalse($evaluator->matches($schedule, $this->at('2021-10-31T02:30:00+01:00')));
+    }
+
+    #[Test]
     public function allday_checks_the_day_alone_and_ignores_the_time(): void
     {
         $evaluator = $this->evaluator();

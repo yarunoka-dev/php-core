@@ -46,6 +46,7 @@ class TimezoneAnomalyTest extends TestCase
             'midnight moves within its day' => ['Africa/Cairo', 2026, 4, 24, '2026-04-24'],
             'the whole day disappears' => ['Pacific/Apia', 2011, 12, 30, '2011-12-31'],
             'midnight happens twice' => ['America/Havana', 2026, 11, 1, '2026-11-01'],
+            'midnight happens twice east of UTC' => ['Asia/Amman', 2021, 10, 29, '2021-10-29'],
         ];
     }
 
@@ -124,6 +125,25 @@ class TimezoneAnomalyTest extends TestCase
         // The three queries have to name the same point.
         $this->assertTrue($evaluator->matches($schedule, DateTimeImmutable::createFromInterface($occurrences[0])));
         $this->assertTrue($this->coversTheMonth($schedule, $timezone, $year, $month));
+    }
+
+    #[Test]
+    public function a_day_whose_midnight_happens_twice_stands_at_the_first_midnight(): void
+    {
+        // Asia/Amman turned 01:00 EEST back to 00:00 EET on 2021-10-29,
+        // so that day's midnight occurs at +03:00 and again at +02:00.
+        // Both the all-day value and a timed 00:00 point stand at the
+        // first occurrence (RFC 5545 §3.3.5) — pinned east of UTC, where
+        // PHP's own reading of the repeated midnight lands on the second.
+        $timezone = new DateTimeZone('Asia/Amman');
+
+        $allday = $this->enumerate($this->allday(2021, 10, 29, $timezone), $timezone, 2021, 10);
+        $this->assertCount(1, $allday);
+        $this->assertSame('2021-10-29T00:00:00+03:00', $allday[0]->format('Y-m-d\TH:i:sP'));
+
+        $timed = $this->enumerate($this->timedAtMidnight(2021, 10, 29, $timezone), $timezone, 2021, 10);
+        $this->assertCount(1, $timed);
+        $this->assertSame('2021-10-29T00:00:00+03:00', $timed[0]->format('Y-m-d\TH:i:sP'));
     }
 
     private function allday(int $year, int $month, int $day, DateTimeZone $timezone): YrnkSchedule

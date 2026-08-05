@@ -4,6 +4,7 @@ namespace Yarunoka\Schedule;
 
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\InvalidYrnkException;
+use Yarunoka\Internal\FoldResolver;
 use Yarunoka\Internal\Parser\DayExpressionParser;
 use Yarunoka\Internal\Parser\EverySequenceParser;
 use Yarunoka\Internal\Parser\IfGuardParser;
@@ -115,7 +116,10 @@ final class YrnkScheduleParser
             throw new InvalidYrnkException("{$key} must be a \"YYYY-MM-DD HH:MM\" string: {$raw[$key]}");
         }
 
-        return new YrnkDateTime($raw[$key], $timezone);
+        // A boundary resolves like any scheduled point, so one written in
+        // the fall-back overlap stands at the first occurrence of its
+        // wall time (RFC 5545 §3.3.5) — not on the reading PHP lands on.
+        return FoldResolver::firstOccurrence(new YrnkDateTime($raw[$key], $timezone));
     }
 
     /**

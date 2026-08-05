@@ -303,6 +303,27 @@ class HasMatchInTest extends TestCase
     }
 
     #[Test]
+    public function the_fold_stands_at_the_first_occurrence_east_of_utc_too(): void
+    {
+        // 03:00 CEST → 02:00 CET on 2021-10-31 (Europe/Berlin). The same
+        // shape as above, pinned east of UTC — the side where PHP's own
+        // reading of a repeated wall time lands on the second occurrence.
+        $evaluator = new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('Europe/Berlin'));
+        $schedule = $this->schedule(['days' => [31], 'times' => ['02:30']]);
+        $from = $this->at('2021-10-31T00:00:00+02:00');
+
+        $this->assertTrue($evaluator->hasMatchIn($schedule, $from, $this->at('2021-10-31T02:30:00+02:00')));
+        $this->assertFalse($evaluator->hasMatchIn($schedule, $from, $this->at('2021-10-31T02:29:59+02:00')));
+        // There is no point in (the first occurrence, the second wall
+        // 02:30].
+        $this->assertFalse($evaluator->hasMatchIn(
+            $schedule,
+            $this->at('2021-10-31T02:30:00+02:00'),
+            $this->at('2021-10-31T02:30:00+01:00'),
+        ));
+    }
+
+    #[Test]
     public function the_every_grid_stands_no_points_in_the_second_pass_of_a_25_hour_day(): void
     {
         // The wall-clock grid stays at 24 points a day. The 01:00 hour
