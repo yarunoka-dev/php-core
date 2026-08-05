@@ -42,7 +42,7 @@ roughly "so, do we do it?". That is the question this engine exists to
 answer.
 
 The DSL is language-independent and specified in the
-[spec repository](https://github.com/yarunoka-dev/spec). This package is
+[spec repository](https://github.com/yarunoka-dev/spec/tree/1.0). This package is
 its PHP implementation.
 
 > [!WARNING]
@@ -98,7 +98,7 @@ $evaluator->hasMatchIn($payday, $lastRunAt, $now); // true
 
 - [Guides](docs/guides/) — what the package requires, how to install it,
   and how to read, write, evaluate, and supply dates at runtime
-- [The spec repository](https://github.com/yarunoka-dev/spec) — the DSL
+- [The spec repository](https://github.com/yarunoka-dev/spec/tree/1.0) — the DSL
   specification. The JSON Schemas under `schema/` are a verbatim copy of
   the spec's (the spec declares that every language implementation
   carries a copy)
