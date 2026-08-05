@@ -147,6 +147,31 @@ class YrnkParserTest extends TestCase
         (new YrnkParser())->parse($this->doc(['schedules' => []]));
     }
 
+    #[Test]
+    public function rejects_duplicate_schedules(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+        $this->expectExceptionMessage('Duplicate schedule in schedules');
+
+        (new YrnkParser())->parse($this->doc(['schedules' => [
+            ['days' => ['mon'], 'times' => ['10:00']],
+            ['days' => ['mon'], 'times' => ['10:00']],
+        ]]));
+    }
+
+    #[Test]
+    public function rejects_duplicate_schedules_spelled_in_a_different_member_order(): void
+    {
+        // JSON object equality has no member order, so uniqueItems does
+        // not either; the two spellings are one schedule.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['schedules' => [
+            ['days' => ['mon'], 'times' => ['10:00']],
+            ['times' => ['10:00'], 'days' => ['mon']],
+        ]]));
+    }
+
     // ---- calendar ----
 
     #[Test]

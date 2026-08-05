@@ -204,15 +204,45 @@ final class YrnkParser
             throw new InvalidYrnkException('schedules must be a list of schedules (a bare object cannot be written)');
         }
 
-        return array_map(
-            function (mixed $schedule) use ($timezone): YrnkSchedule {
-                if (! is_array($schedule)) {
-                    throw new InvalidYrnkException('Elements of schedules must be objects');
-                }
+        $seen = [];
+        $schedules = [];
 
-                return $this->scheduleParser->parse($schedule, $timezone);
-            },
-            $raw,
-        );
+        foreach ($raw as $schedule) {
+            if (! is_array($schedule)) {
+                throw new InvalidYrnkException('Elements of schedules must be objects');
+            }
+
+            // Compare the whole structure of the spelling, as JSON
+            // Schema's uniqueItems does. JSON object equality has no
+            // member order, so the members are canonicalized before the
+            // comparison; list order stays part of the value.
+            $key = json_encode(self::canonicalized($schedule), JSON_THROW_ON_ERROR);
+
+            if (isset($seen[$key])) {
+                throw new InvalidYrnkException('Duplicate schedule in schedules');
+            }
+
+            $seen[$key] = true;
+            $schedules[] = $this->scheduleParser->parse($schedule, $timezone);
+        }
+
+        return $schedules;
+    }
+
+    /**
+     * The spelling with every object's members in one fixed order, so
+     * that structurally equal spellings serialize identically.
+     */
+    private static function canonicalized(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        if (! array_is_list($value)) {
+            ksort($value);
+        }
+
+        return array_map(self::canonicalized(...), $value);
     }
 }
