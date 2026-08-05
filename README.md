@@ -45,11 +45,6 @@ The DSL is language-independent and specified in the
 [spec repository](https://github.com/yarunoka-dev/spec/tree/1.0). This package is
 its PHP implementation.
 
-> [!WARNING]
-> The 0.x releases exist to exercise the release pipeline and to track
-> the specification on its way to 1.0.0. They are **not intended for
-> use**. This notice will be removed at 1.0.0.
-
 ## Installation
 
 ```console
