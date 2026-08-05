@@ -111,6 +111,9 @@ class SchemaConformanceTest extends TestCase
                 '{"days": ["holiday"], "times": ["09:00"]}',
                 calendar: '{"holidays": "founding-day", "date_sets": {"founding-day": ["2026-10-01"]}}',
             )],
+            'two schedules overlapping in what they produce' => [self::doc(
+                '{"days": ["mon"], "times": ["10:00"]}, {"days": ["mon"], "times": ["10:00", "11:00"]}',
+            )],
             'a resolver name written in days' => [self::doc(
                 '{"days": ["yasumi-jp"], "times": ["09:00"]}',
                 resolvers: '["yasumi-jp"]',
@@ -167,6 +170,8 @@ class SchemaConformanceTest extends TestCase
             'a whitespace-only timezone' => ['{"version": "1.0", "timezone": "   ", "schedules": [{"times": ["09:00"]}]}'],
             'missing schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo"}'],
             'empty schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": []}'],
+            'duplicate schedules' => [self::doc('{"days": ["mon"], "times": ["10:00"]}, {"days": ["mon"], "times": ["10:00"]}')],
+            'duplicate schedules spelled in a different member order' => [self::doc('{"days": ["mon"], "times": ["10:00"]}, {"times": ["10:00"], "days": ["mon"]}')],
             'a bare object as schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": {"times": ["09:00"]}}'],
             'an unknown document key' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedule": [], "schedules": [{"times": ["09:00"]}]}'],
             'an unknown schedule key' => [self::doc('{"times": ["09:00"], "day": ["mon"]}')],
