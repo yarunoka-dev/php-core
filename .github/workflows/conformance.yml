@@ -1,11 +1,16 @@
-# The release gate against the spec's conformance kit. Dispatched by hand
-# before tagging rather than run per PR: conformance is a claim about a
-# release, not about every commit, and the tag ruleset requires this
-# check to pass on the commit a tag points at — a release without a green
-# conformance run on its commit is rejected at the push.
+# The release gate against the spec's conformance kit. Runs on every
+# push to main rather than per PR: conformance is a claim about a
+# release, and the tag ruleset requires this check to pass on the commit
+# a tag points at — running on main gives every commit a tag could point
+# at its verdict with nothing to remember to dispatch, and a release
+# without a green run on its commit is rejected at the push. Dispatch
+# stays for ad-hoc runs.
 name: conformance
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
