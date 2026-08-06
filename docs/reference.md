@@ -27,10 +27,12 @@ The declared names ride here rather than on the calendar: they are what the whol
 - `DateTimeZone $timezone`
 - `YrnkCalendar $calendar`
 - `array $resolvers`
+- `?string $label`
+- `?string $description`
 
 #### Methods
 
-- `__construct(string $version, DateTimeZone $timezone, YrnkCalendar $calendar, array $schedules, array $resolvers)`
+- `__construct(string $version, DateTimeZone $timezone, YrnkCalendar $calendar, array $schedules, array $resolvers, ?string $label, ?string $description)`
 
 ### YrnkBuilder
 
@@ -92,6 +94,11 @@ Parses a Yrnk document (RawYrnk) into a Yrnk. Delegates each element of schedule
 `final readonly class YrnkSchedule`
 
 The definition corresponding 1:1 to one element of the DSL's schedules[]. Carries structure only; evaluation happens by handing it to YrnkEvaluator. The date axes (years / months / days) combine with AND, and null means "no restriction on that axis". from / until is the validity range — a boundary that clips this schedule's set of points to [from, until), not a recurrence condition.
+
+#### Properties
+
+- `?string $label` — Annotation: one line saying what this schedule is. Inert — the language never reads it
+- `?string $description` — Annotation: a longer note; LF as the only line break. Inert likewise
 
 ## Yarunoka\Calendar
 
