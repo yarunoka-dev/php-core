@@ -17,7 +17,7 @@
     "support": {
         "issues": "https://github.com/yarunoka-dev/php-core/issues",
         "source": "https://github.com/yarunoka-dev/php-core",
-        "docs": "https://github.com/yarunoka-dev/php-core/blob/main/docs/php-usage.md"
+        "docs": "https://yarunoka.dev/docs/"
     },
     "require": {
         "php": "^8.4"
