@@ -21,6 +21,6 @@ jobs:
           persist-credentials: false
 
       - name: Check docs/ against the docs convention
-        uses: yarunoka-dev/.github/actions/docs-check@main
+        uses: yarunoka-dev/.github/actions/docs-check@1b784ca53b77299349f0232ae7899fdf4e905838 # main
         with:
           vocabulary: concepts,guides,reference
