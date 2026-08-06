@@ -1,0 +1,26 @@
+# The PR-time layer of the docs convention checks — the website's ingest
+# validation is the authoritative layer, but it only runs when a tag is
+# ingested, after a violation is already frozen. This surfaces it on the PR.
+name: docs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  convention:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check docs/ against the docs convention
+        uses: yarunoka-dev/.github/actions/docs-check@main
+        with:
+          vocabulary: concepts,guides,reference
