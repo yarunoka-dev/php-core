@@ -23,9 +23,13 @@ jobs:
   # rebuild it. The cross-repo call authenticates as the org's GitHub App —
   # its installation token is short-lived and scoped to the website
   # repository, and this job holds no GITHUB_TOKEN permissions at all.
+  # The environment adds a deployment review: the job waits for an approval
+  # before it starts, and the App's private key lives in the environment's
+  # secrets, so no job outside this gate can read it.
   rebuild-website:
     needs: release
     runs-on: ubuntu-latest
+    environment: website-rebuild
     permissions: {}
     steps:
       - name: Mint an installation token for the website
