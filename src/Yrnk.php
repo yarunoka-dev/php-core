@@ -5,6 +5,7 @@ namespace Yarunoka;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
+use Yarunoka\Internal\Annotation;
 use Yarunoka\Internal\Parser\Name;
 use DateTimeZone;
 
@@ -29,6 +30,8 @@ final readonly class Yrnk
     /**
      * @param  list<YrnkSchedule>  $schedules  Unvalidated input. An empty list violates the invariants
      * @param  list<string>  $resolvers  The names this document leaves to its host. Empty means it leaves none
+     * @param  string|null  $label  Annotation: one line saying what this document is. Inert — the language never reads it
+     * @param  string|null  $description  Annotation: a longer note; LF as the only line break. Inert likewise
      */
     public function __construct(
         /** @internal */
@@ -37,6 +40,8 @@ final readonly class Yrnk
         public YrnkCalendar $calendar,
         array $schedules,
         public array $resolvers = [],
+        public ?string $label = null,
+        public ?string $description = null,
     ) {
         // The spec requires rejecting a declared version this
         // implementation does not know rather than interpreting it.
@@ -58,6 +63,14 @@ final readonly class Yrnk
 
         if ($schedules === []) {
             throw new InvalidValueException('schedules cannot be empty');
+        }
+
+        if ($this->label !== null) {
+            Annotation::ensureLabel($this->label);
+        }
+
+        if ($this->description !== null) {
+            Annotation::ensureDescription($this->description);
         }
 
         $seen = [];

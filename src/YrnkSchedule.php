@@ -3,6 +3,7 @@
 namespace Yarunoka;
 
 use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Internal\Annotation;
 use Yarunoka\Schedule\DayCycle;
 use Yarunoka\Schedule\DayExpression;
 use Yarunoka\Schedule\EverySequence;
@@ -60,12 +61,24 @@ final readonly class YrnkSchedule
         public ?YrnkDateTime $from = null,
         /** @internal */
         public ?YrnkDateTime $until = null,
+        /** Annotation: one line saying what this schedule is. Inert — the language never reads it */
+        public ?string $label = null,
+        /** Annotation: a longer note; LF as the only line break. Inert likewise */
+        public ?string $description = null,
     ) {
         $this->years = self::validateAxis($years, 'years', 1, 9999);
         $this->months = self::validateAxis($months, 'months', 1, 12);
         $this->ensureRangeOrdered();
         $this->ensureCountingAnchored();
         $this->ensureSequenceStandsAlone();
+
+        if ($this->label !== null) {
+            Annotation::ensureLabel($this->label);
+        }
+
+        if ($this->description !== null) {
+            Annotation::ensureDescription($this->description);
+        }
     }
 
     private function ensureRangeOrdered(): void

@@ -23,7 +23,7 @@ use DateTimeZone;
  */
 final class YrnkScheduleParser
 {
-    private const array KNOWN_KEYS = ['from', 'until', 'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every'];
+    private const array KNOWN_KEYS = ['from', 'until', 'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every', 'label', 'description'];
 
     /** The from / until literal: zero-padded, a single space, no seconds. */
     private const string BOUNDARY_PATTERN = '/\\A\\d{4}-\\d{2}-\\d{2} (?:[01]\\d|2[0-3]):[0-5]\\d\\z/';
@@ -53,12 +53,36 @@ final class YrnkScheduleParser
                 if: array_key_exists('if', $raw) ? IfGuardParser::parse($raw['if']) : null,
                 from: $this->parseBoundary($raw, 'from', $timezone),
                 until: $this->parseBoundary($raw, 'until', $timezone),
+                label: self::parseAnnotation($raw, 'label'),
+                description: self::parseAnnotation($raw, 'description'),
             );
         } catch (InvalidValueException $e) {
             // A node invariant violation is reported as a document syntax
             // error when the value came from a document.
             throw new InvalidYrnkException($e->getMessage());
         }
+    }
+
+    /**
+     * The shape only — the content rules (length, control and invisible
+     * characters) are the YrnkSchedule invariants, so a built schedule is
+     * held to them the same as a parsed one.
+     *
+     * @param  array<mixed>  $raw
+     */
+    private static function parseAnnotation(array $raw, string $key): ?string
+    {
+        if (! array_key_exists($key, $raw)) {
+            return null;
+        }
+
+        if (! is_string($raw[$key])) {
+            $given = get_debug_type($raw[$key]);
+
+            throw new InvalidYrnkException("{$key} must be a string: {$given}");
+        }
+
+        return $raw[$key];
     }
 
     /**

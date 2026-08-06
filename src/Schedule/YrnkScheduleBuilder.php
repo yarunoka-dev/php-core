@@ -21,6 +21,15 @@ final class YrnkScheduleBuilder
     {
         $raw = [];
 
+        // Annotations lead, as in the document builder.
+        if ($schedule->label !== null) {
+            $raw['label'] = $schedule->label;
+        }
+
+        if ($schedule->description !== null) {
+            $raw['description'] = $schedule->description;
+        }
+
         if ($schedule->from !== null) {
             $raw['from'] = $schedule->from->format('Y-m-d H:i');
         }

@@ -24,7 +24,7 @@ use Exception;
  */
 final class YrnkParser
 {
-    private const array KNOWN_KEYS = ['version', 'timezone', 'resolvers', 'calendar', 'schedules'];
+    private const array KNOWN_KEYS = ['version', 'timezone', 'resolvers', 'calendar', 'schedules', 'label', 'description'];
 
     public function __construct(
         private readonly YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
@@ -66,6 +66,8 @@ final class YrnkParser
                 calendar: $calendar,
                 schedules: $this->parseSchedules($input, $timezone),
                 resolvers: $this->parseResolvers($input),
+                label: self::parseAnnotation($input, 'label'),
+                description: self::parseAnnotation($input, 'description'),
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());
@@ -79,6 +81,28 @@ final class YrnkParser
         ReferenceChecker::ensureResolvable($document->schedules, $calendar);
 
         return $document;
+    }
+
+    /**
+     * The shape only — the content rules (length, control and invisible
+     * characters) are the Yrnk invariants, so a built document is held to
+     * them the same as a parsed one.
+     *
+     * @param  array<mixed>  $input
+     */
+    private static function parseAnnotation(array $input, string $key): ?string
+    {
+        if (! array_key_exists($key, $input)) {
+            return null;
+        }
+
+        if (! is_string($input[$key])) {
+            $given = get_debug_type($input[$key]);
+
+            throw new InvalidYrnkException("{$key} must be a string: {$given}");
+        }
+
+        return $input[$key];
     }
 
     /**

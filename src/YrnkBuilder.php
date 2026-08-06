@@ -22,10 +22,20 @@ final class YrnkBuilder
      */
     public function build(Yrnk $document): array
     {
-        $raw = [
-            'version' => $document->version,
-            'timezone' => $document->timezone->getName(),
-        ];
+        $raw = [];
+
+        // Annotations lead: a labeled document tells the reader what it is
+        // before how to read it.
+        if ($document->label !== null) {
+            $raw['label'] = $document->label;
+        }
+
+        if ($document->description !== null) {
+            $raw['description'] = $document->description;
+        }
+
+        $raw['version'] = $document->version;
+        $raw['timezone'] = $document->timezone->getName();
 
         // A document that leaves nothing to its host omits the key rather
         // than writing an empty list.

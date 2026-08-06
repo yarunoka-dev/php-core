@@ -46,6 +46,8 @@ final class Name
         'version', 'timezone', 'resolvers', 'calendar', 'schedules',
         'years', 'months', 'days', 'shift', 'if', 'times', 'allday', 'every', 'between', 'from', 'until',
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'date_sets',
+        // The annotation fields
+        'label', 'description',
     ];
 
     /**
