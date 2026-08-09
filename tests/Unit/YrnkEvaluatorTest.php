@@ -3,6 +3,8 @@
 namespace Yarunoka\Tests\Unit;
 
 use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Calendar\YrnkDateSet;
+use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
 use Yarunoka\YrnkParser;
@@ -80,6 +82,42 @@ class YrnkEvaluatorTest extends TestCase
             $document->schedules[0],
             new DateTimeImmutable('2026-07-19 16:00:00', new DateTimeZone('UTC')),
         ));
+    }
+
+    #[Test]
+    public function ensure_resolvable_passes_schedules_whose_references_all_resolve(): void
+    {
+        // The check logic is ReferenceChecker's; this covers the public entry.
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['founding-day'], 'times' => ['09:00']], self::utc());
+        $evaluator = new YrnkEvaluator(
+            new YrnkCalendar(dateSets: ['founding-day' => YrnkDateSet::ofDates(['2026-10-01'], self::utc())]),
+            new DateTimeZone('Asia/Tokyo'),
+        );
+
+        $evaluator->ensureResolvable([$schedule]);
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function ensure_resolvable_raises_without_any_question_being_asked(): void
+    {
+        $this->expectException(UndefinedNameException::class);
+
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['founding-day'], 'times' => ['09:00']], self::utc());
+
+        $this->evaluator()->ensureResolvable([$schedule]);
+    }
+
+    #[Test]
+    public function ensure_resolvable_checks_every_schedule_of_the_list(): void
+    {
+        $this->expectException(UndefinedNameException::class);
+
+        $fine = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+        $broken = (new YrnkScheduleParser())->parse(['days' => ['founding-day'], 'times' => ['09:00']], self::utc());
+
+        $this->evaluator()->ensureResolvable([$fine, $broken]);
     }
 
     private function evaluator(): YrnkEvaluator
