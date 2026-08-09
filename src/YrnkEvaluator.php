@@ -23,7 +23,9 @@ use DateTimeZone;
  * calendar arithmetic, hierarchical evaluation, grid expansion).
  * Questions about the top-level OR (the schedules list) are composed by
  * the caller asking per branch (any for the judgments; a merge of the
- * per-branch lists for the enumeration).
+ * per-branch lists for the enumeration). The validation every question
+ * runs first is also askable on its own (ensureResolvable), for a caller
+ * that wants wiring mistakes surfaced eagerly.
  *
  * "Should this fire" does not live here. Firing, catch-up, and grace are
  * expressed by the caller through how it cuts the period it asks about
@@ -84,7 +86,7 @@ final class YrnkEvaluator
      */
     public function matches(YrnkSchedule $schedule, DateTimeInterface $at): bool
     {
-        $this->ensureResolvable($schedule);
+        $this->ensureResolvable([$schedule]);
 
         return $this->finder()->matches($schedule, DateTimeImmutable::createFromInterface($at));
     }
@@ -103,7 +105,7 @@ final class YrnkEvaluator
      */
     public function hasMatchIn(YrnkSchedule $schedule, DateTimeInterface $after, DateTimeInterface $through): bool
     {
-        $this->ensureResolvable($schedule);
+        $this->ensureResolvable([$schedule]);
 
         return $this->finder()->hasMatchIn(
             $schedule,
@@ -132,7 +134,7 @@ final class YrnkEvaluator
      */
     public function occurrencesIn(YrnkSchedule $schedule, DateTimeInterface $from, DateTimeInterface $through): array
     {
-        $this->ensureResolvable($schedule);
+        $this->ensureResolvable([$schedule]);
 
         return $this->finder()->occurrencesIn(
             $schedule,
@@ -142,12 +144,20 @@ final class YrnkEvaluator
     }
 
     /**
-     * A hand-composed tree may arrive, so resolvability of references is
-     * validated before evaluation (a document via YrnkParser is guarded
-     * twice).
+     * Would every name these schedules write be answered here? The same
+     * validation every question runs first — a hand-composed tree may
+     * arrive, so resolvability of references is checked before evaluation
+     * (a document via YrnkParser is guarded twice) — reachable on its
+     * own, for a caller that wants a wiring mistake surfaced before a
+     * schedule is stored or a question is asked. Consults the definitions
+     * and the bindings' names only and never invokes a resolver, so
+     * passing says the references are answerable, not what the answers
+     * will be.
+     *
+     * @param  iterable<YrnkSchedule>  $schedules
      */
-    private function ensureResolvable(YrnkSchedule $schedule): void
+    public function ensureResolvable(iterable $schedules): void
     {
-        ReferenceChecker::ensureResolvable([$schedule], $this->calendar);
+        ReferenceChecker::ensureResolvable($schedules, $this->calendar);
     }
 }
