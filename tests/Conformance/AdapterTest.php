@@ -175,18 +175,51 @@ class AdapterTest extends TestCase
         $this->assertSame(['invalid' => true], $response);
     }
 
-    // ---- breakage ----
+    // ---- emit ----
 
     #[Test]
-    public function an_emit_request_is_breakage(): void
+    public function answers_an_emit_request_with_the_round_tripped_document(): void
     {
-        $this->expectException(RuntimeException::class);
+        $document = $this->document(['days' => [25], 'times' => ['10:00']]);
 
-        (new Adapter())->handle([
-            'action' => 'emit',
-            'document' => $this->document(['days' => [25], 'times' => ['10:00']]),
-        ]);
+        $response = (new Adapter())->handle(['action' => 'emit', 'document' => $document]);
+
+        $this->assertSame(['document' => $document], $response);
     }
+
+    #[Test]
+    public function an_emit_request_parses_with_its_bindings(): void
+    {
+        // A document declaring resolvers does not even parse without its
+        // bindings, so emit requests carry them too (the kit's protocol).
+        $document = [
+            'version' => '1.0',
+            'timezone' => 'Asia/Tokyo',
+            'resolvers' => ['company-closures'],
+            'schedules' => [['days' => ['company-closures'], 'allday' => true]],
+        ];
+
+        $response = (new Adapter())->handle([
+            'action' => 'emit',
+            'document' => $document,
+            'bindings' => ['company-closures' => ['2026-08-05']],
+        ]);
+
+        $this->assertSame(['document' => $document], $response);
+    }
+
+    #[Test]
+    public function answers_invalid_for_an_emit_request_the_parser_rejects(): void
+    {
+        $document = $this->document(['days' => [25], 'times' => ['10:00']]);
+        $document['version'] = '9.9';
+
+        $response = (new Adapter())->handle(['action' => 'emit', 'document' => $document]);
+
+        $this->assertSame(['invalid' => true], $response);
+    }
+
+    // ---- breakage ----
 
     #[Test]
     public function an_unknown_query_type_is_breakage(): void

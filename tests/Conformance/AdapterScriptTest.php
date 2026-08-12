@@ -9,7 +9,8 @@ use PHPUnit\Framework\TestCase;
  * Verifies the adapter entry script the runner starts: one request read
  * from stdin, one JSON answer on stdout, exit status 0 — including for
  * an invalid answer, which the protocol makes a normal answer. Breakage
- * (an emit request) exits non-zero with the reason on stderr.
+ * (a request without a document) exits non-zero with the reason on
+ * stderr.
  */
 class AdapterScriptTest extends TestCase
 {
@@ -43,16 +44,25 @@ class AdapterScriptTest extends TestCase
     }
 
     #[Test]
-    public function fails_an_emit_request_with_the_reason_on_stderr(): void
+    public function answers_an_emit_request_with_the_document_on_stdout(): void
     {
         $run = $this->run_adapter([
             'action' => 'emit',
             'document' => $this->document(),
         ]);
 
+        $this->assertSame(0, $run['status'], $run['stderr']);
+        $this->assertSame(['document' => $this->document()], json_decode($run['stdout'], associative: true));
+    }
+
+    #[Test]
+    public function fails_a_request_without_a_document_with_the_reason_on_stderr(): void
+    {
+        $run = $this->run_adapter(['action' => 'eval']);
+
         $this->assertSame(1, $run['status']);
         $this->assertSame('', $run['stdout']);
-        $this->assertStringContainsString('emit is not supported', $run['stderr']);
+        $this->assertStringContainsString('document', $run['stderr']);
     }
 
     #[Test]
