@@ -44,6 +44,9 @@ final class YrnkScheduleParser
         }
 
         try {
+            [$from, $fromLiteral] = $this->parseBoundary($raw, 'from', $timezone);
+            [$until, $untilLiteral] = $this->parseBoundary($raw, 'until', $timezone);
+
             return new YrnkSchedule(
                 times: $this->parseTimeSpec($raw),
                 years: $this->parseIntAxis($raw['years'] ?? null, 'years'),
@@ -51,8 +54,10 @@ final class YrnkScheduleParser
                 days: array_key_exists('days', $raw) ? DayExpressionParser::parse($raw['days']) : null,
                 shift: array_key_exists('shift', $raw) ? ShiftParser::parse($raw['shift']) : null,
                 if: array_key_exists('if', $raw) ? IfGuardParser::parse($raw['if']) : null,
-                from: $this->parseBoundary($raw, 'from', $timezone),
-                until: $this->parseBoundary($raw, 'until', $timezone),
+                from: $from,
+                until: $until,
+                fromLiteral: $fromLiteral,
+                untilLiteral: $untilLiteral,
                 label: self::parseAnnotation($raw, 'label'),
                 description: self::parseAnnotation($raw, 'description'),
             );
@@ -119,12 +124,17 @@ final class YrnkScheduleParser
     }
 
     /**
+     * The boundary as the instant it resolves to, paired with its authored
+     * spelling — a wall time inside a spring-forward gap resolves forward,
+     * so the instant alone cannot answer the document back as written.
+     *
      * @param  array<mixed>  $raw
+     * @return array{?YrnkDateTime, ?string}
      */
-    private function parseBoundary(array $raw, string $key, DateTimeZone $timezone): ?YrnkDateTime
+    private function parseBoundary(array $raw, string $key, DateTimeZone $timezone): array
     {
         if (! array_key_exists($key, $raw)) {
-            return null;
+            return [null, null];
         }
 
         if (! is_string($raw[$key])) {
@@ -143,7 +153,7 @@ final class YrnkScheduleParser
         // A boundary resolves like any scheduled point, so one written in
         // the fall-back overlap stands at the first occurrence of its
         // wall time (RFC 5545 §3.3.5) — not on the reading PHP lands on.
-        return FoldResolver::firstOccurrence(new YrnkDateTime($raw[$key], $timezone));
+        return [FoldResolver::firstOccurrence(new YrnkDateTime($raw[$key], $timezone)), $raw[$key]];
     }
 
     /**

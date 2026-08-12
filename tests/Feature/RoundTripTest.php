@@ -94,6 +94,17 @@ class RoundTripTest extends TestCase
                         'times' => ['every' => [90, 'minute'], 'between' => ['08:30', '24:00']]],
                 ],
             ]],
+            'boundaries inside a spring-forward gap stay as written' => [[
+                'version' => '1.0',
+                'timezone' => 'Europe/Berlin',
+                'schedules' => [
+                    // 02:30 and 02:45 do not exist on 2021-03-28 (the clock
+                    // jumps 02:00 -> 03:00). Evaluation resolves them
+                    // forward, but the document keeps the authored spelling.
+                    ['from' => '2021-03-28 02:30', 'until' => '2021-03-28 02:45',
+                        'years' => [2021], 'months' => [3], 'days' => [28], 'times' => ['03:30']],
+                ],
+            ]],
             'a business_hour reference and if' => [[
                 'version' => '1.0',
                 // A backward link is a tz database entry and must round-trip
