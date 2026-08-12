@@ -4,6 +4,7 @@ namespace Yarunoka\Tests\Conformance;
 
 use Yarunoka\Exceptions\ExceptionInterface;
 use Yarunoka\Resolvers\YrnkResolverContainer;
+use Yarunoka\YrnkBuilder;
 use Yarunoka\YrnkDate;
 use Yarunoka\YrnkDateTime;
 use Yarunoka\YrnkEvaluator;
@@ -16,10 +17,11 @@ use RuntimeException;
  * kit's docs/protocol.md). Thin wiring by principle: the document and
  * the bindings go to the implementation unvalidated and unmodified, so
  * that a case carrying broken input reaches what it is aimed at. What
- * the implementation throws at is answered invalid; what this adapter
- * itself cannot do — emit (php-core has no serializer), a query type or
- * an envelope shape the runner never sends — is breakage and throws.
+ * the implementation throws at is answered invalid; what only a broken
+ * runner would send — an unknown query type, an envelope shape outside
+ * the protocol — is breakage and throws.
  *
+ * An emit request is answered by YrnkBuilder off the parsed document.
  * The evaluator's questions are per schedule, so the top-level OR is
  * composed here: any for the judgments, a merge for the enumeration.
  */
@@ -31,10 +33,6 @@ final class Adapter
      */
     public function handle(array $request): array
     {
-        if (($request['action'] ?? null) === 'emit') {
-            throw new RuntimeException('emit is not supported: php-core has no serializer');
-        }
-
         $document = $request['document'] ?? null;
 
         if (! is_array($document)) {
@@ -54,6 +52,10 @@ final class Adapter
             $parsed = (new YrnkParser($container))->parse($document);
         } catch (ExceptionInterface) {
             return ['invalid' => true];
+        }
+
+        if (($request['action'] ?? null) === 'emit') {
+            return ['document' => (new YrnkBuilder())->build($parsed)];
         }
 
         $query = $request['query'] ?? null;

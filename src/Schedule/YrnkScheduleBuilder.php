@@ -30,12 +30,15 @@ final class YrnkScheduleBuilder
             $raw['description'] = $schedule->description;
         }
 
+        // A parsed schedule carries the authored boundary spelling, which
+        // the resolved instant cannot reproduce for a wall time inside a
+        // spring-forward gap; a built one formats the instant itself.
         if ($schedule->from !== null) {
-            $raw['from'] = $schedule->from->format('Y-m-d H:i');
+            $raw['from'] = $schedule->fromLiteral ?? $schedule->from->format('Y-m-d H:i');
         }
 
         if ($schedule->until !== null) {
-            $raw['until'] = $schedule->until->format('Y-m-d H:i');
+            $raw['until'] = $schedule->untilLiteral ?? $schedule->until->format('Y-m-d H:i');
         }
 
         if ($schedule->years !== null) {
