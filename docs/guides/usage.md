@@ -86,7 +86,9 @@ use Yarunoka\Schedule\YrnkScheduleBuilder;
 again produces the same array you started from — not an equivalent
 spelling, the same one. The language has no scalar sugar and no optional
 punctuation precisely so that this holds, which is what makes it safe to
-let a UI parse, edit, and write back.
+let a UI parse, edit, and write back. The one tolerated redundancy is an
+empty object: an empty `calendar` or `date_sets` says nothing, is
+accepted, and comes back omitted — nothing a document says is lost.
 
 ## Composing a document in PHP
 
