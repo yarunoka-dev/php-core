@@ -51,5 +51,5 @@ jobs:
       - name: Install the conformance kit
         run: go install "github.com/yarunoka-dev/test/cmd/yarunoka-test@${KIT_VERSION}"
 
-      - name: Run the conformance suite (eval)
-        run: '"$(go env GOPATH)/bin/yarunoka-test" eval php tests/Conformance/bin/adapter.php'
+      - name: Run the conformance suite (eval and emit)
+        run: '"$(go env GOPATH)/bin/yarunoka-test" all php tests/Conformance/bin/adapter.php'
