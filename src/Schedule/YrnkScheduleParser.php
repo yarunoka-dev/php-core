@@ -56,10 +56,10 @@ final class YrnkScheduleParser
                 if: array_key_exists('if', $raw) ? IfGuardParser::parse($raw['if']) : null,
                 from: $from,
                 until: $until,
-                fromLiteral: $fromLiteral,
-                untilLiteral: $untilLiteral,
                 label: self::parseAnnotation($raw, 'label'),
                 description: self::parseAnnotation($raw, 'description'),
+                fromLiteral: $fromLiteral,
+                untilLiteral: $untilLiteral,
             );
         } catch (InvalidValueException $e) {
             // A node invariant violation is reported as a document syntax

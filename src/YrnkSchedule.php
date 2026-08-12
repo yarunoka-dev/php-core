@@ -61,14 +61,17 @@ final readonly class YrnkSchedule
         public ?YrnkDateTime $from = null,
         /** @internal */
         public ?YrnkDateTime $until = null,
-        /** @internal The authored from spelling. A wall time inside a spring-forward gap resolves forward into $from, so the instant alone cannot answer the document back as written */
-        public ?string $fromLiteral = null,
-        /** @internal The authored until spelling, kept for the same reason */
-        public ?string $untilLiteral = null,
         /** Annotation: one line saying what this schedule is. Inert — the language never reads it */
         public ?string $label = null,
         /** Annotation: a longer note; LF as the only line break. Inert likewise */
         public ?string $description = null,
+        // The literals come last so that a positional caller of the
+        // pre-literal signature keeps its meaning (both are ?string, so a
+        // shifted label would bind silently).
+        /** @internal The authored from spelling. A wall time inside a spring-forward gap resolves forward into $from, so the instant alone cannot answer the document back as written */
+        public ?string $fromLiteral = null,
+        /** @internal The authored until spelling, kept for the same reason */
+        public ?string $untilLiteral = null,
     ) {
         $this->years = self::validateAxis($years, 'years', 1, 9999);
         $this->months = self::validateAxis($months, 'months', 1, 12);
