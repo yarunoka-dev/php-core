@@ -70,6 +70,8 @@ The evaluator. A service holding configuration (the definitions and the timezone
 
 "Should this fire" does not live here. Firing, catch-up, and grace are expressed by the caller through how it cuts the period it asks about (hasMatchIn(last_run_at, now) is the firing decision). Definitions resolve per question and are not carried between them, so an answer always rests on what the resolvers say at the time it is asked.
 
+Evaluation works over the date domain — calendar days 0001-01-01 through 9999-12-31, read on the configured timezone's clock. At its edges evaluation ends rather than fails: a recurrence generates only its intersection with the domain, a shift search that would leave it finds no landing, an if whose neighbour lies outside fails the whole guard, and a query is answered on its overlap with the domain — a query lying entirely outside answers empty, never an error.
+
 #### Methods
 
 - `__construct(YrnkCalendar $calendar, DateTimeZone $timezone)`
