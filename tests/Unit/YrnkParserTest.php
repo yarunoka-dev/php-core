@@ -66,6 +66,50 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
+    public function rejects_a_document_writing_a_member_name_twice(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
+    public function rejects_a_member_name_colliding_through_an_escape(): void
+    {
+        // JSON decides member equality on the resolved characters, never
+        // on the written bytes.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "\u0074imezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
+    public function rejects_a_duplicate_member_name_in_a_schedule(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "schedules": [{"days": [1], "days": [2], "times": ["09:00"]}]}',
+        );
+    }
+
+    #[Test]
+    public function a_duplicate_member_name_is_rejected_whatever_version_the_document_declares(): void
+    {
+        // A determination of behavior 1.0 left undefined, so it reaches
+        // documents declaring 1.0 too.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.0", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
     public function rejects_an_unknown_document_key(): void
     {
         $this->expectException(InvalidYrnkException::class);

@@ -88,7 +88,7 @@ Parses a Yrnk document (RawYrnk) into a Yrnk. Delegates each element of schedule
 #### Methods
 
 - `__construct(YrnkResolverContainer $resolverContainer, YrnkScheduleParser $scheduleParser, YrnkCalendarParser $calendarParser)`
-- `parse(string|array $input): Yrnk`
+- `parse(string|array $input): Yrnk` — The language rejects an object writing the same member name twice, which only the document text can show — decoding quietly keeps one of the duplicates. String input is therefore scanned before its decoded value is trusted; a caller handing in an already-decoded array forfeits that validation.
 
 ### YrnkSchedule
 

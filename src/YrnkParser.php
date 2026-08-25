@@ -8,6 +8,7 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Calendar\YrnkCalendarParser;
+use Yarunoka\Internal\Parser\DuplicateMemberScanner;
 use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverContainer;
@@ -33,6 +34,12 @@ final class YrnkParser
     ) {}
 
     /**
+     * The language rejects an object writing the same member name twice,
+     * which only the document text can show — decoding quietly keeps one
+     * of the duplicates. String input is therefore scanned before its
+     * decoded value is trusted; a caller handing in an already-decoded
+     * array forfeits that validation.
+     *
      * @param  string|array<mixed>  $input  A JSON string or a decoded array
      */
     public function parse(string|array $input): Yrnk
@@ -43,6 +50,8 @@ final class YrnkParser
             if (! is_array($decoded)) {
                 throw new InvalidYrnkException('A Yrnk document must be a JSON object');
             }
+
+            DuplicateMemberScanner::scan($input);
 
             $input = $decoded;
         }
