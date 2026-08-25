@@ -110,6 +110,45 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
+    public function rejects_an_empty_calendar_object_in_a_1_1_document(): void
+    {
+        // A document with no definitions omits the key, so that the
+        // statement has a single spelling.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'calendar' => []]));
+    }
+
+    #[Test]
+    public function rejects_an_empty_date_sets_object_in_a_1_1_document(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'calendar' => ['date_sets' => []]]));
+    }
+
+    #[Test]
+    public function accepts_an_empty_calendar_object_in_a_1_0_document(): void
+    {
+        // Validity follows the declared version: under 1.0's rules an
+        // empty calendar means the same as omitting the key.
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'calendar' => []]));
+
+        $this->assertSame([], $document->calendar->dateSets);
+    }
+
+    #[Test]
+    public function accepts_an_empty_date_sets_object_in_a_1_0_document(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc([
+            'version' => '1.0',
+            'calendar' => ['holidays' => ['2026-01-01'], 'date_sets' => []],
+        ]));
+
+        $this->assertSame([], $document->calendar->dateSets);
+    }
+
+    #[Test]
     public function rejects_an_unknown_document_key(): void
     {
         $this->expectException(InvalidYrnkException::class);

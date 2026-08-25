@@ -62,15 +62,19 @@ final class YrnkParser
             throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
-        // The timezone is read first: a boundary and a calendar date are
-        // points on the document's clock, so neither can be parsed
-        // without it.
+        // The version is read first — 1.1 carries validation rules that
+        // bind only documents declaring it — and then the timezone: a
+        // boundary and a calendar date are points on the document's
+        // clock, so neither can be parsed without it.
+        $version = $this->parseVersion($input);
         $timezone = $this->parseTimezone($input);
-        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolverContainer);
+        $calendar = array_key_exists('calendar', $input)
+            ? $this->calendarParser->parse($input['calendar'], $timezone, $this->resolverContainer, $version)
+            : new YrnkCalendar(resolverContainer: $this->resolverContainer);
 
         try {
             $document = new Yrnk(
-                version: $this->parseVersion($input),
+                version: $version,
                 timezone: $timezone,
                 calendar: $calendar,
                 schedules: $this->parseSchedules($input, $timezone),

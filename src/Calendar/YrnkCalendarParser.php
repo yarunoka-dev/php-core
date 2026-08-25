@@ -21,13 +21,21 @@ final class YrnkCalendarParser
         'holidays', 'business_holidays', 'business_days', 'workweek', 'business_hours', 'date_sets',
     ];
 
+    /**
+     * @param  string  $version  The document's declared version. Validity follows it: 1.1 rejects the empty-object spellings that 1.0 reads as omission
+     */
     public function parse(
         mixed $raw,
         DateTimeZone $timezone,
         YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
+        string $version = '1.1',
     ): YrnkCalendar {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('calendar must be an object');
+        }
+
+        if ($raw === [] && $version !== '1.0') {
+            throw new InvalidYrnkException('calendar cannot be empty (a document with no definitions omits the key)');
         }
 
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
@@ -51,7 +59,7 @@ final class YrnkCalendarParser
                 businessHours: array_key_exists('business_hours', $raw)
                     ? self::parseBusinessHours($raw['business_hours'])
                     : null,
-                dateSets: array_key_exists('date_sets', $raw) ? self::parseDateSets($raw['date_sets'], $timezone) : [],
+                dateSets: array_key_exists('date_sets', $raw) ? self::parseDateSets($raw['date_sets'], $timezone, $version) : [],
                 resolverContainer: $resolverContainer,
             );
         } catch (InvalidValueException $e) {
@@ -155,10 +163,14 @@ final class YrnkCalendarParser
      *
      * @return array<string, YrnkDateSet>
      */
-    private static function parseDateSets(mixed $raw, DateTimeZone $timezone): array
+    private static function parseDateSets(mixed $raw, DateTimeZone $timezone, string $version): array
     {
         if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
             throw new InvalidYrnkException('date_sets must be an object of name to date list');
+        }
+
+        if ($raw === [] && $version !== '1.0') {
+            throw new InvalidYrnkException('date_sets cannot be empty (a calendar with no named sets omits the key)');
         }
 
         $dateSets = [];

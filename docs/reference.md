@@ -173,7 +173,7 @@ The parser for the definitions part (RawCalendar). The top level is the closed s
 
 #### Methods
 
-- `parse(mixed $raw, DateTimeZone $timezone, YrnkResolverContainer $resolverContainer): YrnkCalendar`
+- `parse(mixed $raw, DateTimeZone $timezone, YrnkResolverContainer $resolverContainer, string $version): YrnkCalendar`
 
 ### YrnkDateSet
 
