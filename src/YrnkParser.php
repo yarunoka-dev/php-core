@@ -203,7 +203,7 @@ final class YrnkParser
         }
 
         if (! is_string($input['version'])) {
-            throw new InvalidYrnkException('version must be an "x.y" string (e.g. "1.0")');
+            throw new InvalidYrnkException('version must be an "x.y" string (e.g. "1.1")');
         }
 
         return $input['version'];
