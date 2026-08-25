@@ -380,7 +380,7 @@ The clock grid ({"every": [90, "minute"], "between": ...}). The count and the un
 
 `final readonly class EverySequence implements Yarunoka\Schedule\TimesSpecInterface`
 
-The from-anchored interval sequence ({"from": ..., "every": [36, "hour"]}). The points are from + k × interval (k = 0, 1, 2, …), and it keeps counting across days (unlike the times clock grid there is no per-day re-anchoring). The count and the unit are kept as written. The count has no upper bound — the grid's one-day cap is a consequence of its per-day re-anchoring semantics and does not apply to a from-anchored sequence.
+The from-anchored interval sequence ({"from": ..., "every": [36, "hour"]}). The points are from + k × interval (k = 0, 1, 2, …), and it keeps counting across days (unlike the times clock grid there is no per-day re-anchoring). The count and the unit are kept as written. The grid's one-day cap is a consequence of its per-day re-anchoring semantics and does not apply here; what bounds the count is the date domain — a document declaring 1.1 caps it, per unit, at the largest count whose second point stays inside the domain (validated by Yrnk, where the declared version lives).
 
 ### FixedTimes
 
