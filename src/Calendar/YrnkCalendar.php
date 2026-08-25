@@ -33,6 +33,8 @@ final readonly class YrnkCalendar
 {
     /**
      * @param  array<string, YrnkDateSet>  $dateSets  Key name constraints (reserved words, literal shapes) are validated by the parser
+     * @param  bool  $dateSetsAuthoredEmpty  The document wrote "date_sets": {} — a 1.0 spelling of "no named sets". Kept so a round-trip answers the document back as written
+     * @param  bool  $authoredEmpty  The document wrote "calendar": {} — a 1.0 spelling of "no definitions". Kept for the same reason
      */
     public function __construct(
         public YrnkHolidaysDateSet|string|null $holidays = null,
@@ -42,6 +44,8 @@ final readonly class YrnkCalendar
         public ?YrnkBusinessHours $businessHours = null,
         public array $dateSets = [],
         public YrnkResolverContainer $resolverContainer = new YrnkResolverContainer(),
+        public bool $dateSetsAuthoredEmpty = false,
+        public bool $authoredEmpty = false,
     ) {
         foreach ([$holidays, $businessHolidays, $businessDays] as $definition) {
             if (! is_string($definition)) {
@@ -53,6 +57,16 @@ final readonly class YrnkCalendar
             if ($problem !== null) {
                 throw new InvalidValueException($problem);
             }
+        }
+
+        if ($dateSetsAuthoredEmpty && $dateSets !== []) {
+            throw new InvalidValueException('date_sets authored as the empty object holds no entries');
+        }
+
+        if ($authoredEmpty
+            && ($holidays !== null || $businessHolidays !== null || $businessDays !== null
+                || $workweek !== null || $businessHours !== null || $dateSets !== [] || $dateSetsAuthoredEmpty)) {
+            throw new InvalidValueException('A calendar authored as the empty object holds no definitions');
         }
     }
 }

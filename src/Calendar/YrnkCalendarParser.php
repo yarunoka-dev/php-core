@@ -34,8 +34,14 @@ final class YrnkCalendarParser
             throw new InvalidYrnkException('calendar must be an object');
         }
 
-        if ($raw === [] && $version !== '1.0') {
-            throw new InvalidYrnkException('calendar cannot be empty (a document with no definitions omits the key)');
+        if ($raw === []) {
+            if ($version !== '1.0') {
+                throw new InvalidYrnkException('calendar cannot be empty (a document with no definitions omits the key)');
+            }
+
+            // 1.0 reads {} as "no definitions"; the authored spelling is
+            // kept so a round-trip answers the document back as written.
+            return new YrnkCalendar(resolverContainer: $resolverContainer, authoredEmpty: true);
         }
 
         $unknownKeys = array_diff(array_keys($raw), self::KNOWN_KEYS);
@@ -61,6 +67,7 @@ final class YrnkCalendarParser
                     : null,
                 dateSets: array_key_exists('date_sets', $raw) ? self::parseDateSets($raw['date_sets'], $timezone, $version) : [],
                 resolverContainer: $resolverContainer,
+                dateSetsAuthoredEmpty: ($raw['date_sets'] ?? null) === [],
             );
         } catch (InvalidValueException $e) {
             throw new InvalidYrnkException($e->getMessage());

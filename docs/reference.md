@@ -150,10 +150,12 @@ null means "undefined" — a document that uses vocabulary or references requiri
 - `?YrnkBusinessHours $businessHours`
 - `array $dateSets`
 - `YrnkResolverContainer $resolverContainer`
+- `bool $dateSetsAuthoredEmpty`
+- `bool $authoredEmpty`
 
 #### Methods
 
-- `__construct(YrnkHolidaysDateSet|string|null $holidays, YrnkBusinessHolidaysDateSet|string|null $businessHolidays, YrnkBusinessDaysDateSet|string|null $businessDays, ?YrnkWorkweek $workweek, ?YrnkBusinessHours $businessHours, array $dateSets, YrnkResolverContainer $resolverContainer)`
+- `__construct(YrnkHolidaysDateSet|string|null $holidays, YrnkBusinessHolidaysDateSet|string|null $businessHolidays, YrnkBusinessDaysDateSet|string|null $businessDays, ?YrnkWorkweek $workweek, ?YrnkBusinessHours $businessHours, array $dateSets, YrnkResolverContainer $resolverContainer, bool $dateSetsAuthoredEmpty, bool $authoredEmpty)`
 
 ### YrnkCalendarBuilder
 
