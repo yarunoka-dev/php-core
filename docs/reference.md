@@ -19,7 +19,7 @@ The declared names ride here rather than on the calendar: they are what the whol
 
 #### Constants
 
-- `SUPPORTED_VERSION`
+- `SUPPORTED_VERSIONS` — The spec versions this implementation knows, in the order they were released. A document declaring any other version is rejected rather than interpreted. 1.0 is deprecated by the spec but stays accepted: the acceptance obligation ends only at a major raise.
 
 #### Properties
 

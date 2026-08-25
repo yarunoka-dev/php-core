@@ -90,6 +90,22 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
+    public function accepts_a_document_declaring_1_1(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1']));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    public function an_unknown_newer_minor_version_raises(): void
+    {
+        $this->expectException(UnsupportedVersionException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.2']));
+    }
+
+    #[Test]
     public function accepts_a_timezone_with_dst(): void
     {
         $document = (new YrnkParser())->parse($this->doc(['timezone' => 'Europe/London']));

@@ -22,7 +22,15 @@ use DateTimeZone;
  */
 final readonly class Yrnk
 {
-    public const string SUPPORTED_VERSION = '1.0';
+    /**
+     * The spec versions this implementation knows, in the order they were
+     * released. A document declaring any other version is rejected rather
+     * than interpreted. 1.0 is deprecated by the spec but stays accepted:
+     * the acceptance obligation ends only at a major raise.
+     *
+     * @var non-empty-list<string>
+     */
+    public const array SUPPORTED_VERSIONS = ['1.0', '1.1'];
 
     /** @var non-empty-list<YrnkSchedule> */
     public array $schedules;
@@ -45,9 +53,9 @@ final readonly class Yrnk
     ) {
         // The spec requires rejecting a declared version this
         // implementation does not know rather than interpreting it.
-        if ($version !== self::SUPPORTED_VERSION) {
+        if (! in_array($version, self::SUPPORTED_VERSIONS, true)) {
             throw new UnsupportedVersionException(
-                sprintf('This implementation supports version %s only: %s', self::SUPPORTED_VERSION, $version),
+                sprintf('This implementation supports versions %s only: %s', implode(' and ', self::SUPPORTED_VERSIONS), $version),
             );
         }
 
