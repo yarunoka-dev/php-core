@@ -4,6 +4,7 @@ namespace Yarunoka\Tests\Unit;
 
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkDateSet;
+use Yarunoka\Exceptions\MalformedQueryException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Schedule\YrnkScheduleParser;
 use Yarunoka\YrnkEvaluator;
@@ -120,9 +121,76 @@ class YrnkEvaluatorTest extends TestCase
         $this->evaluator()->ensureResolvable([$fine, $broken]);
     }
 
-    private function evaluator(): YrnkEvaluator
+    // ---- query well-formedness ----
+
+    #[Test]
+    public function a_reversed_period_is_a_malformed_query(): void
     {
-        return new YrnkEvaluator(new YrnkCalendar(), new DateTimeZone('Asia/Tokyo'));
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+
+        $this->expectException(MalformedQueryException::class);
+
+        $this->evaluator()->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-07-21 00:00:00', self::utc()),
+            new DateTimeImmutable('2026-07-20 00:00:00', self::utc()),
+        );
+    }
+
+    #[Test]
+    public function a_reversed_enumeration_is_a_malformed_query(): void
+    {
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+
+        $this->expectException(MalformedQueryException::class);
+
+        $this->evaluator()->occurrencesIn(
+            $schedule,
+            new DateTimeImmutable('2026-07-21 00:00:00', self::utc()),
+            new DateTimeImmutable('2026-07-20 00:00:00', self::utc()),
+        );
+    }
+
+    #[Test]
+    public function endpoints_reversed_by_less_than_a_second_are_malformed_too(): void
+    {
+        // The comparison is between the instants as given: nothing is
+        // rounded, and equal means exactly equal.
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+
+        $this->expectException(MalformedQueryException::class);
+
+        $this->evaluator()->hasMatchIn(
+            $schedule,
+            new DateTimeImmutable('2026-07-20 00:00:00.500000', self::utc()),
+            new DateTimeImmutable('2026-07-20 00:00:00.400000', self::utc()),
+        );
+    }
+
+    #[Test]
+    public function a_zero_width_period_is_legal_and_answers_false(): void
+    {
+        // A period over (t, t] holds no instant. Each judgment's "now" is
+        // the next one's start, so a caller asking twice within the same
+        // second must not be punished.
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+        $instant = new DateTimeImmutable('2026-07-20 09:00:00', self::utc());
+
+        $this->assertFalse($this->evaluator(self::utc())->hasMatchIn($schedule, $instant, $instant));
+    }
+
+    #[Test]
+    public function a_zero_width_enumeration_is_legal_and_answers_the_point(): void
+    {
+        $schedule = (new YrnkScheduleParser())->parse(['days' => ['mon'], 'times' => ['09:00']], self::utc());
+        $instant = new DateTimeImmutable('2026-07-20 09:00:00', self::utc());
+
+        $this->assertCount(1, $this->evaluator(self::utc())->occurrencesIn($schedule, $instant, $instant));
+    }
+
+    private function evaluator(?DateTimeZone $timezone = null): YrnkEvaluator
+    {
+        return new YrnkEvaluator(new YrnkCalendar(), $timezone ?? new DateTimeZone('Asia/Tokyo'));
     }
 
     private static function utc(): DateTimeZone

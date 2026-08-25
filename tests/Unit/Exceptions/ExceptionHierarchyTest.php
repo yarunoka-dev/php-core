@@ -5,6 +5,7 @@ namespace Yarunoka\Tests\Unit\Exceptions;
 use Yarunoka\Exceptions\ExceptionInterface;
 use Yarunoka\Exceptions\InvalidCalendarDataException;
 use Yarunoka\Exceptions\InvalidValueException;
+use Yarunoka\Exceptions\MalformedQueryException;
 use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\MissingCalendarDataException;
 use Yarunoka\Exceptions\ReservedNameException;
@@ -51,6 +52,9 @@ class ExceptionHierarchyTest extends TestCase
         yield 'InvalidValueException' => [InvalidValueException::class];
         yield 'UnregisteredResolverException' => [UnregisteredResolverException::class];
         yield 'InvalidCalendarDataException' => [InvalidCalendarDataException::class];
+        // A malformed query is an error of a kind distinct from document
+        // invalidity: the document stays valid.
+        yield 'MalformedQueryException' => [MalformedQueryException::class];
     }
 
     /**
@@ -62,6 +66,7 @@ class ExceptionHierarchyTest extends TestCase
         yield 'InvalidYrnkException' => [InvalidYrnkException::class];
         yield 'UnregisteredResolverException' => [UnregisteredResolverException::class];
         yield 'InvalidCalendarDataException' => [InvalidCalendarDataException::class];
+        yield 'MalformedQueryException' => [MalformedQueryException::class];
     }
 
     /**
