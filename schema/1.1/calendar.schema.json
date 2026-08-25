@@ -1,0 +1,54 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.1/calendar.schema.json",
+    "title": "Yrnk calendar",
+    "description": "The set of date and time-window definitions that schedules refer to. The reserved keys (holidays, business_holidays, business_days, workweek, business_hours) are the built-in definitions with layer-model semantics; 'date_sets' is the open namespace for user-defined named date sets, and its values are lists of date literals only. Wherever a date list is expected, a name may be written instead of the array: the name is either an entry of 'date_sets' or one the host binds to a resolver, and the two share one namespace. A calendar contains wall-clock dates and times only and defines no timezone of its own; its entries are written on the premise of the document-level timezone. This value carries rules JSON Schema cannot express; consult the specification.",
+    "type": "object",
+    "minProperties": 1,
+    "additionalProperties": false,
+    "properties": {
+        "holidays": {"$ref": "#/$defs/dateSet"},
+        "business_holidays": {"$ref": "#/$defs/dateSet"},
+        "business_days": {"$ref": "#/$defs/dateSet"},
+        "workweek": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "primitives.schema.json#/$defs/dayName"}
+        },
+        "business_hours": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "primitives.schema.json#/$defs/window"}
+        },
+        "date_sets": {
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": {"$ref": "primitives.schema.json#/$defs/name"},
+            "additionalProperties": {"$ref": "#/$defs/dateList"}
+        }
+    },
+    "$defs": {
+        "date": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "dateList": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"$ref": "#/$defs/date"}
+        },
+        "dateSet": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "oneOf": [
+                {"$ref": "#/$defs/dateList"},
+                {"$ref": "primitives.schema.json#/$defs/name"}
+            ]
+        }
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.1/document.schema.json",
+    "title": "Yrnk schedule document (version 1.1)",
+    "description": "A document of the calendar-aware schedule DSL (Yrnk). The specification is the source of authority for the language; the JSON Schemas under this base URI are a supporting artifact — a machine-readable rendition of what they can express. A document has three layers: reading directives (version, timezone) that declare how to interpret the document, external requirements (resolvers) that declare the names the document leaves to its host, and content (calendar, schedules). Annotations (label, description) may sit beside them and on each schedule: inert human-facing text that never takes part in validation of the rest, evaluation, or any query's answer.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["version", "timezone", "schedules"],
+    "properties": {
+        "label": {"$ref": "primitives.schema.json#/$defs/label"},
+        "description": {"$ref": "primitives.schema.json#/$defs/description"},
+        "version": {"const": "1.1"},
+        "timezone": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+        },
+        "resolvers": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "primitives.schema.json#/$defs/name"}
+        },
+        "calendar": {"$ref": "calendar.schema.json"},
+        "schedules": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"$ref": "schedule.schema.json"}
+        }
+    }
+}
