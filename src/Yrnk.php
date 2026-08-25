@@ -7,6 +7,8 @@ use Yarunoka\Exceptions\InvalidValueException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\Internal\Annotation;
 use Yarunoka\Internal\Parser\Name;
+use Yarunoka\Schedule\DayCycle;
+use Yarunoka\Schedule\EverySequence;
 use DateTimeZone;
 
 /**
@@ -73,6 +75,14 @@ final readonly class Yrnk
             throw new InvalidValueException('schedules cannot be empty');
         }
 
+        // 1.1 bounds the counting forms by the date domain. The bound
+        // binds documents declaring 1.1 (validity follows the declared
+        // version); a 1.0 document keeps its unbounded counts, which the
+        // closed date domain answers with the from point alone.
+        if ($version !== '1.0') {
+            self::ensureCountsWithinDomainBounds($schedules);
+        }
+
         if ($this->label !== null) {
             Annotation::ensureLabel($this->label);
         }
@@ -98,5 +108,40 @@ final readonly class Yrnk
         }
 
         $this->schedules = $schedules;
+    }
+
+    /**
+     * The 1.1 count bounds: for each counting form, the largest count
+     * whose second point stays inside the date domain when from sits at
+     * its lower end. Every over-bound count collapses to the same
+     * behavior — the from point alone — so rejecting it forfeits no
+     * expressiveness.
+     *
+     * @param  list<YrnkSchedule>  $schedules
+     */
+    private static function ensureCountsWithinDomainBounds(array $schedules): void
+    {
+        foreach ($schedules as $schedule) {
+            $times = $schedule->times;
+
+            if ($times instanceof EverySequence && $times->amount > $times->unit->sequenceMaximumCount()) {
+                throw new InvalidValueException(sprintf(
+                    'Count of every must be at most %d for the unit "%s": %d',
+                    $times->unit->sequenceMaximumCount(),
+                    $times->unit->value,
+                    $times->amount,
+                ));
+            }
+
+            foreach ($schedule->days->atoms ?? [] as $atom) {
+                if ($atom instanceof DayCycle && $atom->intervalDays > DayCycle::MAX_COUNT) {
+                    throw new InvalidValueException(sprintf(
+                        'Count of ["every", N, "day"] must be at most %d: %d',
+                        DayCycle::MAX_COUNT,
+                        $atom->intervalDays,
+                    ));
+                }
+            }
+        }
     }
 }

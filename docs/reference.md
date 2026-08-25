@@ -352,6 +352,10 @@ An atom of a day expression. Marker for the values that can appear in the `days`
 
 The day-cycle tuple atom (["every", 2, "day"] — every N days). The matching days count the date of the schedule's `from` as day one, so a schedule that uses this atom requires `from` (an invariant of YrnkSchedule). Allowed only as an element of the `days` enumeration (not as a `shift` landing condition or an `if` condition).
 
+#### Constants
+
+- `MAX_COUNT` — The largest count whose second matching day stays inside the date domain when `from` sits at its lower end. A count beyond it makes a document declaring 1.1 invalid; 1.0 documents keep their unbounded counts, which the closed date domain answers with the `from` day alone (validated by Yrnk, where the declared version lives).
+
 ### DayExpression
 
 `final readonly class DayExpression`

@@ -14,6 +14,16 @@ use Yarunoka\Exceptions\InvalidValueException;
 final readonly class DayCycle implements DayAtomInterface
 {
     /**
+     * The largest count whose second matching day stays inside the date
+     * domain when `from` sits at its lower end. A count beyond it makes
+     * a document declaring 1.1 invalid; 1.0 documents keep their
+     * unbounded counts, which the closed date domain answers with the
+     * `from` day alone (validated by Yrnk, where the declared version
+     * lives).
+     */
+    public const int MAX_COUNT = 3_652_058;
+
+    /**
      * @internal
      */
     public function __construct(

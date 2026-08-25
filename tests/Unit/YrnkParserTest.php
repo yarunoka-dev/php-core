@@ -10,6 +10,7 @@ use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\YrnkParser;
 use Yarunoka\Tests\Support\Bindings;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -146,6 +147,82 @@ class YrnkParserTest extends TestCase
         ]));
 
         $this->assertSame([], $document->calendar->dateSets);
+    }
+
+    #[Test]
+    public function accepts_the_day_cycle_count_at_the_1_1_bound(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'days' => [['every', 3652058, 'day']], 'times' => ['09:00']],
+        ]]));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    public function rejects_a_day_cycle_count_beyond_the_1_1_bound(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'days' => [['every', 3652059, 'day']], 'times' => ['09:00']],
+        ]]));
+    }
+
+    #[Test]
+    public function accepts_a_day_cycle_count_beyond_the_bound_in_a_1_0_document(): void
+    {
+        // 1.0's counts have no upper bound; under the closed date domain
+        // an over-bound count enumerates the from day alone.
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'schedules' => [
+            ['from' => '2026-01-01 00:00', 'days' => [['every', 3652059, 'day']], 'times' => ['09:00']],
+        ]]));
+
+        $this->assertSame('1.0', $document->version);
+    }
+
+    #[Test]
+    #[DataProvider('sequenceCountsAtTheBound')]
+    public function accepts_a_sequence_count_at_the_1_1_bound(int $count, string $unit): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'every' => [$count, $unit]],
+        ]]));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    #[DataProvider('sequenceCountsAtTheBound')]
+    public function rejects_a_sequence_count_beyond_the_1_1_bound(int $count, string $unit): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'every' => [$count + 1, $unit]],
+        ]]));
+    }
+
+    #[Test]
+    public function accepts_a_sequence_count_beyond_the_bound_in_a_1_0_document(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'schedules' => [
+            ['from' => '2026-01-01 00:00', 'every' => [87649416, 'hour']],
+        ]]));
+
+        $this->assertSame('1.0', $document->version);
+    }
+
+    /**
+     * @return array<string, array{int, string}>
+     */
+    public static function sequenceCountsAtTheBound(): array
+    {
+        return [
+            'hour' => [87649415, 'hour'],
+            'minute' => [5258964959, 'minute'],
+            'second' => [315537897599, 'second'],
+        ];
     }
 
     #[Test]
