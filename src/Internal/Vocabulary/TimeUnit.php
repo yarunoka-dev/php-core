@@ -28,4 +28,19 @@ enum TimeUnit: string
     {
         return intdiv(86400, $this->seconds());
     }
+
+    /**
+     * The largest interval-every count whose second point stays inside
+     * the date domain when `from` sits at its lower end (the 1.1 bound;
+     * the grid's one-day cap above does not apply to a from-anchored
+     * sequence).
+     */
+    public function sequenceMaximumCount(): int
+    {
+        return match ($this) {
+            self::Hour => 87_649_415,
+            self::Minute => 5_258_964_959,
+            self::Second => 315_537_897_599,
+        };
+    }
 }

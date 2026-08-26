@@ -182,7 +182,7 @@ class AdapterTest extends TestCase
     {
         $document = $this->document(['days' => [25], 'times' => ['10:00']]);
 
-        $response = (new Adapter())->handle(['action' => 'emit', 'document' => $document]);
+        $response = (new Adapter())->handle(['action' => 'emit', 'document' => json_encode($document, JSON_THROW_ON_ERROR)]);
 
         $this->assertSame(['document' => $document], $response);
     }
@@ -201,7 +201,7 @@ class AdapterTest extends TestCase
 
         $response = (new Adapter())->handle([
             'action' => 'emit',
-            'document' => $document,
+            'document' => json_encode($document, JSON_THROW_ON_ERROR),
             'bindings' => ['company-closures' => ['2026-08-05']],
         ]);
 
@@ -214,9 +214,61 @@ class AdapterTest extends TestCase
         $document = $this->document(['days' => [25], 'times' => ['10:00']]);
         $document['version'] = '9.9';
 
-        $response = (new Adapter())->handle(['action' => 'emit', 'document' => $document]);
+        $response = (new Adapter())->handle(['action' => 'emit', 'document' => json_encode($document, JSON_THROW_ON_ERROR)]);
 
         $this->assertSame(['invalid' => true], $response);
+    }
+
+    #[Test]
+    public function answers_invalid_for_a_document_writing_a_member_name_twice(): void
+    {
+        // The reason the protocol delivers the document as a JSON
+        // string: duplicates survive to the implementation's parse.
+        $response = (new Adapter())->handle([
+            'action' => 'eval',
+            'document' => '{"version": "1.1", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"allday": true}]}',
+            'query' => ['type' => 'point', 'at' => '2026-07-25T10:00:00+09:00'],
+        ]);
+
+        $this->assertSame(['invalid' => true], $response);
+    }
+
+    // ---- the malformed answer ----
+
+    #[Test]
+    public function answers_malformed_for_a_reversed_period(): void
+    {
+        $response = (new Adapter())->handle($this->request(
+            $this->document(['days' => [25], 'times' => ['10:00']]),
+            ['type' => 'period', 'after' => '2026-07-26T00:00:00+09:00', 'through' => '2026-07-24T00:00:00+09:00'],
+        ));
+
+        $this->assertSame(['malformed' => true], $response);
+    }
+
+    #[Test]
+    public function answers_malformed_for_a_reversed_enumeration(): void
+    {
+        $response = (new Adapter())->handle($this->request(
+            $this->document(['days' => [25], 'times' => ['10:00']]),
+            ['type' => 'enumeration', 'from' => '2026-07-26T00:00:00+09:00', 'through' => '2026-07-24T00:00:00+09:00'],
+        ));
+
+        $this->assertSame(['malformed' => true], $response);
+    }
+
+    #[Test]
+    public function a_request_whose_document_is_not_a_string_is_breakage(): void
+    {
+        // The protocol delivers the document as a JSON string; an
+        // embedded value is a broken runner, not an invalid document.
+        $this->expectException(RuntimeException::class);
+
+        (new Adapter())->handle([
+            'action' => 'eval',
+            'document' => $this->document(['days' => [25], 'times' => ['10:00']]),
+            'query' => ['type' => 'point', 'at' => '2026-07-25T10:00:00+09:00'],
+        ]);
     }
 
     // ---- breakage ----
@@ -246,6 +298,9 @@ class AdapterTest extends TestCase
     }
 
     /**
+     * The protocol delivers the document as a JSON string, so the
+     * requests built here encode it the way the runner does.
+     *
      * @param  array<string, mixed>  $document
      * @param  array<string, mixed>  $query
      * @param  array<string, list<string>>|null  $bindings
@@ -253,7 +308,7 @@ class AdapterTest extends TestCase
      */
     private function request(array $document, array $query, ?array $bindings = null): array
     {
-        $request = ['action' => 'eval', 'document' => $document, 'query' => $query];
+        $request = ['action' => 'eval', 'document' => json_encode($document, JSON_THROW_ON_ERROR), 'query' => $query];
 
         if ($bindings !== null) {
             $request['bindings'] = $bindings;

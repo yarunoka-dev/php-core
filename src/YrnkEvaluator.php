@@ -3,6 +3,7 @@
 namespace Yarunoka;
 
 use Yarunoka\Calendar\YrnkCalendar;
+use Yarunoka\Exceptions\MalformedQueryException;
 use Yarunoka\Internal\Evaluation\AtomDayEnumerator;
 use Yarunoka\Internal\Evaluation\DayMatcher;
 use Yarunoka\Internal\Evaluation\MatchFinder;
@@ -32,6 +33,14 @@ use DateTimeZone;
  * (hasMatchIn(last_run_at, now) is the firing decision). Definitions
  * resolve per question and are not carried between them, so an answer
  * always rests on what the resolvers say at the time it is asked.
+ *
+ * Evaluation works over the date domain — calendar days 0001-01-01
+ * through 9999-12-31, read on the configured timezone's clock. At its
+ * edges evaluation ends rather than fails: a recurrence generates only
+ * its intersection with the domain, a shift search that would leave it
+ * finds no landing, an if whose neighbour lies outside fails the whole
+ * guard, and a query is answered on its overlap with the domain — a
+ * query lying entirely outside answers empty, never an error.
  */
 final class YrnkEvaluator
 {
@@ -102,16 +111,30 @@ final class YrnkEvaluator
      * occurrence counts when its day overlaps the period, however late in
      * the day it is asked: a day is due for as long as it lasts. That
      * does not make it a timed occurrence at 00:00.
+     *
+     * The endpoints must satisfy $after <= $through, compared as given
+     * (nothing is rounded, and equal is legal — a period over (t, t]
+     * holds no instant and answers false). A reversed pair raises
+     * MalformedQueryException rather than answering false: it arises
+     * only from broken caller state or a clock that moved backwards,
+     * and an empty answer would hide exactly that.
      */
     public function hasMatchIn(YrnkSchedule $schedule, DateTimeInterface $after, DateTimeInterface $through): bool
     {
+        $afterInstant = DateTimeImmutable::createFromInterface($after);
+        $throughInstant = DateTimeImmutable::createFromInterface($through);
+
+        if ($afterInstant > $throughInstant) {
+            throw new MalformedQueryException(sprintf(
+                'A period requires after <= through: %s > %s',
+                $afterInstant->format(DateTimeInterface::RFC3339_EXTENDED),
+                $throughInstant->format(DateTimeInterface::RFC3339_EXTENDED),
+            ));
+        }
+
         $this->ensureResolvable([$schedule]);
 
-        return $this->finder()->hasMatchIn(
-            $schedule,
-            DateTimeImmutable::createFromInterface($after),
-            DateTimeImmutable::createFromInterface($through),
-        );
+        return $this->finder()->hasMatchIn($schedule, $afterInstant, $throughInstant);
     }
 
     /**
@@ -130,17 +153,30 @@ final class YrnkEvaluator
      * contain a point exactly on it, and a caller that means to exclude a
      * boundary moves it.
      *
+     * The endpoints must satisfy $from <= $through, compared as given
+     * (nothing is rounded, and equal is legal — an enumeration over
+     * [t, t] answers what stands exactly at that point). A reversed pair
+     * raises MalformedQueryException rather than answering empty, for
+     * the reason hasMatchIn states.
+     *
      * @return list<YrnkDate|YrnkDateTime>
      */
     public function occurrencesIn(YrnkSchedule $schedule, DateTimeInterface $from, DateTimeInterface $through): array
     {
+        $fromInstant = DateTimeImmutable::createFromInterface($from);
+        $throughInstant = DateTimeImmutable::createFromInterface($through);
+
+        if ($fromInstant > $throughInstant) {
+            throw new MalformedQueryException(sprintf(
+                'An enumeration requires from <= through: %s > %s',
+                $fromInstant->format(DateTimeInterface::RFC3339_EXTENDED),
+                $throughInstant->format(DateTimeInterface::RFC3339_EXTENDED),
+            ));
+        }
+
         $this->ensureResolvable([$schedule]);
 
-        return $this->finder()->occurrencesIn(
-            $schedule,
-            DateTimeImmutable::createFromInterface($from),
-            DateTimeImmutable::createFromInterface($through),
-        );
+        return $this->finder()->occurrencesIn($schedule, $fromInstant, $throughInstant);
     }
 
     /**

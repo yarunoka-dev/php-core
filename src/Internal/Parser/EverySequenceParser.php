@@ -8,9 +8,10 @@ use Yarunoka\Internal\Vocabulary\TimeUnit;
 
 /**
  * The parser for the interval every directly on a schedule ({"every":
- * [36, "hour"]}). Unlike the times grid the count has no upper bound (a
- * from-anchored sequence keeps counting across days, so a one-day cap
- * would be meaningless).
+ * [36, "hour"]}). Unlike the times grid there is no one-day cap (a
+ * from-anchored sequence keeps counting across days); the 1.1 per-unit
+ * count bounds are version-dependent and validated by Yrnk, where the
+ * declared version lives.
  *
  * @internal
  */

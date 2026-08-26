@@ -295,6 +295,31 @@ class RoundTripTest extends TestCase
 
 
     #[Test]
+    public function a_1_0_empty_calendar_object_round_trips_as_authored(): void
+    {
+        // 1.0 reads "calendar": {} as "no definitions"; round-tripping is
+        // the identity, so the authored spelling comes back rather than
+        // the omission (JSON tells {} and an absent key apart).
+        $json = '{"version": "1.0", "timezone": "Asia/Tokyo", "calendar": {}, "schedules": [{"times": ["09:00"]}]}';
+
+        $document = (new YrnkParser())->parse($json);
+
+        $this->assertJsonStringEqualsJsonString($json, (new YrnkBuilder())->toJson($document));
+    }
+
+    #[Test]
+    public function a_1_0_empty_date_sets_object_round_trips_as_authored(): void
+    {
+        $json = '{"version": "1.0", "timezone": "Asia/Tokyo", '
+            . '"calendar": {"holidays": ["2026-01-01"], "date_sets": {}}, '
+            . '"schedules": [{"times": ["09:00"]}]}';
+
+        $document = (new YrnkParser())->parse($json);
+
+        $this->assertJsonStringEqualsJsonString($json, (new YrnkBuilder())->toJson($document));
+    }
+
+    #[Test]
     public function to_json_parses_back_to_the_same_meaning(): void
     {
         $raw = [

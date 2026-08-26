@@ -11,21 +11,21 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies that the JSON Schema (the authority on the syntax) and
- * YrnkParser agree.
+ * Verifies that the JSON Schemas (the machine-readable rendition of the
+ * syntax; the specification is the source of authority) and YrnkParser
+ * agree. A document is validated against the schemas of the version it
+ * declares — validity follows the declared version, and the package
+ * carries a verbatim copy of each supported version's schemas.
  *
  * - Legal documents: both accept
  * - Syntax violations: both reject
- * - Constraints beyond the schema (resolvability of references, window
- *   start < end and non-overlap, existence of dates and the timezone):
- *   the schema passes them and the implementation rejects them at parse
- *   time. That list is the inventory of what the schema alone cannot
- *   validate
+ * - Rules the schemas cannot express (resolvability of references,
+ *   window non-overlap, existence of dates and the timezone, duplicate
+ *   member names): the schemas pass them and the implementation rejects
+ *   them at parse time
  */
 class SchemaConformanceTest extends TestCase
 {
-    private const string SCHEMA_ID_BASE = 'https://yarunoka.dev/schema/1.0/';
-
     private const array SCHEMA_FILES = [
         'document.schema.json', 'calendar.schema.json', 'schedule.schema.json', 'primitives.schema.json',
     ];
@@ -122,16 +122,25 @@ class SchemaConformanceTest extends TestCase
                 '{"times": ["09:00"]}',
                 resolvers: '["yasumi-jp"]',
             )],
-            'the document model example of the specification' => ['{"version": "1.0", "timezone": "Asia/Tokyo", '
+            'the document model example of the specification' => ['{"version": "1.1", "timezone": "Asia/Tokyo", '
                 . '"resolvers": ["yasumi-jp"], '
                 . '"calendar": {"holidays": "yasumi-jp", "date_sets": {"founding-day": ["2026-10-01"]}}, '
                 . '"schedules": [{"days": ["founding-day"], "allday": true}]}'],
-            'an empty date_sets object' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {}}')],
+            'an empty date_sets object in a 1.0 document' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {}}', version: '1.0')],
+            'an empty calendar object in a 1.0 document' => [self::doc('{"times": ["09:00"]}', calendar: '{}', version: '1.0')],
+            'a day-cycle count beyond the bound in a 1.0 document' => [self::doc(
+                '{"from": "2026-01-01 00:00", "days": [["every", 3652059, "day"]], "times": ["09:00"]}',
+                version: '1.0',
+            )],
+            'the day-cycle count at its bound' => [self::doc(
+                '{"from": "0001-01-01 00:00", "days": [["every", 3652058, "day"]], "times": ["09:00"]}',
+            )],
+            'the hour sequence count at its bound' => [self::doc('{"from": "0001-01-01 00:00", "every": [87649415, "hour"]}')],
             'an empty list under date_sets' => [self::doc(
                 '{"days": ["no-such-day"], "times": ["09:00"]}',
                 calendar: '{"date_sets": {"no-such-day": []}}',
             )],
-            'a timezone with DST' => ['{"version": "1.0", "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone with DST' => ['{"version": "1.1", "timezone": "Europe/London", "schedules": [{"times": ["09:00"]}]}'],
             'the per-unit maximum of every (hours)' => [self::doc('{"times": {"every": [24, "hour"]}}')],
             'the minute maximum of every' => [self::doc('{"times": {"every": [1440, "minute"]}}')],
             'the second maximum of every' => [self::doc('{"times": {"every": [86400, "second"]}}')],
@@ -166,14 +175,14 @@ class SchemaConformanceTest extends TestCase
             'an integer version (the pre-1.0 spelling)' => ['{"version": 1, "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
             'a bare major version' => ['{"version": "1", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
             'an unknown version' => ['{"version": "2.0", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
-            'a missing timezone' => ['{"version": "1.0", "schedules": [{"times": ["09:00"]}]}'],
-            'a whitespace-only timezone' => ['{"version": "1.0", "timezone": "   ", "schedules": [{"times": ["09:00"]}]}'],
-            'missing schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo"}'],
-            'empty schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": []}'],
+            'a missing timezone' => ['{"version": "1.1", "schedules": [{"times": ["09:00"]}]}'],
+            'a whitespace-only timezone' => ['{"version": "1.1", "timezone": "   ", "schedules": [{"times": ["09:00"]}]}'],
+            'missing schedules' => ['{"version": "1.1", "timezone": "Asia/Tokyo"}'],
+            'empty schedules' => ['{"version": "1.1", "timezone": "Asia/Tokyo", "schedules": []}'],
             'duplicate schedules' => [self::doc('{"days": ["mon"], "times": ["10:00"]}, {"days": ["mon"], "times": ["10:00"]}')],
             'duplicate schedules spelled in a different member order' => [self::doc('{"days": ["mon"], "times": ["10:00"]}, {"times": ["10:00"], "days": ["mon"]}')],
-            'a bare object as schedules' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedules": {"times": ["09:00"]}}'],
-            'an unknown document key' => ['{"version": "1.0", "timezone": "Asia/Tokyo", "schedule": [], "schedules": [{"times": ["09:00"]}]}'],
+            'a bare object as schedules' => ['{"version": "1.1", "timezone": "Asia/Tokyo", "schedules": {"times": ["09:00"]}}'],
+            'an unknown document key' => ['{"version": "1.1", "timezone": "Asia/Tokyo", "schedule": [], "schedules": [{"times": ["09:00"]}]}'],
             'an unknown schedule key' => [self::doc('{"times": ["09:00"], "day": ["mon"]}')],
             'a scalar in days' => [self::doc('{"days": "mon", "times": ["09:00"]}')],
             'a scalar in months' => [self::doc('{"months": 2, "times": ["09:00"]}')],
@@ -252,6 +261,17 @@ class SchemaConformanceTest extends TestCase
             'the interval every without from' => [self::doc('{"every": [36, "hour"]}')],
             'the reserved word day as a date_sets name' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {"day": ["2026-01-01"]}}')],
             'the reserved word from as a date_sets name' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {"from": ["2026-01-01"]}}')],
+            'an unknown newer minor version' => ['{"version": "1.2", "timezone": "Asia/Tokyo", "schedules": [{"times": ["09:00"]}]}'],
+            // The 1.1 schema states the requirement structurally (an
+            // if/then on the days enumeration), so this stopped being a
+            // constraint beyond the schema.
+            'a cycle atom without from' => [self::doc('{"days": [["every", 2, "day"]], "times": ["09:00"]}')],
+            'an empty calendar object' => [self::doc('{"times": ["09:00"]}', calendar: '{}')],
+            'an empty date_sets object' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {}}')],
+            'a day-cycle count beyond its bound' => [self::doc(
+                '{"from": "0001-01-01 00:00", "days": [["every", 3652059, "day"]], "times": ["09:00"]}',
+            )],
+            'an hour sequence count beyond its bound' => [self::doc('{"from": "0001-01-01 00:00", "every": [87649416, "hour"]}')],
             'an empty declaration list' => [self::doc('{"times": ["09:00"]}', resolvers: '[]')],
             'a duplicate declaration' => [self::doc('{"times": ["09:00"]}', resolvers: '["a-name", "a-name"]')],
             'a reserved word as a declared name' => [self::doc('{"times": ["09:00"]}', resolvers: '["mon"]')],
@@ -290,9 +310,9 @@ class SchemaConformanceTest extends TestCase
                 calendar: '{"date_sets": {"founding-day": ["2026-10-01"]}}',
                 resolvers: '["founding-day"]',
             )],
-            'a timezone that does not exist' => ['{"version": "1.0", "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
-            'a fixed-offset timezone' => ['{"version": "1.0", "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
-            'a timezone abbreviation' => ['{"version": "1.0", "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone that does not exist' => ['{"version": "1.1", "timezone": "Asia/Edo", "schedules": [{"times": ["09:00"]}]}'],
+            'a fixed-offset timezone' => ['{"version": "1.1", "timezone": "+09:00", "schedules": [{"times": ["09:00"]}]}'],
+            'a timezone abbreviation' => ['{"version": "1.1", "timezone": "JST", "schedules": [{"times": ["09:00"]}]}'],
             'a window crossing midnight' => [self::doc('{"times": {"every": [1, "hour"], "between": ["20:00", "08:00"]}}')],
             'a definition with a date that does not exist' => [self::doc('{"times": ["09:00"]}', calendar: '{"date_sets": {"anniversary": ["2026-02-30"]}}')],
             'a definition with overlapping windows' => [self::doc(
@@ -305,19 +325,22 @@ class SchemaConformanceTest extends TestCase
             'from after until' => [self::doc(
                 '{"from": "2026-09-01 00:00", "until": "2026-08-01 00:00", "times": ["09:00"]}',
             )],
-            'a cycle atom without from' => [self::doc('{"days": [["every", 2, "day"]], "times": ["09:00"]}')],
             'a from whose date does not exist' => [self::doc('{"from": "2026-02-30 00:00", "times": ["09:00"]}')],
+            // Decoding collapses the duplicates before the schema sees
+            // them; the implementation reads the document text itself.
+            'a duplicate member name' => ['{"version": "1.1", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"times": ["09:00"]}]}'],
+            'a member name colliding through an escape' => ['{"version": "1.1", "timezone": "Asia/Tokyo", "\\u0074imezone": "UTC", "schedules": [{"times": ["09:00"]}]}'],
         ];
     }
 
     // ---- helpers ----
 
-    private static function doc(string $scheduleJson, ?string $calendar = null, ?string $resolvers = null): string
+    private static function doc(string $scheduleJson, ?string $calendar = null, ?string $resolvers = null, string $version = '1.1'): string
     {
         $resolversPart = $resolvers === null ? '' : ', "resolvers": ' . $resolvers;
         $calendarPart = $calendar === null ? '' : ', "calendar": ' . $calendar;
 
-        return '{"version": "1.0", "timezone": "Asia/Tokyo"' . $resolversPart . $calendarPart
+        return '{"version": "' . $version . '", "timezone": "Asia/Tokyo"' . $resolversPart . $calendarPart
             . ', "schedules": [' . $scheduleJson . ']}';
     }
 
@@ -328,12 +351,19 @@ class SchemaConformanceTest extends TestCase
 
     private function schemaAccepts(string $json): bool
     {
+        // The declared version picks the schemas; a version that is not
+        // a supported spelling falls to the newest ones (which reject
+        // it at the version const, as every other version's would).
+        $decoded = json_decode($json);
+        $declared = is_object($decoded) && is_string($decoded->version ?? null) ? $decoded->version : null;
+        $version = in_array($declared, ['1.0', '1.1'], true) ? $declared : '1.1';
+        $base = "https://yarunoka.dev/schema/{$version}/";
         $validator = new Validator();
 
         foreach (self::SCHEMA_FILES as $file) {
-            $validator->resolver()?->registerFile(self::SCHEMA_ID_BASE . $file, dirname(__DIR__, 2) . "/schema/{$file}");
+            $validator->resolver()?->registerFile($base . $file, dirname(__DIR__, 2) . "/schema/{$version}/{$file}");
         }
 
-        return $validator->validate(json_decode($json), self::SCHEMA_ID_BASE . 'document.schema.json')->isValid();
+        return $validator->validate($decoded, $base . 'document.schema.json')->isValid();
     }
 }

@@ -19,7 +19,7 @@ class AdapterScriptTest extends TestCase
     {
         $run = $this->run_adapter([
             'action' => 'eval',
-            'document' => $this->document(),
+            'document' => json_encode($this->document(), JSON_THROW_ON_ERROR),
             'query' => ['type' => 'point', 'at' => '2026-07-25T10:00:00+09:00'],
         ]);
 
@@ -35,7 +35,7 @@ class AdapterScriptTest extends TestCase
 
         $run = $this->run_adapter([
             'action' => 'eval',
-            'document' => $document,
+            'document' => json_encode($document, JSON_THROW_ON_ERROR),
             'query' => ['type' => 'point', 'at' => '2026-07-25T10:00:00+09:00'],
         ]);
 
@@ -48,7 +48,7 @@ class AdapterScriptTest extends TestCase
     {
         $run = $this->run_adapter([
             'action' => 'emit',
-            'document' => $this->document(),
+            'document' => json_encode($this->document(), JSON_THROW_ON_ERROR),
         ]);
 
         $this->assertSame(0, $run['status'], $run['stderr']);

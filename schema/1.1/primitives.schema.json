@@ -1,0 +1,62 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://yarunoka.dev/schema/1.1/primitives.schema.json",
+    "title": "Yrnk primitives",
+    "description": "Primitive value vocabulary shared by the other schemas: names, day names, wall-clock times, time windows, and the annotation fields. A name denotes a date set; the document either defines it under 'calendar.date_sets' or declares it under 'resolvers' and leaves it to a host binding, and the two share one namespace. A name must therefore not be spelled like a reserved word or like a literal (digits only, time-shaped, date-shaped). Times are zero-padded HH:MM; '24:00' is a token allowed only as the end of a window. A window is a half-open interval [start, end). The annotations (label, description) are inert human-facing text carried at the document and schedule levels: control characters are forbidden (description may contain LF as its only line break), and so are the invisible characters that can spoof what a reader sees (zero-width space, word joiner, BOM, and the bidi embedding/override/isolate controls; ZWJ/ZWNJ and the bidi marks stay legal for emoji sequences and the scripts that need them).",
+    "$defs": {
+        "name": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"enum": [
+                    "weekday", "weekend", "holiday", "business_day", "business_holiday", "business_hour",
+                    "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+                    "1st", "2nd", "3rd", "4th", "5th", "last",
+                    "last_day_of_month",
+                    "not", "prev", "next", "or_same",
+                    "hour", "minute", "second", "day",
+                    "version", "timezone", "resolvers", "calendar", "schedules",
+                    "years", "months", "days", "shift", "if", "times", "allday", "every", "between", "from", "until",
+                    "holidays", "business_holidays", "business_days", "workweek", "business_hours", "date_sets",
+                    "label", "description"
+                ]}},
+                {"not": {"pattern": "^\\d+$"}},
+                {"not": {"pattern": "^\\d{2}:\\d{2}$"}},
+                {"not": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}
+            ]
+        },
+        "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"}},
+                {"not": {"pattern": "[\\u200b\\u2060\\ufeff\\u202a-\\u202e\\u2066-\\u2069]"}}
+            ]
+        },
+        "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S",
+            "allOf": [
+                {"not": {"pattern": "[\\u0000-\\u0009\\u000b-\\u001f\\u007f-\\u009f]"}},
+                {"not": {"pattern": "[\\u200b\\u2060\\ufeff\\u202a-\\u202e\\u2066-\\u2069]"}}
+            ]
+        },
+        "dayName": {"enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]},
+        "time": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
+        "timeOrEndOfDay": {"type": "string", "minLength": 5, "maxLength": 5, "pattern": "^(([01]\\d|2[0-3]):[0-5]\\d|24:00)$"},
+        "window": {
+            "description": "This value carries rules JSON Schema cannot express; consult the specification.",
+            "type": "array",
+            "prefixItems": [{"$ref": "#/$defs/time"}, {"$ref": "#/$defs/timeOrEndOfDay"}],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
+        }
+    }
+}

@@ -4,6 +4,7 @@ namespace Yarunoka\Tests\Feature;
 
 use Yarunoka\Calendar\YrnkBusinessDaysDateSet;
 use Yarunoka\Calendar\YrnkBusinessHolidaysDateSet;
+use Yarunoka\Exceptions\MalformedQueryException;
 use Yarunoka\Calendar\YrnkCalendar;
 use Yarunoka\Calendar\YrnkHolidaysDateSet;
 use Yarunoka\Schedule\YrnkScheduleParser;
@@ -54,15 +55,19 @@ class OccurrencesInTest extends TestCase
     }
 
     #[Test]
-    public function an_inverted_window_is_the_empty_interval(): void
+    public function an_inverted_window_is_a_malformed_query(): void
     {
+        // Not an empty answer: a reversed pair arises only from broken
+        // caller state, and an empty answer would hide exactly that.
         $schedule = $this->schedule(['times' => ['09:00']]);
 
-        $this->assertSame([], $this->evaluator()->occurrencesIn(
+        $this->expectException(MalformedQueryException::class);
+
+        $this->evaluator()->occurrencesIn(
             $schedule,
             $this->at('2026-07-13T00:00:00+09:00'),
             $this->at('2026-07-12T00:00:00+09:00'),
-        ));
+        );
     }
 
     #[Test]

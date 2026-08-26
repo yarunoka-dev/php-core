@@ -3,6 +3,7 @@
 namespace Yarunoka\Tests\Conformance;
 
 use Yarunoka\Exceptions\ExceptionInterface;
+use Yarunoka\Exceptions\MalformedQueryException;
 use Yarunoka\Resolvers\YrnkResolverContainer;
 use Yarunoka\YrnkBuilder;
 use Yarunoka\YrnkDate;
@@ -33,10 +34,14 @@ final class Adapter
      */
     public function handle(array $request): array
     {
+        // The protocol delivers the document as a JSON string, so that
+        // duplicate member names and escape spellings survive to the
+        // implementation's parse. Handed over undecoded for the same
+        // reason.
         $document = $request['document'] ?? null;
 
-        if (! is_array($document)) {
-            throw new RuntimeException('The request carries no document');
+        if (! is_string($document)) {
+            throw new RuntimeException('The request carries no document (a JSON string)');
         }
 
         try {
@@ -87,6 +92,10 @@ final class Adapter
                 )],
                 default => throw new RuntimeException('Unknown query type'),
             };
+        } catch (MalformedQueryException) {
+            // The document is fine; the question is the side that does
+            // not stand — a normal answer, distinct from invalid.
+            return ['malformed' => true];
         } catch (ExceptionInterface) {
             return ['invalid' => true];
         }

@@ -4,6 +4,7 @@ namespace Yarunoka;
 
 use Yarunoka\Calendar\YrnkCalendarBuilder;
 use Yarunoka\Schedule\YrnkScheduleBuilder;
+use stdClass;
 
 /**
  * The mirror image of YrnkParser. Yrnk → a Yrnk document (an array /
@@ -45,7 +46,11 @@ final class YrnkBuilder
 
         $calendar = $this->calendarBuilder->build($document->calendar, $document->timezone);
 
-        if ($calendar !== []) {
+        if ($document->calendar->authoredEmpty) {
+            // The 1.0 spelling "calendar": {} comes back as written — an
+            // object, which an empty PHP array would not encode as.
+            $raw['calendar'] = new stdClass();
+        } elseif ($calendar !== []) {
             $raw['calendar'] = $calendar;
         }
 

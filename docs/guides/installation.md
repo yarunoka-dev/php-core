@@ -50,7 +50,7 @@ Any other name is yours to bind. See
 use Yarunoka\YrnkParser;
 
 $document = (new YrnkParser())->parse('{
-    "version": "1.0",
+    "version": "1.1",
     "timezone": "Asia/Tokyo",
     "schedules": [{"days": [25], "times": ["10:00"]}]
 }');

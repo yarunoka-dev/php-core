@@ -11,7 +11,7 @@ those objects back out as a document, and answers questions about the
 occurrences a schedule denotes.
 
 The language itself — what a document may say and what it means — is
-defined in the [spec repository](https://github.com/yarunoka-dev/spec/tree/1.0).
+defined in the [spec repository](https://github.com/yarunoka-dev/spec/tree/1.1).
 This documentation is about the PHP package only.
 
 - **Guides** — what the package needs, how to install it, and how to use

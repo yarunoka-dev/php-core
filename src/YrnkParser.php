@@ -8,6 +8,7 @@ use Yarunoka\Exceptions\InvalidYrnkException;
 use Yarunoka\Exceptions\UndefinedNameException;
 use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Calendar\YrnkCalendarParser;
+use Yarunoka\Internal\Parser\DuplicateMemberScanner;
 use Yarunoka\Internal\Parser\Name;
 use Yarunoka\Internal\ReferenceChecker;
 use Yarunoka\Resolvers\YrnkResolverContainer;
@@ -33,6 +34,12 @@ final class YrnkParser
     ) {}
 
     /**
+     * The language rejects an object writing the same member name twice,
+     * which only the document text can show — decoding quietly keeps one
+     * of the duplicates. String input is therefore scanned before its
+     * decoded value is trusted; a caller handing in an already-decoded
+     * array forfeits that validation.
+     *
      * @param  string|array<mixed>  $input  A JSON string or a decoded array
      */
     public function parse(string|array $input): Yrnk
@@ -44,6 +51,8 @@ final class YrnkParser
                 throw new InvalidYrnkException('A Yrnk document must be a JSON object');
             }
 
+            DuplicateMemberScanner::scan($input);
+
             $input = $decoded;
         }
 
@@ -53,15 +62,19 @@ final class YrnkParser
             throw new InvalidYrnkException('Unknown keys in the document: ' . implode(', ', $unknownKeys));
         }
 
-        // The timezone is read first: a boundary and a calendar date are
-        // points on the document's clock, so neither can be parsed
-        // without it.
+        // The version is read first — 1.1 carries validation rules that
+        // bind only documents declaring it — and then the timezone: a
+        // boundary and a calendar date are points on the document's
+        // clock, so neither can be parsed without it.
+        $version = $this->parseVersion($input);
         $timezone = $this->parseTimezone($input);
-        $calendar = $this->calendarParser->parse($input['calendar'] ?? [], $timezone, $this->resolverContainer);
+        $calendar = array_key_exists('calendar', $input)
+            ? $this->calendarParser->parse($input['calendar'], $timezone, $this->resolverContainer, $version)
+            : new YrnkCalendar(resolverContainer: $this->resolverContainer);
 
         try {
             $document = new Yrnk(
-                version: $this->parseVersion($input),
+                version: $version,
                 timezone: $timezone,
                 calendar: $calendar,
                 schedules: $this->parseSchedules($input, $timezone),
@@ -190,7 +203,7 @@ final class YrnkParser
         }
 
         if (! is_string($input['version'])) {
-            throw new InvalidYrnkException('version must be an "x.y" string (e.g. "1.0")');
+            throw new InvalidYrnkException('version must be an "x.y" string (e.g. "1.1")');
         }
 
         return $input['version'];

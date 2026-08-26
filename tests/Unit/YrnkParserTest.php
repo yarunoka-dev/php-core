@@ -10,6 +10,7 @@ use Yarunoka\Exceptions\UnregisteredResolverException;
 use Yarunoka\Exceptions\UnsupportedVersionException;
 use Yarunoka\YrnkParser;
 use Yarunoka\Tests\Support\Bindings;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -66,6 +67,165 @@ class YrnkParserTest extends TestCase
     }
 
     #[Test]
+    public function rejects_a_document_writing_a_member_name_twice(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
+    public function rejects_a_member_name_colliding_through_an_escape(): void
+    {
+        // JSON decides member equality on the resolved characters, never
+        // on the written bytes.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "\u0074imezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
+    public function rejects_a_duplicate_member_name_in_a_schedule(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.1", "timezone": "Asia/Tokyo", "schedules": [{"days": [1], "days": [2], "times": ["09:00"]}]}',
+        );
+    }
+
+    #[Test]
+    public function a_duplicate_member_name_is_rejected_whatever_version_the_document_declares(): void
+    {
+        // A determination of behavior 1.0 left undefined, so it reaches
+        // documents declaring 1.0 too.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse(
+            '{"version": "1.0", "timezone": "Asia/Tokyo", "timezone": "UTC", "schedules": [{"allday": true}]}',
+        );
+    }
+
+    #[Test]
+    public function rejects_an_empty_calendar_object_in_a_1_1_document(): void
+    {
+        // A document with no definitions omits the key, so that the
+        // statement has a single spelling.
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'calendar' => []]));
+    }
+
+    #[Test]
+    public function rejects_an_empty_date_sets_object_in_a_1_1_document(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'calendar' => ['date_sets' => []]]));
+    }
+
+    #[Test]
+    public function accepts_an_empty_calendar_object_in_a_1_0_document(): void
+    {
+        // Validity follows the declared version: under 1.0's rules an
+        // empty calendar means the same as omitting the key.
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'calendar' => []]));
+
+        $this->assertSame([], $document->calendar->dateSets);
+    }
+
+    #[Test]
+    public function accepts_an_empty_date_sets_object_in_a_1_0_document(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc([
+            'version' => '1.0',
+            'calendar' => ['holidays' => ['2026-01-01'], 'date_sets' => []],
+        ]));
+
+        $this->assertSame([], $document->calendar->dateSets);
+    }
+
+    #[Test]
+    public function accepts_the_day_cycle_count_at_the_1_1_bound(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'days' => [['every', 3652058, 'day']], 'times' => ['09:00']],
+        ]]));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    public function rejects_a_day_cycle_count_beyond_the_1_1_bound(): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'days' => [['every', 3652059, 'day']], 'times' => ['09:00']],
+        ]]));
+    }
+
+    #[Test]
+    public function accepts_a_day_cycle_count_beyond_the_bound_in_a_1_0_document(): void
+    {
+        // 1.0's counts have no upper bound; under the closed date domain
+        // an over-bound count enumerates the from day alone.
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'schedules' => [
+            ['from' => '2026-01-01 00:00', 'days' => [['every', 3652059, 'day']], 'times' => ['09:00']],
+        ]]));
+
+        $this->assertSame('1.0', $document->version);
+    }
+
+    #[Test]
+    #[DataProvider('sequenceCountsAtTheBound')]
+    public function accepts_a_sequence_count_at_the_1_1_bound(int $count, string $unit): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'every' => [$count, $unit]],
+        ]]));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    #[DataProvider('sequenceCountsAtTheBound')]
+    public function rejects_a_sequence_count_beyond_the_1_1_bound(int $count, string $unit): void
+    {
+        $this->expectException(InvalidYrnkException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.1', 'schedules' => [
+            ['from' => '0001-01-01 00:00', 'every' => [$count + 1, $unit]],
+        ]]));
+    }
+
+    #[Test]
+    public function accepts_a_sequence_count_beyond_the_bound_in_a_1_0_document(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.0', 'schedules' => [
+            ['from' => '2026-01-01 00:00', 'every' => [87649416, 'hour']],
+        ]]));
+
+        $this->assertSame('1.0', $document->version);
+    }
+
+    /**
+     * @return array<string, array{int, string}>
+     */
+    public static function sequenceCountsAtTheBound(): array
+    {
+        return [
+            'hour' => [87649415, 'hour'],
+            'minute' => [5258964959, 'minute'],
+            'second' => [315537897599, 'second'],
+        ];
+    }
+
+    #[Test]
     public function rejects_an_unknown_document_key(): void
     {
         $this->expectException(InvalidYrnkException::class);
@@ -87,6 +247,22 @@ class YrnkParserTest extends TestCase
         $this->expectException(UnsupportedVersionException::class);
 
         (new YrnkParser())->parse($this->doc(['version' => '2.0']));
+    }
+
+    #[Test]
+    public function accepts_a_document_declaring_1_1(): void
+    {
+        $document = (new YrnkParser())->parse($this->doc(['version' => '1.1']));
+
+        $this->assertSame('1.1', $document->version);
+    }
+
+    #[Test]
+    public function an_unknown_newer_minor_version_raises(): void
+    {
+        $this->expectException(UnsupportedVersionException::class);
+
+        (new YrnkParser())->parse($this->doc(['version' => '1.2']));
     }
 
     #[Test]

@@ -19,7 +19,7 @@ The declared names ride here rather than on the calendar: they are what the whol
 
 #### Constants
 
-- `SUPPORTED_VERSION`
+- `SUPPORTED_VERSIONS` — The spec versions this implementation knows, in the order they were released. A document declaring any other version is rejected rather than interpreted. 1.0 is deprecated by the spec but stays accepted: the acceptance obligation ends only at a major raise.
 
 #### Properties
 
@@ -70,6 +70,8 @@ The evaluator. A service holding configuration (the definitions and the timezone
 
 "Should this fire" does not live here. Firing, catch-up, and grace are expressed by the caller through how it cuts the period it asks about (hasMatchIn(last_run_at, now) is the firing decision). Definitions resolve per question and are not carried between them, so an answer always rests on what the resolvers say at the time it is asked.
 
+Evaluation works over the date domain — calendar days 0001-01-01 through 9999-12-31, read on the configured timezone's clock. At its edges evaluation ends rather than fails: a recurrence generates only its intersection with the domain, a shift search that would leave it finds no landing, an if whose neighbour lies outside fails the whole guard, and a query is answered on its overlap with the domain — a query lying entirely outside answers empty, never an error.
+
 #### Methods
 
 - `__construct(YrnkCalendar $calendar, DateTimeZone $timezone)`
@@ -88,7 +90,7 @@ Parses a Yrnk document (RawYrnk) into a Yrnk. Delegates each element of schedule
 #### Methods
 
 - `__construct(YrnkResolverContainer $resolverContainer, YrnkScheduleParser $scheduleParser, YrnkCalendarParser $calendarParser)`
-- `parse(string|array $input): Yrnk`
+- `parse(string|array $input): Yrnk` — The language rejects an object writing the same member name twice, which only the document text can show — decoding quietly keeps one of the duplicates. String input is therefore scanned before its decoded value is trusted; a caller handing in an already-decoded array forfeits that validation.
 
 ### YrnkSchedule
 
@@ -150,10 +152,12 @@ null means "undefined" — a document that uses vocabulary or references requiri
 - `?YrnkBusinessHours $businessHours`
 - `array $dateSets`
 - `YrnkResolverContainer $resolverContainer`
+- `bool $dateSetsAuthoredEmpty`
+- `bool $authoredEmpty`
 
 #### Methods
 
-- `__construct(YrnkHolidaysDateSet|string|null $holidays, YrnkBusinessHolidaysDateSet|string|null $businessHolidays, YrnkBusinessDaysDateSet|string|null $businessDays, ?YrnkWorkweek $workweek, ?YrnkBusinessHours $businessHours, array $dateSets, YrnkResolverContainer $resolverContainer)`
+- `__construct(YrnkHolidaysDateSet|string|null $holidays, YrnkBusinessHolidaysDateSet|string|null $businessHolidays, YrnkBusinessDaysDateSet|string|null $businessDays, ?YrnkWorkweek $workweek, ?YrnkBusinessHours $businessHours, array $dateSets, YrnkResolverContainer $resolverContainer, bool $dateSetsAuthoredEmpty, bool $authoredEmpty)`
 
 ### YrnkCalendarBuilder
 
@@ -173,7 +177,7 @@ The parser for the definitions part (RawCalendar). The top level is the closed s
 
 #### Methods
 
-- `parse(mixed $raw, DateTimeZone $timezone, YrnkResolverContainer $resolverContainer): YrnkCalendar`
+- `parse(mixed $raw, DateTimeZone $timezone, YrnkResolverContainer $resolverContainer, string $version): YrnkCalendar`
 
 ### YrnkDateSet
 
@@ -240,6 +244,12 @@ A logic error rather than a runtime one: every path that feeds document data int
 A document validation error: the structure or a value of a Yrnk document violates the language (unknown key, malformed shape, or invalid value).
 
 The base of everything that means "the document is wrong", so catching it covers that whole family. A document arrives at runtime, which is why this side of the hierarchy is not a logic error.
+
+### MalformedQueryException
+
+`class MalformedQueryException extends RuntimeException implements Yarunoka\Exceptions\ExceptionInterface`
+
+A malformed query: a period or an enumeration whose endpoints are reversed (its start lies after its end). An error of a kind distinct from document invalidity — the document stays valid; the question is the side that does not stand. A reversed period arises only from broken caller state or from a clock that moved backwards, and an empty answer would hide exactly that, which is why the answer is an error rather than false. Equal endpoints are legal and never raise this.
 
 ### MissingCalendarDataException
 
@@ -350,6 +360,10 @@ An atom of a day expression. Marker for the values that can appear in the `days`
 
 The day-cycle tuple atom (["every", 2, "day"] — every N days). The matching days count the date of the schedule's `from` as day one, so a schedule that uses this atom requires `from` (an invariant of YrnkSchedule). Allowed only as an element of the `days` enumeration (not as a `shift` landing condition or an `if` condition).
 
+#### Constants
+
+- `MAX_COUNT` — The largest count whose second matching day stays inside the date domain when `from` sits at its lower end. A count beyond it makes a document declaring 1.1 invalid; 1.0 documents keep their unbounded counts, which the closed date domain answers with the `from` day alone (validated by Yrnk, where the declared version lives).
+
 ### DayExpression
 
 `final readonly class DayExpression`
@@ -366,7 +380,7 @@ The clock grid ({"every": [90, "minute"], "between": ...}). The count and the un
 
 `final readonly class EverySequence implements Yarunoka\Schedule\TimesSpecInterface`
 
-The from-anchored interval sequence ({"from": ..., "every": [36, "hour"]}). The points are from + k × interval (k = 0, 1, 2, …), and it keeps counting across days (unlike the times clock grid there is no per-day re-anchoring). The count and the unit are kept as written. The count has no upper bound — the grid's one-day cap is a consequence of its per-day re-anchoring semantics and does not apply to a from-anchored sequence.
+The from-anchored interval sequence ({"from": ..., "every": [36, "hour"]}). The points are from + k × interval (k = 0, 1, 2, …), and it keeps counting across days (unlike the times clock grid there is no per-day re-anchoring). The count and the unit are kept as written. The grid's one-day cap is a consequence of its per-day re-anchoring semantics and does not apply here; what bounds the count is the date domain — a document declaring 1.1 caps it, per unit, at the largest count whose second point stays inside the domain (validated by Yrnk, where the declared version lives).
 
 ### FixedTimes
 

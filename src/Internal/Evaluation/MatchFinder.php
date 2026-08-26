@@ -54,12 +54,33 @@ final readonly class MatchFinder
      */
     private const int WALL_OFFSET_SLACK_SECONDS = 172800;
 
+    /**
+     * The month indexes (monthIndex) of the date domain's first and last
+     * months (0001-01 and 9999-12). Month walks stop at them: there are
+     * no days outside the domain to visit.
+     */
+    private const int FIRST_MONTH_INDEX = 12;
+
+    private const int LAST_MONTH_INDEX = 9999 * 12 + 11;
+
+    /** The instant the date domain starts at: 0001-01-01 00:00 on the document timezone's clock. */
+    private DateTimeImmutable $domainLower;
+
+    /** The first instant past the date domain: 10000-01-01 00:00 on the document timezone's clock. */
+    private DateTimeImmutable $domainUpperExclusive;
+
     public function __construct(
         private DayMatcher $dayMatcher,
         private AtomDayEnumerator $enumerator,
         private TimesExpander $expander,
         private DateTimeZone $timezone,
-    ) {}
+    ) {
+        $this->domainLower = new DateTimeImmutable('0001-01-01 00:00:00', $timezone);
+        // Built by day arithmetic: the YrnkDate / YrnkDateTime spellings
+        // stop at four-digit years, but the bound is one day past the
+        // last of them.
+        $this->domainUpperExclusive = (new DateTimeImmutable('9999-12-31 00:00:00', $timezone))->modify('+1 day');
+    }
 
     /**
      * Is the given instant an occurrence? The comparison is between
@@ -70,6 +91,13 @@ final readonly class MatchFinder
      */
     public function matches(YrnkSchedule $schedule, DateTimeImmutable $at): bool
     {
+        // Every occurrence's day lies in the date domain, whose instants
+        // on the document's clock are [domainLower, domainUpperExclusive)
+        // — an instant outside them matches nothing.
+        if ($at < $this->domainLower || $at >= $this->domainUpperExclusive) {
+            return false;
+        }
+
         if ($schedule->times instanceof EverySequence) {
             // Points are whole seconds, so "is there a point in
             // (at−1 second, at]" = "is at a point".
@@ -129,6 +157,22 @@ final readonly class MatchFinder
             }
         }
 
+        // The date domain clips the period the same way: only its
+        // overlap is evaluated, and a period lying entirely outside
+        // empties here. Points are whole seconds, so t >= domainLower ⇔
+        // t > domainLower − 1s.
+        $lower = self::secondBefore($this->domainLower);
+
+        if ($lower > $after) {
+            $after = $lower;
+        }
+
+        $upper = self::secondBefore($this->domainUpperExclusive);
+
+        if ($upper < $through) {
+            $through = $upper;
+        }
+
         if ($after >= $through) {
             return false;
         }
@@ -137,7 +181,9 @@ final readonly class MatchFinder
             return $this->sequenceHasMatchIn($schedule->from, $schedule->times, $after, $through);
         }
 
-        $afterDay = $this->wallDateOf($after);
+        // An $after cut to just before the domain reads as the day
+        // before it; the walk starts on the domain's first day instead.
+        $afterDay = $this->wallDateOf(max($after, $this->domainLower));
         $throughDay = $this->wallDateOf($through);
 
         if ($schedule->times instanceof AllDay) {
@@ -209,6 +255,19 @@ final readonly class MatchFinder
             if ($upper < $through) {
                 $through = $upper;
             }
+        }
+
+        // The date domain clips the range the same way (see hasMatchIn);
+        // both enumeration bounds are inclusive, so the lower bound
+        // needs no second-before adjustment.
+        if ($this->domainLower > $from) {
+            $from = $this->domainLower;
+        }
+
+        $upper = self::secondBefore($this->domainUpperExclusive);
+
+        if ($upper < $through) {
+            $through = $upper;
         }
 
         if ($from > $through) {
@@ -284,11 +343,14 @@ final readonly class MatchFinder
         }
 
         if ($schedule->shift?->direction === Direction::Next) {
-            for ($index = self::monthIndex($fromDay) - 1; ; $index--) {
+            // The walk down stops at the domain's first month: there are
+            // no earlier days to shift in. The cutoffs compare by day
+            // counts so no day outside the domain is ever built.
+            for ($index = self::monthIndex($fromDay) - 1; $index >= self::FIRST_MONTH_INDEX; $index--) {
                 [$year, $month] = self::yearMonthAt($index);
                 $monthLast = $this->lastDayOf($year, $month);
 
-                if ($fromDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
+                if (self::daysBetween($monthLast, $fromDay) > self::SHIFT_SEARCH_LIMIT_DAYS) {
                     break;
                 }
 
@@ -302,10 +364,10 @@ final readonly class MatchFinder
         }
 
         if ($schedule->shift?->direction === Direction::Prev) {
-            for ($index = self::monthIndex($throughDay) + 1; ; $index++) {
+            for ($index = self::monthIndex($throughDay) + 1; $index <= self::LAST_MONTH_INDEX; $index++) {
                 [$year, $month] = self::yearMonthAt($index);
 
-                if ($this->addDays($this->dayAt($year, $month, 1), -self::SHIFT_SEARCH_LIMIT_DAYS) > $throughDay) {
+                if (self::daysBetween($throughDay, $this->dayAt($year, $month, 1)) > self::SHIFT_SEARCH_LIMIT_DAYS) {
                     break;
                 }
 
@@ -353,11 +415,11 @@ final readonly class MatchFinder
         YrnkDate $afterDay,
         YrnkDate $throughDay,
     ): bool {
-        for ($index = self::monthIndex($afterDay) - 1; ; $index--) {
+        for ($index = self::monthIndex($afterDay) - 1; $index >= self::FIRST_MONTH_INDEX; $index--) {
             [$year, $month] = self::yearMonthAt($index);
             $monthLast = $this->lastDayOf($year, $month);
 
-            if ($afterDay > $this->addDays($monthLast, self::SHIFT_SEARCH_LIMIT_DAYS)) {
+            if (self::daysBetween($monthLast, $afterDay) > self::SHIFT_SEARCH_LIMIT_DAYS) {
                 return false;
             }
 
@@ -371,6 +433,9 @@ final readonly class MatchFinder
                 return false;
             }
         }
+
+        // The domain's first month: no earlier days exist to spill in.
+        return false;
     }
 
     /**
@@ -388,11 +453,11 @@ final readonly class MatchFinder
         YrnkDate $afterDay,
         YrnkDate $throughDay,
     ): bool {
-        for ($index = self::monthIndex($throughDay) + 1; ; $index++) {
+        for ($index = self::monthIndex($throughDay) + 1; $index <= self::LAST_MONTH_INDEX; $index++) {
             [$year, $month] = self::yearMonthAt($index);
             $monthFirst = $this->dayAt($year, $month, 1);
 
-            if ($this->addDays($monthFirst, -self::SHIFT_SEARCH_LIMIT_DAYS) > $throughDay) {
+            if (self::daysBetween($throughDay, $monthFirst) > self::SHIFT_SEARCH_LIMIT_DAYS) {
                 return false;
             }
 
@@ -406,6 +471,9 @@ final readonly class MatchFinder
                 return false;
             }
         }
+
+        // The domain's last month: no later days exist to spill in.
+        return false;
     }
 
     /**
@@ -581,6 +649,12 @@ final readonly class MatchFinder
                 return true;
             }
 
+            // Days outside the date domain are not base days, so the
+            // candidate walk ends at its edge.
+            if (self::stepLeavesDomain($cursor, $step)) {
+                return false;
+            }
+
             $cursor = $this->addDays($cursor, $step);
 
             if ($this->dayMatcher->matches($schedule->shift->condition, $cursor)) {
@@ -607,6 +681,11 @@ final readonly class MatchFinder
      */
     private function vanishedDayLandsOn(YrnkSchedule $schedule, YrnkDate $day): bool
     {
+        // The domain's first day has no previous day to have vanished.
+        if (self::stepLeavesDomain($day, -1)) {
+            return false;
+        }
+
         if (! self::isSameDay($this->addDays($day, -1), $day)) {
             return false;
         }
@@ -669,6 +748,13 @@ final readonly class MatchFinder
             return true;
         }
 
+        // A neighbour outside the date domain fails the whole guard, and
+        // it fails before not applies — "no such day" is not a falsehood
+        // for not to turn into a match.
+        if ($if->direction !== null && self::stepLeavesDomain($date, $if->direction->step())) {
+            return false;
+        }
+
         $target = $if->direction === null ? $date : $this->addDays($date, $if->direction->step());
         $result = $this->dayMatcher->matches($if->condition, $target);
 
@@ -692,11 +778,26 @@ final readonly class MatchFinder
      */
     private function landingOf(Shift $shift, YrnkDate $base): ?YrnkDate
     {
-        $cursor = $shift->orSame ? $base : $this->addDays($base, $shift->direction->step());
+        $cursor = $base;
+
+        if (! $shift->orSame) {
+            if (self::stepLeavesDomain($cursor, $shift->direction->step())) {
+                return null;
+            }
+
+            $cursor = $this->addDays($cursor, $shift->direction->step());
+        }
 
         for ($displacement = $shift->orSame ? 0 : 1; $displacement <= self::SHIFT_SEARCH_LIMIT_DAYS; $displacement++) {
             if ($this->dayMatcher->matches($shift->condition, $cursor)) {
                 return $cursor;
+            }
+
+            // The edge of the date domain bounds the search the same way
+            // the displacement cap does: a search that would leave it
+            // stops with no landing.
+            if (self::stepLeavesDomain($cursor, $shift->direction->step())) {
+                return null;
             }
 
             $cursor = $this->addDays($cursor, $shift->direction->step());
@@ -713,7 +814,11 @@ final readonly class MatchFinder
     private function dayOverlaps(YrnkDate $day, int $lower, int $upper): bool
     {
         $start = $this->atTime($day, 0)->getTimestamp();
-        $end = $this->atTime($this->addDays($day, 1), 0)->getTimestamp() - 1;
+        // The day after the domain's last day cannot be built as a date;
+        // its start is the domain's upper bound.
+        $end = self::stepLeavesDomain($day, 1)
+            ? $this->domainUpperExclusive->getTimestamp() - 1
+            : $this->atTime($this->addDays($day, 1), 0)->getTimestamp() - 1;
 
         return max($start, $lower) <= min($end, $upper);
     }
@@ -1007,6 +1112,17 @@ final readonly class MatchFinder
     private static function isSameDay(YrnkDate $a, YrnkDate $b): bool
     {
         return $a->format('Y-m-d') === $b->format('Y-m-d');
+    }
+
+    /**
+     * Would one step in the given direction leave the date domain? True
+     * exactly on the edge day facing the step: the day past it does not
+     * exist for evaluation, and building it is a spelling error besides
+     * (a year outside 1–9999 has no date literal).
+     */
+    private static function stepLeavesDomain(YrnkDate $day, int $step): bool
+    {
+        return $day->format('Y-m-d') === ($step > 0 ? '9999-12-31' : '0001-01-01');
     }
 
     /**

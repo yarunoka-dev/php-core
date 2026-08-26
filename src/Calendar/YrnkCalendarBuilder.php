@@ -6,6 +6,7 @@ use Yarunoka\YrnkDate;
 use Yarunoka\Time\YrnkTimeWindow;
 use Yarunoka\Vocabulary\YrnkDayName;
 use DateTimeZone;
+use stdClass;
 
 /**
  * The mirror image of CalendarParser. YrnkCalendar node →
@@ -50,6 +51,12 @@ final class YrnkCalendarBuilder
             foreach ($calendar->dateSets as $name => $definition) {
                 $raw['date_sets'][$name] = self::datesOf($definition);
             }
+        }
+
+        // The 1.0 spelling "date_sets": {} comes back as written — an
+        // object, which an empty PHP array would not encode as.
+        if ($calendar->dateSetsAuthoredEmpty) {
+            $raw['date_sets'] = new stdClass();
         }
 
         return $raw;

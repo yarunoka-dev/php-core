@@ -236,7 +236,7 @@ A document declares the names it leaves outside itself:
 
 ```json
 {
-  "version": "1.0",
+  "version": "1.1",
   "timezone": "Asia/Tokyo",
   "resolvers": ["company-holidays"],
   "calendar": {

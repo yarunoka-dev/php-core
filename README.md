@@ -42,7 +42,7 @@ roughly "so, do we do it?". That is the question this engine exists to
 answer.
 
 The DSL is language-independent and specified in the
-[spec repository](https://github.com/yarunoka-dev/spec/tree/1.0). This package is
+[spec repository](https://github.com/yarunoka-dev/spec/tree/1.1). This package is
 its PHP implementation.
 
 ## Installation
@@ -61,7 +61,7 @@ use Yarunoka\YrnkParser;
 
 $json = <<<'JSON'
 {
-    "version": "1.0",
+    "version": "1.1",
     "timezone": "Asia/Tokyo",
     "calendar": {
         "holidays": ["2026-01-01", "2026-07-20"],
@@ -93,10 +93,10 @@ $evaluator->hasMatchIn($payday, $lastRunAt, $now); // true
 
 - [Guides](docs/guides/) — what the package requires, how to install it,
   and how to read, write, evaluate, and supply dates at runtime
-- [The spec repository](https://github.com/yarunoka-dev/spec/tree/1.0) — the DSL
-  specification. The JSON Schemas under `schema/` are a verbatim copy of
-  the spec's (the spec declares that every language implementation
-  carries a copy)
+- [The spec repository](https://github.com/yarunoka-dev/spec/tree/1.1) — the DSL
+  specification. The JSON Schemas under `schema/` are verbatim copies of
+  the spec's, one directory per supported spec version (the spec
+  declares that every language implementation carries a copy)
 - The Laravel bridge is the separate
   [yarunoka/laravel](https://github.com/yarunoka-dev/php-laravel) package
 

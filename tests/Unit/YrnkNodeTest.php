@@ -30,12 +30,42 @@ class YrnkNodeTest extends TestCase
     }
 
     #[Test]
+    public function accepts_every_supported_version(): void
+    {
+        foreach (Yrnk::SUPPORTED_VERSIONS as $version) {
+            $document = new Yrnk(
+                version: $version,
+                timezone: new DateTimeZone('Asia/Tokyo'),
+                calendar: new YrnkCalendar(),
+                schedules: [new YrnkSchedule(times: new AllDay())],
+            );
+
+            $this->assertSame($version, $document->version);
+        }
+    }
+
+    #[Test]
     public function rejects_an_unknown_version(): void
     {
         $this->expectException(UnsupportedVersionException::class);
 
         new Yrnk(
             version: '2.0',
+            timezone: new DateTimeZone('Asia/Tokyo'),
+            calendar: new YrnkCalendar(),
+            schedules: [new YrnkSchedule(times: new AllDay())],
+        );
+    }
+
+    #[Test]
+    public function rejects_an_unknown_newer_minor_version(): void
+    {
+        // An implementation must reject a declared version it does not
+        // know, a newer minor of its own major included.
+        $this->expectException(UnsupportedVersionException::class);
+
+        new Yrnk(
+            version: '1.2',
             timezone: new DateTimeZone('Asia/Tokyo'),
             calendar: new YrnkCalendar(),
             schedules: [new YrnkSchedule(times: new AllDay())],
