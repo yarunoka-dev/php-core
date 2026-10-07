@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "azuyalabs/yasumi",
-            "version": "2.11.0",
+            "version": "2.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/azuyalabs/yasumi.git",
-                "reference": "e24bc345d2dd0b9425ff19abf7f11574bbb1d7be"
+                "reference": "24727701cd50b1177e39b3e20ed764fb0943bfb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/azuyalabs/yasumi/zipball/e24bc345d2dd0b9425ff19abf7f11574bbb1d7be",
-                "reference": "e24bc345d2dd0b9425ff19abf7f11574bbb1d7be",
+                "url": "https://api.github.com/repos/azuyalabs/yasumi/zipball/24727701cd50b1177e39b3e20ed764fb0943bfb3",
+                "reference": "24727701cd50b1177e39b3e20ed764fb0943bfb3",
                 "shasum": ""
             },
             "require": {
@@ -29,9 +29,10 @@
                 "azuyalabs/php-cs-fixer-config": "^0.3",
                 "ext-intl": "*",
                 "mikey179/vfsstream": "^1.6",
-                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan": "^2.2",
                 "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpunit/phpunit": "^11.5"
+                "phpunit/phpunit": "^11.5",
+                "rector/rector": "^2.6"
             },
             "suggest": {
                 "ext-calendar": "For calculating the date of Easter"
@@ -78,7 +79,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-03-30T13:35:38+00:00"
+            "time": "2026-09-30T14:35:38+00:00"
         },
         {
             "name": "bamarni/composer-bin-plugin",
